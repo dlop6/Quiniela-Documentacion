@@ -1,0 +1,42 @@
+\section{Arquitectura frontend}
+
+\subsection{Descripcion}
+
+Este documento reserva la especificacion descriptiva del frontend. Su enfoque sera organizacion por features, separacion entre UI, logica y acceso a datos, y uso controlado de `shared`.
+
+\subsection{Alcance}
+
+Describe la arquitectura del repositorio frontend, no su implementacion detalle a detalle.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Feature}: unidad funcional autocontenida del frontend.
+  \item \textbf{Shared}: espacio comun reservado para elementos verdaderamente reutilizables.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item El frontend seguira un esquema simplificado de organizacion por features.
+  \item La logica de negocio del juego no se resolvera exclusivamente en cliente.
+  \item Los contratos de entrada y salida se validaran con Zod donde aplique.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de detallar cuando la estructura real del frontend exista o se confirme.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item El documento futuro no debe duplicar reglas del dominio ya definidas en \texttt{01\_Producto\_y\_Reglas}.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Definir estructura final de features y criterios exactos para `shared`.
+\end{itemize}

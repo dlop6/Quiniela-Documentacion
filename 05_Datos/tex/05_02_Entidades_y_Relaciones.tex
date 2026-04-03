@@ -1,0 +1,72 @@
+\section{Entidades y relaciones}
+
+\subsection{Descripcion}
+
+Este documento enumera las entidades conceptuales del sistema y sus relaciones principales. El nivel es funcional y no pretende reemplazar un esquema fisico de base de datos.
+
+\subsection{Alcance}
+
+Aplica al modelo conceptual de datos de la plataforma.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Entidad}: objeto de dominio con identidad propia.
+  \item \textbf{Relacion}: vinculo funcional entre entidades.
+\end{itemize}
+
+\subsection{Reglas}
+
+Entidades principales:
+
+\begin{longtable}{p{0.25\textwidth}p{0.67\textwidth}}
+\toprule
+\textbf{Entidad} & \textbf{Responsabilidad funcional} \\
+\midrule
+User & Identidad del participante o administrador. \\
+PaymentProof & Evidencia de pago usada para activacion manual. \\
+Tournament & Contenedor del torneo documentado por la plataforma. \\
+Phase & Segmentacion oficial del torneo para scoring y vistas. \\
+Team & Equipo participante del torneo. \\
+Match & Partido con kickoff, fase y estado operativo. \\
+Pick & Prediccion de marcador exacto por usuario y partido. \\
+SpecialPrediction & Prediccion especial de Campeon o Goleador. \\
+Result & Resultado oficial o corregido de un partido. \\
+ScoreEntry & Registro derivado del puntaje aplicado a un pick. \\
+LeaderboardSnapshot & Vista derivada opcional del ranking en un momento dado. \\
+AuditEvent & Evento auditable generado por accion critica o correccion. \\
+\bottomrule
+\end{longtable}
+
+Relaciones principales:
+
+\begin{itemize}
+  \item `User` genera `PaymentProof`.
+  \item `User` crea `Pick` y `SpecialPrediction`.
+  \item `Tournament` contiene `Phase`, `Team` y `Match`.
+  \item `Match` tiene cero o un `Result` vigente.
+  \item `Pick` se evalua contra `Result` para producir `ScoreEntry`.
+  \item `AuditEvent` puede referenciar acciones sobre usuarios, pagos, partidos, resultados y recalculos.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Un `Match` puede pasar por estados no lineales como postergado o corregido; el modelo debe preservar historia suficiente para auditar.
+  \item `LeaderboardSnapshot` es opcional; el ranking puede derivarse o persistirse segun necesidad operativa.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Un `Pick` pertenece a un solo `User` y a un solo `Match`.
+  \item Un `Result` vigente a efectos de scoring debe ser unico por `Match`.
+  \item Cada `AuditEvent` debe poder asociarse a un actor o a un proceso identificable.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar si `SpecialPrediction` se persiste como entidad separada o como variante de `Pick`.
+\end{itemize}
+

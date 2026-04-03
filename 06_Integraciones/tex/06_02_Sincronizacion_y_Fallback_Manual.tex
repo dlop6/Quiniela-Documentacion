@@ -1,0 +1,41 @@
+\section{Sincronizacion y fallback manual}
+
+\subsection{Descripcion}
+
+Este documento reservara la estrategia de sincronizacion automatica de resultados y el procedimiento funcional de correccion manual.
+
+\subsection{Alcance}
+
+Aplica a jobs de resultados, reintentos, overrides y recalculo.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Fallback manual}: intervencion administrativa cuando la fuente automatica no es suficiente.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item Toda correccion manual debe quedar auditada.
+  \item Toda actualizacion relevante de resultado debe disparar un recalculo consistente.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de completar con la politica definitiva de prioridad entre fuente externa y override manual.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item El fallback manual no elimina trazabilidad ni historia del dato anterior.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar ventanas de sync, re-sync y criterio final de override.
+\end{itemize}
+

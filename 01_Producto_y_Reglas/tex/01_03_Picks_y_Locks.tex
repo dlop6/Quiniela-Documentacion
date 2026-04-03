@@ -1,0 +1,61 @@
+\section{Picks y locks}
+
+\subsection{Descripcion}
+
+Este documento detalla las reglas especificas de captura, visibilidad, bloqueo y validez de los picks.
+
+\subsection{Alcance}
+
+Aplica a picks por partido y a predicciones especiales cuando corresponda.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Ventana abierta}: periodo previo al lock donde el pick puede crearse o editarse.
+  \item \textbf{Visibilidad post-cierre}: momento a partir del cual otros usuarios pueden consultar picks ajenos.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{enumerate}
+  \item Solo usuarios `ACTIVOS` pueden guardar picks.
+  \item El pick se compone de dos enteros: goles local y goles visita.
+  \item El sistema debe permitir crear y editar picks mientras el partido este en ventana abierta.
+  \item El lock ocurre 5 minutos antes del kickoff oficial vigente.
+  \item El backend debe rechazar cualquier modificacion posterior al lock.
+  \item Los picks de otros usuarios permanecen ocultos antes del cierre del partido.
+  \item Los picks de otros usuarios se vuelven visibles solo despues de que el partido este cerrado.
+  \item Si no existe pick al llegar el lock, el estado funcional es \texttt{SIN\_PICK} y el puntaje del partido es 0.
+  \item El lock depende del kickoff oficial del sistema, no del reloj del navegador del usuario.
+  \item Las predicciones especiales forman parte del producto y deben quedar bloqueadas segun una fecha de corte oficial del torneo.
+\end{enumerate}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si el kickoff cambia antes del lock, el cierre se recalcula.
+  \item Si el kickoff cambia despues del lock por una postergacion, el pick ya cerrado se conserva salvo decision administrativa extraordinaria auditada.
+  \item Si el usuario guardo parcialmente una jornada, solo cuentan los partidos con pick persistido antes del lock.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item No existe edicion valida de pick despues del lock.
+  \item La visibilidad de picks ajenos nunca ocurre antes del cierre del partido.
+  \item Un partido sin pick no genera prediccion implicita.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar el rango valido de goles por input para frontend y backend.
+  \item Confirmar la fecha exacta de cierre de predicciones especiales.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `Bloquea backend`: definir el rango maximo permitido para goles en la validacion de entrada.
+  \item `Decision pendiente` `Bloquea ambos`: definir la fecha de corte exacta de Campeon y Goleador.
+\end{itemize}

@@ -1,0 +1,42 @@
+\section{Seguridad aplicativa}
+
+\subsection{Descripcion}
+
+Este documento reservara los lineamientos de seguridad del sistema alineados a OWASP y Secure by Design.
+
+\subsection{Alcance}
+
+Aplica a autenticacion, autorizacion, validacion de entradas y hardening base.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Secure by Design}: seguridad incorporada desde el diseno, no agregada al final.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item El sistema debe validar entradas de forma estricta.
+  \item El backend debe proteger acciones criticas con autorizacion y auditoria.
+  \item La configuracion sensible debe vivir fuera del codigo.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de aterrizar medidas concretas por capa.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Las reglas de seguridad no pueden debilitar el enforcement del dominio.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar checklist inicial de controles obligatorios para v1.
+\end{itemize}
+

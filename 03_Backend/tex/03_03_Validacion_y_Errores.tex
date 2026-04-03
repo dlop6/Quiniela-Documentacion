@@ -1,0 +1,43 @@
+\section{Validacion y errores}
+
+\subsection{Descripcion}
+
+Este documento reservara lineamientos de validacion de entrada, manejo de errores e idempotencia a nivel backend.
+
+\subsection{Alcance}
+
+Aplica a contratos de entrada y comportamiento de error del backend.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Validacion de frontera}: verificacion de entradas en el limite del sistema.
+  \item \textbf{Idempotencia}: repeticion segura de una operacion sin efectos incorrectos adicionales.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item Toda entrada backend debe validarse en la frontera.
+  \item Los errores funcionales deben separarse de errores tecnicos.
+  \item Recalculo y sincronizacion deben describirse con criterio de idempotencia.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de desarrollar por flujo y modulo.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ningun error critico debe impedir auditoria de acciones relevantes.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar taxonomia final de errores funcionales y tecnicos.
+\end{itemize}
+

@@ -1,0 +1,90 @@
+\section{Principios de ingenieria y arquitectura}
+
+\subsection{Descripcion}
+
+Este documento fija los principios que deben reflejarse en la documentacion y, posteriormente, en la implementacion del sistema. No es una lista decorativa; actua como criterio de calidad para escribir reglas, contratos y limites.
+
+\subsection{Alcance}
+
+Aplica a backend, frontend, datos, integraciones y operacion.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{KISS}: la solucion documental y tecnica debe ser lo mas simple posible sin sacrificar claridad.
+  \item \textbf{Single Responsibility}: cada documento y cada modulo deben tener una responsabilidad dominante.
+  \item \textbf{Explicit Contracts}: toda frontera debe declarar que recibe, que entrega y bajo que reglas opera.
+\end{itemize}
+
+\subsection{Reglas}
+
+Principios de ingenieria aplicados al repositorio:
+
+\begin{itemize}
+  \item `KISS`: los documentos deben ser directos y libres de teoria innecesaria.
+  \item `SOLID` y `Single Responsibility`: un documento responde una sola pregunta principal.
+  \item `DRY`: una regla normativa se define una vez y luego se referencia.
+  \item `YAGNI`: no se documentan capacidades fuera del alcance confirmado.
+  \item `Separation of Concerns`: producto, dominio, arquitectura, datos, seguridad y operacion viven en documentos separados.
+  \item `Law of Demeter`: se evita acoplar documentos a detalles de otras capas cuando no son necesarios.
+  \item `Fail Fast`: se documentan estados invalidos, entradas invalidas y errores esperados.
+  \item `Least Privilege`: los roles se definen con permisos minimos suficientes.
+  \item `Idempotency`: recalculo, sincronizacion y acciones repetibles deben quedar documentadas como operaciones seguras frente a reintentos.
+  \item `Convention over Configuration`: el repositorio adopta convenciones fijas para estructura, nombres y compilacion.
+  \item `Explicit Contracts`: toda interfaz relevante debe quedar escrita de forma verificable.
+\end{itemize}
+
+Principios arquitectonicos confirmados:
+
+\begin{itemize}
+  \item Frontend organizado por features.
+  \item Separacion entre UI, logica y acceso a datos.
+  \item `shared` restringido a elementos realmente reutilizables.
+  \item Backend como modular monolith.
+  \item Separacion por dominio: auth, users, payments, matches, picks, results, scoring, leaderboard, admin, audit y notifications.
+  \item Validacion en la frontera de entrada.
+  \item Logica de negocio fuera de controllers.
+\end{itemize}
+
+Lineamientos de produccion:
+
+\begin{itemize}
+  \item `Secure by Design`.
+  \item Buenas practicas `OWASP`.
+  \item `Twelve-Factor App`.
+  \item Configuracion fuera del codigo.
+  \item Logs como stream de eventos.
+  \item Validacion estricta de inputs.
+  \item Manejo claro de errores.
+  \item Auditoria de acciones criticas.
+\end{itemize}
+
+Baseline aprobado:
+
+\begin{itemize}
+  \item Frontend: Next.js, TypeScript, ESLint, Zod, TanStack Query, Tailwind CSS, Playwright.
+  \item Backend: Node.js, Express, TypeScript, Zod, Prisma, Helmet, Pino, OpenTelemetry, Vitest.
+  \item Base de datos: PostgreSQL.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si una practica recomendada entra en conflicto con una regla del dominio, la regla del dominio no se altera sin decision explicita.
+  \item Si una herramienta baseline cambia en el futuro, debe registrarse como decision del repositorio.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item La documentacion debe justificar limites y responsabilidades; no solo listarlos.
+  \item Ningun contrato relevante debe quedar implicito.
+  \item Las decisiones tecnicas deben preservar claridad operativa y trazabilidad.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Ninguna por ahora.
+\end{itemize}
+

@@ -1,0 +1,61 @@
+\section{Mapa documental}
+
+\subsection{Descripcion}
+
+Este documento explica como se organiza el repositorio de documentacion y que pregunta responde cada seccion. Su objetivo es reducir duplicidad, evitar mezclas de responsabilidad y facilitar el mantenimiento.
+
+\subsection{Alcance}
+
+Aplica a todo el repositorio de documentacion tecnica de Quiniela.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Seccion}: carpeta principal del repositorio, asociada a un area concreta del sistema.
+  \item \textbf{Documento fuente}: archivo `.tex` editable dentro de una subcarpeta `tex/`.
+  \item \textbf{Entregable}: PDF publicado en la raiz de una seccion.
+  \item \textbf{Documento maestro}: PDF que consolida los documentos aprobados del repositorio.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{longtable}{p{0.25\textwidth}p{0.67\textwidth}}
+\toprule
+\textbf{Seccion} & \textbf{Pregunta principal que responde} \\
+\midrule
+\texttt{00\_Overview} & Que es el sistema, como se organiza la documentacion y bajo que principios debe leerse. \\
+\texttt{01\_Producto\_y\_Reglas} & Cuales son las reglas oficiales del producto y del juego. \\
+\texttt{02\_Arquitectura} & Como se divide el sistema y cuales son sus limites principales. \\
+\texttt{03\_Backend} & Como se organiza el backend a nivel conceptual. \\
+\texttt{04\_Frontend} & Como se organiza el frontend a nivel conceptual. \\
+\texttt{05\_Datos} & Cual es el modelo de dominio y cuales son sus invariantes. \\
+\texttt{06\_Integraciones} & Como interactua el sistema con servicios externos. \\
+\texttt{07\_Seguridad\_y\_Operacion} & Que lineamientos operativos y de seguridad deben respetarse. \\
+\texttt{08\_Testing} & Como se valida la calidad funcional y tecnica. \\
+\texttt{09\_UI\_UX} & Que principios de interfaz y experiencia guian el producto. \\
+\texttt{10\_Planeacion} & Que decisiones, riesgos y fases de trabajo siguen abiertas. \\
+\bottomrule
+\end{longtable}
+
+Una regla normativa debe definirse una sola vez en el repositorio. Los demas documentos deben referenciarla en lugar de duplicarla.
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si un tema encaja en dos secciones, se documenta en la seccion que lo define y se referencia desde la otra.
+  \item Si una regla afecta varias capas del sistema, sigue perteneciendo primero al dominio, no a la capa tecnica que la ejecuta.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Cada documento debe tener una sola responsabilidad primaria.
+  \item Ninguna regla del negocio debe depender del lector interpretando el contexto.
+  \item El documento maestro no reemplaza los documentos modulares; los consolida.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Ninguna por ahora.
+\end{itemize}

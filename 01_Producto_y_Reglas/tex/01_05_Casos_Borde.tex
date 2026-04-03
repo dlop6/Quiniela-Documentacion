@@ -1,0 +1,58 @@
+\section{Casos borde}
+
+\subsection{Descripcion}
+
+Este documento concentra los escenarios funcionales no triviales que pueden generar disputa, recalculo o intervencion administrativa.
+
+\subsection{Alcance}
+
+Aplica a partidos, resultados, lock, scoring y visibilidad.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Suspendido}: partido interrumpido temporalmente sin resultado final utilizable.
+  \item \textbf{Postergado}: partido movido a una nueva fecha.
+  \item \textbf{Cancelado}: partido sin resultado oficial utilizable para la quiniela.
+  \item \textbf{Corregido}: resultado oficial ajustado posteriormente.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{enumerate}
+  \item Si un partido se posterga antes del lock, el lock se recalcula con el nuevo kickoff oficial.
+  \item Si un partido se posterga despues del lock, los picks ya guardados permanecen validos y bloqueados, salvo decision administrativa extraordinaria auditada.
+  \item Si un partido se suspende y luego se completa con resultado oficial compatible con la regla de 90 minutos mas agregado, el sistema puntua cuando ese resultado exista.
+  \item Si un partido se cancela y no existe resultado oficial utilizable, no genera puntaje para ningun usuario.
+  \item Si un resultado se corrige por fuente valida o override manual autorizado, se debe recalcular el puntaje afectado y dejar trazabilidad completa.
+  \item Todo override manual de resultado debe registrar actor, momento, valor anterior, valor nuevo y justificacion.
+\end{enumerate}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si el proveedor de resultados entrega un valor temporal y luego otro definitivo, solo el resultado oficial vigente debe quedar activo.
+  \item Si el sistema recalcula varias veces el mismo partido corregido, el proceso debe ser idempotente.
+  \item Si un usuario intenta disputar un resultado, la evidencia operativa debe salir de la auditoria y de la fuente oficial aplicada.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ninguna correccion manual debe borrar la historia del valor anterior.
+  \item Ningun caso borde debe resolverse fuera de trazabilidad.
+  \item Un partido cancelado no asigna puntos.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar la politica exacta de comunicacion al usuario cuando un resultado sea corregido despues de haberse mostrado.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `Bloquea ambos`: definir el mensaje funcional al usuario para partidos corregidos.
+  \item `Riesgo` `Bloquea backend`: confirmar criterios de prioridad entre API externa y override manual si ambos entregan cambios en ventanas cercanas.
+\end{itemize}

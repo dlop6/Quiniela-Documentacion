@@ -1,0 +1,102 @@
+\section{Estados y flujos}
+
+\subsection{Descripcion}
+
+Este documento define los estados funcionales del sistema y las transiciones validas entre ellos. Su foco es el dominio, no la implementacion tecnica de pantalla o endpoint.
+
+\subsection{Alcance}
+
+Aplica a usuarios, partidos, picks, resultados y torneo.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Transicion}: cambio valido entre dos estados.
+  \item \textbf{Estado terminal}: estado desde el cual no se espera retorno ordinario.
+\end{itemize}
+
+\subsection{Reglas}
+
+Estados de usuario:
+
+\begin{itemize}
+  \item `PENDIENTE`: registrado, con pago aun no validado o en revision.
+  \item `ACTIVO`: habilitado para participar.
+  \item `RECHAZADO`: activacion denegada.
+  \item `BLOQUEADO`: acceso revocado por accion administrativa.
+\end{itemize}
+
+Transiciones validas de usuario:
+
+\begin{itemize}
+  \item registro nuevo a `PENDIENTE`;
+  \item `PENDIENTE` a `ACTIVO`;
+  \item `PENDIENTE` a `RECHAZADO`;
+  \item `ACTIVO` a `BLOQUEADO`.
+\end{itemize}
+
+Estados de partido a nivel funcional:
+
+\begin{itemize}
+  \item `PROGRAMADO`;
+  \item `BLOQUEADO` para picks;
+  \item `CERRADO`;
+  \item `SUSPENDIDO`;
+  \item `POSTERGADO`;
+  \item `CANCELADO`;
+  \item `CORREGIDO` como marca de resultado ajustado.
+\end{itemize}
+
+Transiciones validas de partido:
+
+\begin{itemize}
+  \item `PROGRAMADO` a `BLOQUEADO`;
+  \item `BLOQUEADO` a `CERRADO`;
+  \item `PROGRAMADO` o `BLOQUEADO` a `POSTERGADO`;
+  \item `BLOQUEADO` o `CERRADO` a `SUSPENDIDO`;
+  \item `PROGRAMADO`, `BLOQUEADO` o `SUSPENDIDO` a `CANCELADO`;
+  \item `CERRADO` a `CORREGIDO`.
+\end{itemize}
+
+Estados de pick:
+
+\begin{itemize}
+  \item `ABIERTO`: editable;
+  \item `BLOQUEADO`: no editable;
+  \item \texttt{SIN\_PICK}: no existe prediccion guardada al momento del lock.
+\end{itemize}
+
+Estados de torneo:
+
+\begin{itemize}
+  \item `ACTIVO`;
+  \item `ARCHIVADO`.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Un usuario rechazado no se reactiva sin una accion administrativa explicita y documentada.
+  \item Un partido corregido conserva su historial previo mediante auditoria; la correccion no borra la trazabilidad.
+  \item \texttt{SIN\_PICK} no es una prediccion; es la ausencia valida de una prediccion antes del cierre.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Un usuario no puede ser simultaneamente `ACTIVO` y `BLOQUEADO`.
+  \item Un torneo archivado no vuelve a estado activo dentro del flujo ordinario.
+  \item Un pick bloqueado no vuelve a estado abierto por flujo ordinario.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar si se necesita un estado funcional explicito para pago \texttt{EN\_REVISION} como entidad separada del estado de usuario.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: formalizar los estados internos del comprobante de pago si el backend los modela como entidad propia.
+\end{itemize}

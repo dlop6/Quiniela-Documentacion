@@ -1,0 +1,66 @@
+\section{Vision y alcance}
+
+\subsection{Descripcion}
+
+Quiniela es una plataforma web para administrar una quiniela del Mundial con registro publico, activacion manual por pago, picks por marcador exacto, resultados oficiales, calculo de puntajes y operacion administrativa con trazabilidad.
+
+\subsection{Alcance}
+
+Esta vision cubre el producto v1 y el limite funcional de la documentacion actual.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{v1}: primera version operativa del producto para un solo torneo.
+  \item \textbf{JD}: equipo administrativo responsable de operar la quiniela.
+  \item \textbf{Quiniela oficial}: unica quiniela habilitada para el torneo cubierto en esta version.
+\end{itemize}
+
+\subsection{Reglas}
+
+El sistema cubre los siguientes componentes funcionales:
+
+\begin{itemize}
+  \item registro, login y recuperacion de contrasena;
+  \item activacion por pago con comprobante y validacion manual;
+  \item ingreso de picks por partido mediante marcador exacto;
+  \item lock automatico previo al kickoff;
+  \item importacion de resultados desde API externa con fallback manual;
+  \item calculo de puntos, desempates y leaderboard;
+  \item panel administrativo para usuarios, partidos, resultados y recalculo;
+  \item auditoria de acciones criticas;
+  \item archivado del torneo en modo solo lectura.
+\end{itemize}
+
+Fuera de alcance para v1:
+
+\begin{itemize}
+  \item app movil nativa;
+  \item multiples quinielas privadas;
+  \item multiples torneos activos en paralelo;
+  \item pasarela de pago;
+  \item notificaciones por WhatsApp o push;
+  \item white-label multi-club.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item El producto debe quedar preparado para crecer en datos, pero la v1 no habilita multi-torneo concurrente.
+  \item El volumen esperado es acotado, pero la documentacion no debe depender de ese volumen para definir reglas.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item La plataforma se documenta como sistema web con dos repos de implementacion y uno exclusivo de documentacion.
+  \item El dominio del juego tiene prioridad sobre las decisiones de tecnologia.
+  \item Todo comportamiento fuera de alcance debe quedar explicitamente fuera de v1.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Ninguna por ahora.
+\end{itemize}
+

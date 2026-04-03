@@ -1,0 +1,76 @@
+\section{Fuentes y gobernanza}
+
+\subsection{Descripcion}
+
+Este documento define de donde salen las reglas del proyecto, como se resuelven contradicciones y como se registra una decision nueva.
+
+\subsection{Alcance}
+
+Aplica a toda incorporacion, actualizacion o correccion documental.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Fuente primaria}: insumo con autoridad para definir una regla.
+  \item \textbf{Registro documental}: contenido vigente de este repositorio, incluyendo changelog y documentos actualizados.
+  \item \textbf{Decision reciente}: instruccion explicita posterior a los documentos fuente.
+\end{itemize}
+
+\subsection{Reglas}
+
+Jerarquia oficial:
+
+\begin{enumerate}
+  \item decision mas reciente del responsable del proyecto;
+  \item registro documental vigente de este repositorio;
+  \item PRD;
+  \item backlog/UI-UX como apoyo de detalle.
+\end{enumerate}
+
+Clasificacion obligatoria de vacios:
+
+\begin{itemize}
+  \item `Decision pendiente`;
+  \item `Bloqueante`;
+  \item `Riesgo`.
+\end{itemize}
+
+Criticidad obligatoria:
+
+\begin{itemize}
+  \item `Bloquea backend`;
+  \item `Bloquea frontend`;
+  \item `Bloquea ambos`;
+  \item `No bloqueante`.
+\end{itemize}
+
+Proceso documental:
+
+\begin{enumerate}
+  \item detectar definiciones existentes;
+  \item detectar contradicciones o huecos;
+  \item registrar pendiente con criticidad;
+  \item cerrar la decision;
+  \item actualizar documento fuente;
+  \item registrar el cambio en `CHANGELOG.md`.
+\end{enumerate}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si una decision nueva contradice el PRD, no se corrige el PDF original; se actualiza este repositorio y el changelog.
+  \item Si una definicion sigue abierta pero no bloquea el avance completo, se documenta el hueco y se continua alrededor de el.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ninguna contradiccion relevante debe quedar silenciosa.
+  \item Toda decision nueva debe poder rastrearse en el repositorio.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Ninguna por ahora.
+\end{itemize}

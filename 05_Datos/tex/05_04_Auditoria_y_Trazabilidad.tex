@@ -1,0 +1,70 @@
+\section{Auditoria y trazabilidad}
+
+\subsection{Descripcion}
+
+Este documento define que eventos deben quedar auditados y que informacion minima necesita cada registro para soportar operacion, revision y resolucion de disputas.
+
+\subsection{Alcance}
+
+Aplica a acciones administrativas, cambios de estado relevantes, overrides y procesos automaticos sensibles.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Evento auditable}: accion o proceso cuya ocurrencia debe poder demostrarse despues.
+  \item \textbf{Actor}: usuario o proceso responsable de un evento.
+\end{itemize}
+
+\subsection{Reglas}
+
+Eventos que deben auditarse como minimo:
+
+\begin{itemize}
+  \item aprobacion o rechazo de usuario;
+  \item bloqueo de usuario;
+  \item carga, revision y validacion de comprobante;
+  \item cambio de kickoff;
+  \item ingreso manual o correccion de resultado;
+  \item recalculo de puntajes;
+  \item archivado de torneo;
+  \item errores operativos relevantes de integracion de resultados.
+\end{itemize}
+
+Campos minimos del evento auditable:
+
+\begin{itemize}
+  \item identificador del evento;
+  \item fecha y hora;
+  \item actor;
+  \item tipo de accion;
+  \item entidad afectada;
+  \item valor anterior cuando aplique;
+  \item valor nuevo cuando aplique;
+  \item motivo o justificacion cuando aplique.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Los procesos automaticos deben registrarse con identidad de proceso y no como usuario anonimo.
+  \item Si una accion falla despues de un cambio parcial, la auditoria debe reflejar el resultado real de la operacion.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ninguna correccion critica del dominio puede ocurrir sin rastro auditable.
+  \item La auditoria debe permitir reconstruir que paso, quien lo hizo y cuando ocurrio.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar politica de retencion y consulta de eventos de auditoria para uso administrativo.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: definir ventana de retencion de eventos auditables y nivel de acceso a consulta historica.
+\end{itemize}

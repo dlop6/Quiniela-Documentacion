@@ -1,0 +1,43 @@
+\section{Arquitectura backend}
+
+\subsection{Descripcion}
+
+Este documento reserva la especificacion descriptiva del backend. Su enfoque sera modular monolith por dominio, validacion en fronteras de entrada y logica fuera de controllers.
+
+\subsection{Alcance}
+
+Describe la arquitectura del repositorio backend a nivel conceptual.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Modulo}: agrupacion de responsabilidad de dominio dentro del backend.
+  \item \textbf{Frontera de entrada}: punto donde el sistema recibe solicitudes y valida contratos.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item El backend seguira una arquitectura modular por dominio.
+  \item La logica de negocio critica vivira fuera de controllers.
+  \item Las integraciones externas no deben contaminar el dominio con contratos ajenos.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de detallar al aterrizar los modulos concretos y sus limites.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ningun modulo backend debe redefinir por su cuenta reglas oficiales de scoring, locks o activacion.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar estructura final de modulos y servicios transversales.
+\end{itemize}
+

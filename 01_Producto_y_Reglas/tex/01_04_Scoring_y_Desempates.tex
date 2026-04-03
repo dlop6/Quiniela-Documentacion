@@ -1,0 +1,97 @@
+\section{Scoring y desempates}
+
+\subsection{Descripcion}
+
+Este documento formaliza el calculo de puntos, el uso de multiplicadores y la logica oficial de desempate del leaderboard.
+
+\subsection{Alcance}
+
+Aplica al calculo de puntajes por partido, puntaje acumulado y orden de ranking.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Puntaje base}: suma de outcome correcto y marcador exacto antes de multiplicador.
+  \item \textbf{Puntaje acumulado}: suma de puntajes validos del usuario en el torneo.
+  \item \textbf{Desempate}: regla para ordenar usuarios con el mismo puntaje acumulado.
+\end{itemize}
+
+\subsection{Reglas}
+
+Puntaje base por partido:
+
+\begin{itemize}
+  \item Outcome correcto: 3 puntos.
+  \item Marcador exacto correcto: 2 puntos adicionales.
+  \item Maximo base por partido: 5 puntos.
+\end{itemize}
+
+Multiplicadores por fase:
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Fase & Multiplicador \\
+\midrule
+Grupos & x1.0 \\
+Octavos de final & x1.25 \\
+Cuartos de final & x1.5 \\
+Semifinales & x1.75 \\
+Tercer lugar & x1.75 \\
+Final & x2.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Predicciones especiales:
+
+\begin{itemize}
+  \item Campeon correcto: 20 puntos.
+  \item Goleador correcto: 15 puntos.
+\end{itemize}
+
+Orden oficial de desempates:
+
+\begin{enumerate}
+  \item mayor cantidad de marcadores exactos acertados;
+  \item mayor cantidad de outcomes acertados;
+  \item mayor puntaje acumulado en fase KO;
+  \item fecha y hora de registro mas temprana.
+\end{enumerate}
+
+Vistas esperadas del leaderboard:
+
+\begin{itemize}
+  \item general;
+  \item por jornada;
+  \item por fase.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si un resultado se corrige, el puntaje asociado debe recalcularse de forma deterministica.
+  \item Si un partido fue cancelado sin resultado oficial utilizable, ese partido no debe alterar el ranking.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Dos usuarios con el mismo puntaje total deben ordenarse siempre con el mismo algoritmo de desempate.
+  \item El recalculo no debe producir duplicacion de puntos.
+  \item El leaderboard refleja solo resultados oficiales vigentes.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar si las predicciones especiales se muestran en el leaderboard general, en una vista aparte o en ambos.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `Bloquea frontend`: definir la presentacion exacta del impacto de predicciones especiales en UI.
+  \item `Decision pendiente` `No bloqueante`: confirmar si el multiplicador aplica con redondeo explicito o si el sistema opera siempre con precision exacta y formato final controlado.
+\end{itemize}
+

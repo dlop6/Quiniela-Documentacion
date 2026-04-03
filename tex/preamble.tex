@@ -1,0 +1,66 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\usepackage{polyglossia}
+\setdefaultlanguage{spanish}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage{tabularx}
+\usepackage{tcolorbox}
+\usepackage{titlesec}
+\usepackage{lastpage}
+
+\definecolor{quinielaBlue}{HTML}{1F4E79}
+\definecolor{quinielaGray}{HTML}{5B6570}
+\definecolor{quinielaLight}{HTML}{EFF4F8}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=quinielaBlue,
+  urlcolor=quinielaBlue,
+  pdftitle={\doctitle},
+  pdfauthor={Repositorio de Documentacion Quiniela}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlist[itemize]{leftmargin=1.6em}
+\setlist[enumerate]{leftmargin=1.8em}
+
+\titleformat{\section}{\Large\bfseries\color{quinielaBlue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{quinielaBlue}}{\thesubsection}{0.6em}{}
+
+\providecommand{\doctitle}{Documento}
+\providecommand{\docarea}{Area}
+\providecommand{\docversion}{0.1.0}
+\providecommand{\docstatus}{Borrador operativo}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\sffamily\footnotesize Quiniela}
+\chead{\sffamily\footnotesize \docarea}
+\rhead{\sffamily\footnotesize Version \docversion}
+\lfoot{\sffamily\footnotesize \doctitle}
+\rfoot{\sffamily\footnotesize \thepage\ de \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\newtcolorbox{docnote}{
+  colback=quinielaLight,
+  colframe=quinielaBlue,
+  boxrule=0.5pt,
+  arc=1mm
+}
+
+\newcommand{\docfield}[2]{\textbf{#1}: #2\\}
+

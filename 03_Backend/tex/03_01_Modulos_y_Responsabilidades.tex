@@ -1,0 +1,41 @@
+\section{Modulos y responsabilidades}
+
+\subsection{Descripcion}
+
+Este documento reserva la especificacion de modulos backend y su reparto de responsabilidades.
+
+\subsection{Alcance}
+
+Describira responsabilidades por modulo sin duplicar reglas del dominio.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Modulo}: unidad de organizacion del backend alrededor de una responsabilidad de dominio.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item El backend se documentara por modulos de dominio.
+  \item Cada modulo debera declarar sus entradas, salidas y dependencias permitidas.
+  \item La logica de negocio no se documentara como responsabilidad de controllers.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de detallar con la arquitectura backend definitiva.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ningun modulo debe redefinir reglas centrales de \texttt{01\_Producto\_y\_Reglas}.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar fronteras finales entre `admin`, `audit` y `notifications`.
+\end{itemize}

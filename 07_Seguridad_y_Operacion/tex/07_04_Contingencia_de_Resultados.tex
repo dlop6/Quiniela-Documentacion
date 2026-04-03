@@ -1,0 +1,41 @@
+\section{Contingencia de resultados}
+
+\subsection{Descripcion}
+
+Este documento reservara el plan operativo minimo cuando falle la integracion automatica de resultados.
+
+\subsection{Alcance}
+
+Aplica a indisponibilidad, datos inconsistentes y correccion manual de resultados.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Contingencia}: procedimiento excepcional para sostener la operacion del negocio.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item El sistema debe poder operar con fallback manual cuando la API externa falle.
+  \item Toda contingencia debe quedar documentada y auditada.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de definir ventanas, responsables y criterios de comunicacion.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item La contingencia no puede sacrificar trazabilidad ni consistencia del scoring.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar pasos minimos de contingencia que usara la JD en v1.
+\end{itemize}
+

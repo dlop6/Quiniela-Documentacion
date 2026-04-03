@@ -1,0 +1,77 @@
+\section{Contratos y limites}
+
+\subsection{Descripcion}
+
+Este documento delimita que puede saber y hacer cada capa del sistema. Su objetivo es evitar acoplamiento accidental entre dominio, frontend, backend, datos e integraciones.
+
+\subsection{Alcance}
+
+Aplica a los limites entre repositorios y entre capas internas principales.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Contrato}: acuerdo explicito de entrada, salida y comportamiento esperado.
+  \item \textbf{Limite}: frontera de responsabilidad entre componentes.
+\end{itemize}
+
+\subsection{Reglas}
+
+Contratos entre repositorios:
+
+\begin{itemize}
+  \item El frontend consume datos del backend por HTTP y contratos aplicacionales.
+  \item El frontend no depende directamente de la base de datos ni de la API externa de resultados.
+  \item El backend usa la base de datos como sistema de registro y persistencia.
+  \item El backend encapsula integraciones externas y expone al frontend una vista de dominio estable.
+\end{itemize}
+
+Limites internos esperados del backend:
+
+\begin{itemize}
+  \item `auth`: autenticacion y sesion.
+  \item `users`: identidad y estado de cuenta.
+  \item `payments`: recepcion y validacion funcional de comprobantes.
+  \item `matches`: calendario, kickoff y estados de partido.
+  \item `picks`: captura y lock de picks.
+  \item `results`: recepcion de resultados oficiales y overrides.
+  \item `scoring`: calculo de puntos y desempates.
+  \item `leaderboard`: vistas de ranking.
+  \item `admin`: acciones administrativas.
+  \item `audit`: trazabilidad.
+  \item `notifications`: correos y avisos del sistema.
+\end{itemize}
+
+Contratos de documentacion:
+
+\begin{itemize}
+  \item Las reglas funcionales se definen primero en \texttt{01\_Producto\_y\_Reglas}.
+  \item Los datos conceptuales se definen primero en \texttt{05\_Datos}.
+  \item Backend y frontend consumen estas definiciones, no las reemplazan.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si una integracion externa entrega un modelo incompatible con el dominio, se adapta en el limite de integracion, no en el frontend.
+  \item Si una regla de negocio obliga a recalculo, el contrato del dominio prevalece sobre cualquier cache o vista derivada.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ninguna capa consume directamente internals de otra sin contrato definido.
+  \item Ninguna integracion externa define la logica oficial del juego por si sola.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar si notifications vivira como modulo independiente o como servicio transversal.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: confirmar el limite exacto entre `admin` y los modulos de dominio cuando se cierre la arquitectura backend.
+\end{itemize}

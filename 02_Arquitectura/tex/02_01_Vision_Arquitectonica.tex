@@ -1,0 +1,62 @@
+\section{Vision arquitectonica}
+
+\subsection{Descripcion}
+
+La solucion se documenta como un sistema web dividido en tres repositorios: frontend, backend y documentacion. El dominio del juego es el centro del sistema y condiciona el diseno de las demas capas.
+
+\subsection{Alcance}
+
+Esta vista describe componentes, limites y principios de separacion. No reemplaza la documentacion detallada de backend ni frontend.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Repositorio frontend}: aplicacion web construida en Next.js.
+  \item \textbf{Repositorio backend}: API y logica de negocio construida en Node.js y Express.
+  \item \textbf{Repositorio documental}: fuente de verdad de reglas, dominio y criterios del sistema.
+  \item \textbf{Modular monolith}: backend dividido por modulos de dominio con despliegue unico.
+\end{itemize}
+
+\subsection{Reglas}
+
+Vista de alto nivel:
+
+\begin{itemize}
+  \item Frontend consume al backend exclusivamente mediante contratos de API.
+  \item Backend concentra autenticacion, autorizacion, reglas de negocio, integraciones y persistencia.
+  \item PostgreSQL almacena usuarios, comprobantes, partidos, picks, resultados, puntajes y auditoria.
+  \item Una API externa provee resultados, con capacidad de override manual.
+  \item La documentacion define reglas antes de que se cierren interfaces de implementacion.
+\end{itemize}
+
+Principios estructurales:
+
+\begin{itemize}
+  \item El dominio no debe depender de detalles de UI.
+  \item La logica de negocio no debe vivir en controllers.
+  \item La validacion de entradas ocurre en la frontera de entrada.
+  \item Las acciones criticas deben quedar auditadas.
+  \item El sistema debe poder recalcular sin romper consistencia.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si una necesidad de implementacion entra en conflicto con una regla del dominio, la regla se revisa documentalmente antes de ajustarse en codigo.
+  \item Si el proveedor externo de resultados cambia, la arquitectura debe preservar el contrato interno del dominio.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item El frontend no accede directamente a la base de datos.
+  \item El backend es responsable de enforcement de locks y scoring.
+  \item La documentacion es el origen de definiciones funcionales.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Ninguna por ahora.
+\end{itemize}
+

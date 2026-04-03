@@ -1,0 +1,56 @@
+\section{Invariantes de datos}
+
+\subsection{Descripcion}
+
+Este documento concentra las condiciones que siempre deben cumplirse en el modelo de datos y en la persistencia funcional del sistema.
+
+\subsection{Alcance}
+
+Aplica a la consistencia logica de usuarios, partidos, picks, resultados, scoring y auditoria.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Invariante}: regla que debe mantenerse verdadera en todo momento valido del sistema.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item Un usuario no activo no puede registrar picks validos.
+  \item No puede existir mas de un pick vigente por usuario y partido.
+  \item Un pick bloqueado no puede mutar.
+  \item Un partido tiene un solo kickoff oficial vigente a la vez.
+  \item Un resultado vigente por partido debe ser unico.
+  \item El scoring debe poder recalcularse sin duplicar puntajes.
+  \item Un partido cancelado no produce puntaje.
+  \item Toda correccion de resultado debe preservar referencia al valor anterior mediante auditoria.
+  \item El ranking debe ser reproducible a partir de resultados oficiales y reglas de desempate.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Si se persisten snapshots del leaderboard, estos no reemplazan la posibilidad de reconstruccion a partir de datos fuente.
+  \item Si un usuario es bloqueado despues de haber jugado, sus datos historicos se conservan para trazabilidad salvo una politica explicita distinta.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ninguna entidad critica del dominio puede quedar sin identificacion suficiente para auditoria.
+  \item Toda operacion administrativa sensible debe dejar evidencia trazable.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar politica de conservacion de datos para usuarios bloqueados o rechazados.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: definir estrategia de retencion historica de snapshots de leaderboard.
+\end{itemize}
+

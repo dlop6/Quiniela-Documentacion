@@ -1,0 +1,41 @@
+\section{Logging, observabilidad y auditoria}
+
+\subsection{Descripcion}
+
+Este documento reservara la estrategia de logs estructurados, observabilidad y su relacion con la auditoria del negocio.
+
+\subsection{Alcance}
+
+Aplica a eventos operativos, trazas tecnicas y correlacion con acciones funcionales.
+
+\subsection{Definiciones}
+
+\begin{itemize}
+  \item \textbf{Log estructurado}: evento tecnico emitido en formato consistente y parseable.
+\end{itemize}
+
+\subsection{Reglas}
+
+\begin{itemize}
+  \item Los logs deben servir para diagnostico, no para redefinir reglas del negocio.
+  \item Auditoria funcional y observabilidad tecnica deben ser complementarias, no duplicadas.
+\end{itemize}
+
+\subsection{Casos borde}
+
+\begin{itemize}
+  \item Pendiente de definir niveles, campos y correlacion operativa.
+\end{itemize}
+
+\subsection{Invariantes}
+
+\begin{itemize}
+  \item Ningun evento critico debe quedar sin rastro tecnico o funcional suficiente.
+\end{itemize}
+
+\subsection{Preguntas abiertas}
+
+\begin{itemize}
+  \item Confirmar estrategia de correlacion entre logs y audit events.
+\end{itemize}
+
