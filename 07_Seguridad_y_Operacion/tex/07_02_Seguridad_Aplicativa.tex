@@ -2,41 +2,102 @@
 
 \subsection{Descripcion}
 
-Este documento reservara los lineamientos de seguridad del sistema alineados a OWASP y Secure by Design.
+Este documento define los lineamientos de seguridad aplicativa del proyecto alineados con \textit{Secure by Design}, buenas practicas OWASP y principios de produccion ya aprobados para Quiniela.
 
 \subsection{Alcance}
 
-Aplica a autenticacion, autorizacion, validacion de entradas y hardening base.
+Aplica a autenticacion, autorizacion, validacion de entradas, proteccion de configuracion, hardening base y manejo seguro de errores. No sustituye una auditoria de seguridad ni una politica de infraestructura detallada.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Secure by Design}: seguridad incorporada desde el diseno, no agregada al final.
+  \item \textbf{Secure by Design}: seguridad incorporada desde el diseno y no agregada al final.
+  \item \textbf{Superficie de ataque}: puntos donde el sistema recibe datos, ejecuta acciones o expone informacion.
+  \item \textbf{Hardening}: medidas de reduccion de riesgo en configuracion y comportamiento del sistema.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El sistema debe validar entradas de forma estricta.
-  \item El backend debe proteger acciones criticas con autorizacion y auditoria.
-  \item La configuracion sensible debe vivir fuera del codigo.
+  \item Todo input externo debe validarse de forma estricta en la frontera de entrada.
+  \item Toda accion critica debe exigir autenticacion valida, autorizacion acorde al rol y trazabilidad suficiente.
+  \item La configuracion sensible debe vivir fuera del codigo y gestionarse por entorno.
+  \item Los errores expuestos al cliente no deben filtrar detalles internos innecesarios.
+  \item La seguridad no puede debilitar reglas del dominio; debe reforzarlas.
+\end{itemize}
+
+\subsubsection{Controles minimos esperados}
+
+\begin{itemize}
+  \item validacion estricta de payloads y parametros;
+  \item manejo seguro de sesion o tokens;
+  \item proteccion de rutas administrativas;
+  \item headers y hardening HTTP apropiados para produccion;
+  \item politicas de contrasena y recuperacion de acceso controladas;
+  \item proteccion contra abuso basico en autenticacion y acciones sensibles;
+  \item sanitizacion y manejo seguro de archivos o evidencias cargadas si aplica.
+\end{itemize}
+
+\subsubsection{Autenticacion y autorizacion}
+
+\begin{itemize}
+  \item La autenticacion debe identificar de forma fiable al actor antes de permitir operaciones protegidas.
+  \item La autorizacion debe evaluarse por rol y por estado funcional cuando la accion lo requiera.
+  \item Una cuenta autenticada pero no \texttt{ACTIVA} no puede ejecutar acciones competitivas reservadas a jugadores habilitados.
+  \item Las operaciones administrativas no deben confiar en ocultamiento de UI; su proteccion principal vive en backend.
+\end{itemize}
+
+\subsubsection{Validacion y manejo de entrada}
+
+\begin{itemize}
+  \item Los contratos de entrada deben definirse de forma explicita y rechazarse si no cumplen formato, rango o contexto funcional.
+  \item El rango de goles permitido para picks debe respetar la regla oficial del producto: enteros entre \texttt{0} y \texttt{9}.
+  \item Una entrada formalmente valida puede seguir siendo rechazada por estado del dominio, por ejemplo lock vencido o cuenta no activa.
+  \item Las validaciones del frontend son complementarias; el backend es la autoridad final.
+\end{itemize}
+
+\subsubsection{Configuracion y secretos}
+
+\begin{itemize}
+  \item Ningun secreto debe quedar hardcodeado en codigo fuente ni en documentos de ejemplo.
+  \item La configuracion operativa debe separarse por entorno y mantenerse fuera del repositorio cuando sea sensible.
+  \item Los valores por defecto del sistema no deben abrir superficies inseguras en produccion.
+\end{itemize}
+
+\subsubsection{Manejo de errores}
+
+\begin{itemize}
+  \item Los errores funcionales deben informar rechazo de forma comprensible sin exponer detalle tecnico sensible.
+  \item Los errores tecnicos deben registrarse con suficiente contexto interno para diagnostico.
+  \item Una respuesta de error no debe filtrar internals de base de datos, stack trace ni configuracion.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de aterrizar medidas concretas por capa.
+  \item Si el frontend intenta una accion permitida por interfaz pero rechazada por backend, el sistema debe preferir seguridad y reconciliar la vista.
+  \item Si una carga de comprobante o archivo existe en v1, su validacion y almacenamiento deben considerarse superficie sensible.
+  \item Si una accion administrativa modifica resultados o scoring, la proteccion debe cubrir tanto acceso como auditoria posterior.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Las reglas de seguridad no pueden debilitar el enforcement del dominio.
+  \item Ninguna accion critica opera sin autenticacion, autorizacion y trazabilidad acordes.
+  \item Ningun input externo cruza la frontera del sistema sin validacion.
+  \item Ninguna respuesta publica expone internals innecesarios del sistema.
+  \item La configuracion sensible permanece fuera del codigo fuente.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar checklist inicial de controles obligatorios para v1.
+  \item Confirmar el checklist final de controles obligatorios de v1, incluyendo politica de rate limiting, manejo de archivos y nivel exacto de protecciones HTTP.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{Bloquea backend}: cerrar el set minimo obligatorio de controles de autenticacion, gestion de sesion y proteccion contra abuso para v1.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si el proyecto documentara una checklist OWASP interna separada o si estos controles vivirán solo en este documento.
+\end{itemize}

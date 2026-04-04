@@ -2,40 +2,104 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la estrategia de sincronizacion automatica de resultados y el procedimiento funcional de correccion manual.
+Este documento define la estrategia funcional de sincronizacion automatica de resultados y el uso de fallback manual cuando la integracion externa no sea suficiente. Su objetivo es dejar clara la prioridad de fuentes, las condiciones de override y el disparo controlado de recalculos.
 
 \subsection{Alcance}
 
-Aplica a jobs de resultados, reintentos, overrides y recalculo.
+Aplica a jobs programados, sincronizaciones manuales, overrides administrativos, reintentos y activacion de recalculo a partir de cambios en resultados o estados de partido.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Fallback manual}: intervencion administrativa cuando la fuente automatica no es suficiente.
+  \item \textbf{Sincronizacion automatica}: consulta programada o gatillada a la fuente externa de resultados.
+  \item \textbf{Fallback manual}: intervencion administrativa para registrar, corregir o preservar un resultado cuando la fuente automatica no es suficiente.
+  \item \textbf{Override manual}: resultado vigente establecido por una accion administrativa autorizada.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Toda correccion manual debe quedar auditada.
-  \item Toda actualizacion relevante de resultado debe disparar un recalculo consistente.
+  \item Toda actualizacion de resultado debe ser trazable, idempotente y consistente con el dominio.
+  \item Toda correccion manual debe quedar auditada con actor, momento, valor anterior, valor nuevo y justificacion.
+  \item Cuando exista un override manual vigente, la sincronizacion automatica no puede sobrescribirlo sin una accion explicita y auditada.
+  \item Todo cambio efectivo en resultado vigente o estado relevante del partido debe habilitar un recalculo consistente del scoring y leaderboard.
+\end{itemize}
+
+\subsubsection{Secuencia funcional de sincronizacion automatica}
+
+\begin{enumerate}
+  \item El sistema consulta al proveedor externo segun su ventana operativa definida.
+  \item Cada dato recibido se adapta al modelo interno del dominio.
+  \item El sistema determina si el dato es aceptable como candidato para actualizar el resultado vigente.
+  \item Si el valor no cambia o no es aplicable, la sincronizacion termina sin alterar scoring.
+  \item Si el valor cambia y no existe override manual vigente, el sistema actualiza el resultado vigente, registra evidencia y habilita recalculo.
+\end{enumerate}
+
+\subsubsection{Uso del fallback manual}
+
+\begin{itemize}
+  \item El fallback manual se usa cuando la fuente externa no entrega el dato a tiempo, lo entrega de forma incompleta, produce inconsistencia o requiere correccion operativa.
+  \item La operacion manual debe exigir autorizacion y justificacion visible.
+  \item El valor manual pasa a ser la verdad oficial vigente hasta nueva accion explicita y auditada.
+  \item El fallback manual no elimina la historia del dato anterior ni la referencia a la fuente de origen.
+\end{itemize}
+
+\subsubsection{Eventos que deben habilitar recalculo}
+
+\begin{itemize}
+  \item publicacion inicial de resultado oficial utilizable;
+  \item correccion de resultado vigente;
+  \item cambio de estado de partido que altere scoring o cierre funcional;
+  \item override manual que reemplace el valor previamente vigente.
+\end{itemize}
+
+\subsubsection{Politica de prioridad de fuentes}
+
+\begin{enumerate}
+  \item Si no existe override manual vigente, el sistema puede adoptar el valor aceptado del proveedor externo.
+  \item Si existe override manual vigente, ese valor tiene prioridad operativa sobre la API automatica.
+  \item Para volver a aceptar automaticamente un valor externo luego de un override manual, debe existir una nueva accion explicita y auditada.
+\end{enumerate}
+
+\subsubsection{Ventanas funcionales de sincronizacion}
+
+La estrategia exacta de frecuencia queda pendiente de proveedor e infraestructura, pero funcionalmente el sistema debe cubrir:
+
+\begin{itemize}
+  \item sincronizacion previa a kickoff para cambios oficiales de horario o estado;
+  \item sincronizacion cercana al cierre del partido para detectar resultado utilizable;
+  \item re-sincronizacion posterior para detectar correcciones;
+  \item sincronizacion manual administrativa cuando operacion lo requiera.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de completar con la politica definitiva de prioridad entre fuente externa y override manual.
+  \item Si un partido fue postergado antes del lock, la sincronizacion del nuevo kickoff debe reflejarse sin perder consistencia con picks.
+  \item Si un partido fue suspendido, la sincronizacion no debe cerrar scoring hasta existir resultado oficial utilizable.
+  \item Si una correccion manual reemplaza un dato de API y luego la API vuelve a sincronizar, el valor manual debe preservarse hasta nueva accion explicita.
+  \item Si el mismo evento provoca mas de un recalculo, el estado final debe converger al mismo resultado por idempotencia.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item El fallback manual no elimina trazabilidad ni historia del dato anterior.
+  \item El fallback manual no elimina trazabilidad.
+  \item La integracion automatica no puede sobrescribir un override manual vigente por su sola ejecucion.
+  \item Todo recalculo parte del resultado vigente oficial y no de valores intermedios de sincronizacion.
+  \item El sistema no debe dejar dos verdades simultaneas activas para un mismo partido.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar ventanas de sync, re-sync y criterio final de override.
+  \item Confirmar ventanas reales de scheduler, reintentos y re-sincronizacion una vez elegido el proveedor definitivo.
+  \item Confirmar si habra una accion administrativa explicita para liberar un override manual y volver a aceptar sincronizacion automatica normal.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir frecuencia exacta de sincronizacion segun limites del proveedor y necesidades operativas.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el recalculo posterior a sincronizacion se ejecuta inmediatamente en todos los casos o si algunas rutas usaran cola diferida.
+\end{itemize}

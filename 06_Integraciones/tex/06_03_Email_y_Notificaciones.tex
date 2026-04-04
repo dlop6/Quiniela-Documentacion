@@ -2,39 +2,99 @@
 
 \subsection{Descripcion}
 
-Este documento reservara los eventos del sistema que deben producir correos o notificaciones operativas.
+Este documento define las comunicaciones funcionales minimas de v1 producidas por el sistema. Su objetivo es identificar que eventos ameritan correo o notificacion visible, con que intencion y bajo que limites, evitando una estrategia de mensajeria excesiva o ambigua.
 
 \subsection{Alcance}
 
-Aplica a comunicaciones minimas previstas para v1.
+Aplica a correos transaccionales y notificaciones funcionales del producto. No define copy final detallado ni un sistema avanzado de preferencias de comunicacion.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Notificacion accionable}: mensaje que impulsa una accion concreta del usuario o del admin.
+  \item \textbf{Correo transaccional}: email disparado por un cambio de estado o una accion funcional del sistema.
+  \item \textbf{Notificacion visible}: mensaje mostrado dentro del producto para explicar un estado, cambio o restriccion relevante.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Las notificaciones de v1 deben ser pocas, claras y funcionales.
-  \item La mensajeria debe respetar estados reales del sistema.
+  \item Las comunicaciones de v1 deben ser pocas, claras y estrictamente funcionales.
+  \item Ninguna notificacion debe prometer un estado que el sistema no haya persistido y confirmado.
+  \item Los mensajes deben respetar los estados reales del usuario, partido o resultado.
+  \item Las acciones administrativas internas no deben generar ruido innecesario al participante salvo cuando cambien su experiencia funcional.
+\end{itemize}
+
+\subsubsection{Correos minimos esperados en v1}
+
+\begin{longtable}{p{0.27\textwidth}p{0.26\textwidth}p{0.31\textwidth}}
+\toprule
+\textbf{Evento} & \textbf{Destinatario} & \textbf{Objetivo funcional} \\
+\midrule
+registro de cuenta & participante & confirmar alta e indicar siguientes pasos de acceso o activacion \\
+recuperacion de contrasena & participante & permitir continuar el flujo de recuperacion \\
+comprobante recibido & participante & confirmar recepcion para revision administrativa \\
+activacion aprobada & participante & informar que la cuenta ya puede participar \\
+activacion rechazada & participante & informar resolucion y siguiente accion esperada si aplica \\
+bloqueo administrativo de cuenta & participante & informar restriccion funcional de acceso \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Notificaciones visibles dentro del producto}
+
+\begin{itemize}
+  \item confirmacion o rechazo de guardado de pick;
+  \item restriccion por lock vencido;
+  \item restriccion por cuenta no activa;
+  \item confirmacion o rechazo de guardado de prediccion especial;
+  \item aviso explicito de resultado corregido cuando esa superficie sea definida;
+  \item feedback de accion administrativa dentro del panel admin.
+\end{itemize}
+
+\subsubsection{Reglas de disparo}
+
+\begin{itemize}
+  \item Un correo de activacion aprobada solo se envia cuando el estado del usuario ya fue persistido como \texttt{ACTIVO}.
+  \item Un correo de rechazo solo se envia cuando la resolucion administrativa ya fue aplicada al usuario.
+  \item Las notificaciones visibles de lock o permiso deben poder dispararse tanto por validacion previa de interfaz como por rechazo recibido del backend.
+  \item Un aviso por resultado corregido debe dispararse solo cuando el sistema ya consolidó el nuevo resultado vigente y habilito el recalculo correspondiente.
+\end{itemize}
+
+\subsubsection{Mensajes que no son prioridad para v1}
+
+\begin{itemize}
+  \item recordatorios promocionales;
+  \item notificaciones masivas por cada partido proximo a comenzar;
+  \item resúmenes automaticos complejos de rendimiento;
+  \item preferencias avanzadas de suscripcion por canal.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de aterrizar los triggers definitivos y el copy funcional.
+  \item Si un comprobante se vuelve a cargar o corregir, el sistema debe evitar enviar confirmaciones redundantes sin valor funcional.
+  \item Si una accion falla tecnicamente despues de que el usuario inicia el flujo, no debe enviarse un correo de exito.
+  \item Si un resultado se corrige mas de una vez, la politica de aviso visible debe evitar ruido excesivo aunque preserve transparencia.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ninguna notificacion debe prometer un estado que no haya sido persistido y auditado cuando aplique.
+  \item Ninguna comunicacion contradice el estado persistido del sistema.
+  \item Ningun correo de exito se emite antes de confirmar la transicion funcional correspondiente.
+  \item La mensajeria de v1 se mantiene funcional y acotada, no promocional.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar lista final de emails obligatorios y opcionales para v1.
+  \item Confirmar si v1 incluira correo explicito para resultado corregido o si ese evento vivira solo como notificacion visible dentro del producto.
+  \item Confirmar si el panel admin requiere notificaciones internas persistentes ademas del feedback inmediato de interfaz.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: cerrar la lista final de correos obligatorios y opcionales de v1 con su due\~no funcional.
+  \item \texttt{Decision pendiente} \texttt{Bloquea frontend}: definir en que superficies y durante cuanto tiempo se muestra el aviso de resultado corregido al participante.
 \end{itemize}

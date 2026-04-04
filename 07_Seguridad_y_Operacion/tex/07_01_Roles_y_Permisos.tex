@@ -2,40 +2,94 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la matriz funcional de permisos por rol del sistema.
+Este documento define la matriz funcional de roles y permisos del sistema. Su objetivo es aplicar \textit{Least Privilege} al producto y dejar claro que acciones puede ejecutar cada tipo de usuario sin mezclar permisos funcionales con estados de cuenta.
 
 \subsection{Alcance}
 
-Aplica a usuarios participantes, admins y super admins.
+Aplica a participantes y operadores administrativos del sistema. No define el mecanismo tecnico final de autorizacion, pero si la frontera funcional de acceso.
 
 \subsection{Definiciones}
 
 \begin{itemize}
+  \item \textbf{Rol}: conjunto de permisos funcionales asignados a un tipo de actor.
   \item \textbf{Permiso}: accion autorizada sobre una capacidad del sistema.
+  \item \textbf{Least Privilege}: principio por el cual cada actor recibe solo el nivel minimo de acceso necesario.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El modelo de permisos seguira `Least Privilege`.
-  \item Todo permiso administrativo sensible debe poder auditarse.
+  \item El sistema debe separar claramente permisos de rol y estado funcional del usuario.
+  \item Un participante \texttt{ACTIVO} no adquiere privilegios administrativos por su estado.
+  \item Toda accion administrativa sensible debe exigir autorizacion valida y dejar auditoria.
+  \item Los permisos deben definirse por capacidad funcional, no por conveniencia de interfaz.
+\end{itemize}
+
+\subsubsection{Roles funcionales minimos}
+
+\begin{itemize}
+  \item \texttt{Participante}: usuario final de la quiniela.
+  \item \texttt{Admin}: operador autorizado para gestion del torneo y resolucion operativa.
+  \item \texttt{Super admin}: rol administrativo con mayor amplitud para configuracion critica o acciones de alto impacto.
+\end{itemize}
+
+\subsubsection{Matriz funcional de permisos}
+
+\begin{longtable}{p{0.34\textwidth}p{0.15\textwidth}p{0.12\textwidth}p{0.15\textwidth}}
+\toprule
+\textbf{Capacidad} & \textbf{Participante} & \textbf{Admin} & \textbf{Super admin} \\
+\midrule
+registrarse e iniciar sesion & si & no aplica & no aplica \\
+consultar estado de cuenta propio & si & si & si \\
+cargar comprobante propio & si & no & no \\
+capturar picks propios en ventana abierta & si & no & no \\
+capturar predicciones especiales propias en ventana abierta & si & no & no \\
+consultar leaderboard y resultados visibles & si & si & si \\
+aprobar o rechazar comprobantes & no & si & si \\
+bloquear usuarios & no & si & si \\
+actualizar kickoff o estado de partido & no & si & si \\
+cargar o corregir resultado manualmente & no & si & si \\
+ejecutar recalculo & no & si & si \\
+consultar auditoria operativa & no & si & si \\
+archivar torneo & no & no & si \\
+gestionar configuracion critica del sistema & no & no & si \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Reglas de interpretacion}
+
+\begin{itemize}
+  \item El rol de participante se combina con estados funcionales como \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO} o \texttt{BLOQUEADO}.
+  \item Un participante no \texttt{ACTIVO} puede autenticarse y consultar su estado cuando corresponda, pero no ejecutar acciones de juego reservadas a cuentas activas.
+  \item El rol administrativo no debe usarse para jugar con privilegios especiales ni para eludir restricciones del dominio.
+  \item El archivado de torneo y configuraciones criticas quedan reservados al nivel mas alto de autorizacion.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de aterrizar la matriz accion por accion.
+  \item Un admin puede tener cuenta propia en el sistema, pero su experiencia de participante y su experiencia administrativa deben permanecer separadas funcionalmente.
+  \item Si una accion administrativa afecta datos competitivos, como resultado, scoring o estado de usuario, debe registrarse con justificacion cuando aplique.
+  \item Si el frontend expone un control visible por error, el backend debe seguir rechazando la operacion sin permiso.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ningun rol recibe permisos mas amplios de los necesarios para su operacion.
+  \item Ningun rol recibe permisos mas amplios de lo necesario para su operacion.
+  \item Ninguna accion administrativa critica existe sin posibilidad de auditoria.
+  \item El permiso de ejecutar una accion no sustituye validaciones de estado del dominio.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar diferencia exacta de permisos entre `admin` y `super admin`.
+  \item Confirmar la diferencia exacta de capacidades entre \texttt{admin} y \texttt{super admin} si el proyecto decide reducir a un solo rol administrativo en v1.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar si v1 requiere realmente \texttt{super admin} como rol separado o si basta un unico rol administrativo con politicas operativas adicionales.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si ciertas acciones administrativas, como recalculo global o archivado, requeriran doble confirmacion funcional ademas de autorizacion.
+\end{itemize}

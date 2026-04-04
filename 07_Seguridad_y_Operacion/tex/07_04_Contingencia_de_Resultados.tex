@@ -2,40 +2,91 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el plan operativo minimo cuando falle la integracion automatica de resultados.
+Este documento define el plan operativo minimo cuando falle la integracion automatica de resultados o cuando los datos externos no sean suficientes para sostener la operacion del torneo con consistencia y trazabilidad.
 
 \subsection{Alcance}
 
-Aplica a indisponibilidad, datos inconsistentes y correccion manual de resultados.
+Aplica a indisponibilidad del proveedor, datos inconsistentes, ausencia de actualizacion o necesidad de correccion manual en resultados y estados de partido.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Contingencia}: procedimiento excepcional para sostener la operacion del negocio.
+  \item \textbf{Contingencia}: procedimiento excepcional para sostener la operacion del negocio sin depender del flujo ordinario automatizado.
+  \item \textbf{Evento de contingencia}: situacion que obliga a evaluar o ejecutar fallback manual.
+  \item \textbf{Resolucion operativa}: accion administrativa explicita para preservar una verdad oficial vigente del sistema.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El sistema debe poder operar con fallback manual cuando la API externa falle.
+  \item El sistema debe poder operar con fallback manual cuando la API externa falle o no entregue un valor utilizable a tiempo.
   \item Toda contingencia debe quedar documentada y auditada.
+  \item Una contingencia no autoriza a relajar reglas de dominio, scoring ni trazabilidad.
+  \item Si se establece un resultado manual durante contingencia, ese valor sigue la misma regla de prioridad operativa de un override manual autorizado.
+\end{itemize}
+
+\subsubsection{Eventos que pueden activar contingencia}
+
+\begin{itemize}
+  \item indisponibilidad total del proveedor externo;
+  \item respuesta incompleta o inconsistente respecto del partido esperado;
+  \item ausencia de actualizacion dentro de la ventana operativa razonable;
+  \item correccion urgente requerida para preservar consistencia competitiva;
+  \item conflicto entre dato externo y evidencia operativa validada por administracion.
+\end{itemize}
+
+\subsubsection{Secuencia minima de contingencia}
+
+\begin{enumerate}
+  \item Detectar y registrar el evento de contingencia.
+  \item Verificar si el problema puede resolverse con reintento o re-sincronizacion controlada.
+  \item Si no basta la integracion automatica, escalar a operacion administrativa autorizada.
+  \item Registrar resultado o estado manual con justificacion y evidencia suficiente.
+  \item Ejecutar o habilitar recalculo si el valor vigente cambió.
+  \item Mantener trazabilidad del evento hasta su cierre operativo.
+\end{enumerate}
+
+\subsubsection{Responsabilidad operativa minima}
+
+\begin{itemize}
+  \item La deteccion puede venir de monitoreo tecnico o revision administrativa.
+  \item La resolucion manual debe ejecutarla un actor con permisos administrativos suficientes.
+  \item Toda accion de contingencia debe dejar contexto claro para posteriores revisiones o disputas.
+\end{itemize}
+
+\subsubsection{Comunicacion funcional}
+
+\begin{itemize}
+  \item La contingencia interna no exige comunicar todos los detalles operativos al participante.
+  \item Si la contingencia produce correccion del resultado visible, el usuario debe recibir el aviso funcional ya definido para resultado corregido.
+  \item La comunicacion hacia participantes debe priorizar transparencia funcional sin exponer ruido operativo innecesario.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de definir ventanas, responsables y criterios de comunicacion.
+  \item Si la API vuelve a estar disponible despues de una carga manual, el valor manual no debe perderse por sincronizacion automatica.
+  \item Si el partido queda suspendido sin resultado utilizable, la contingencia puede documentar el estado pero no forzar scoring inexistente.
+  \item Si ocurre mas de una contingencia sobre el mismo partido, la auditoria debe permitir reconstruir el orden de decisiones y el valor vigente final.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item La contingencia no puede sacrificar trazabilidad ni consistencia del scoring.
+  \item Ninguna contingencia crea dos resultados vigentes simultaneos.
+  \item Todo cambio manual ejecutado en contingencia requiere actor identificado y justificacion.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar pasos minimos de contingencia que usara la JD en v1.
+  \item Confirmar si la operacion real de v1 definira una ventana temporal objetiva para declarar formalmente una contingencia de resultados.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir responsables nominales y tiempos objetivo de respuesta para contingencias reales de v1.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si existira una plantilla operativa separada para registro de contingencias fuera de la auditoria del sistema.
+\end{itemize}

@@ -24,3 +24,13 @@
 - Se itera `03_02_Procesos_de_Negocio` con procesos backend de activacion, lock, sincronizacion de resultados, scoring, recalculo y archivado, incluyendo triggers, validaciones y resultados esperados.
 - Se itera `03_03_Validacion_y_Errores` con validacion de frontera, taxonomia funcional vs tecnica, reglas de idempotencia y relacion entre error, log y auditoria.
 - Se itera `03_04_Endpoints_Conceptuales` con operaciones publicas, autenticadas y administrativas agrupadas por modulo, con entrada y salida esperada a nivel conceptual.
+- Se itera `04_01_Estructura_por_Features` con inventario funcional de v1, tree sugerido del frontend, ownership por feature, reglas de dependencia y criterios de uso de `shared`.
+- Se itera `04_02_Flujos_y_Paginas` con inventario funcional de paginas, flujos de participante y admin, estados visibles minimos y restricciones alineadas al dominio.
+- Se itera `04_03_Estado_Validacion_y_Datos` con separacion entre estado remoto y local, reglas de validacion, contratos de datos y criterios de feedback funcional vs tecnico.
+- Se itera `06_01_API_de_Resultados` con datos minimos esperados del proveedor, criterios de adaptacion al dominio y limites de la integracion externa.
+- Se itera `06_02_Sincronizacion_y_Fallback_Manual` con prioridad de fuentes, uso de override manual, eventos que habilitan recalculo y ventanas funcionales de sincronizacion.
+- Se itera `06_03_Email_y_Notificaciones` con correos minimos de v1, notificaciones visibles del producto y reglas de disparo coherentes con estados persistidos.
+- Se itera `07_01_Roles_y_Permisos` con matriz funcional minima por rol, separacion entre permisos y estado de usuario, y alcance administrativo basado en least privilege.
+- Se itera `07_02_Seguridad_Aplicativa` con controles minimos esperados, reglas de autenticacion, autorizacion, validacion de entradas y manejo seguro de configuracion y errores.
+- Se itera `07_03_Logging_Observabilidad_y_Auditoria` con separacion entre diagnostico tecnico, observabilidad y evidencia funcional, incluyendo campos minimos y reglas de correlacion.
+- Se itera `07_04_Contingencia_de_Resultados` con eventos que activan contingencia, secuencia minima de fallback manual y criterios de comunicacion y trazabilidad.

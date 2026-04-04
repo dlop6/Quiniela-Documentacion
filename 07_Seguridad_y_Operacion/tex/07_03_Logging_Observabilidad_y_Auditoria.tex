@@ -2,40 +2,107 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la estrategia de logs estructurados, observabilidad y su relacion con la auditoria del negocio.
+Este documento define la relacion entre logs estructurados, observabilidad tecnica y auditoria funcional. Su objetivo es dejar claro que problemas resuelve cada uno, donde se complementan y como evitar duplicacion o lagunas de trazabilidad.
 
 \subsection{Alcance}
 
-Aplica a eventos operativos, trazas tecnicas y correlacion con acciones funcionales.
+Aplica a eventos tecnicos, correlacion operativa, rastreo de errores y acciones funcionales criticas del negocio. No define dashboards concretos ni una implementacion detallada de telemetria.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Log estructurado}: evento tecnico emitido en formato consistente y parseable.
+  \item \textbf{Observabilidad}: capacidad de entender el comportamiento del sistema a partir de señales tecnicas.
+  \item \textbf{Auditoria}: registro funcional de acciones relevantes para negocio, operacion y trazabilidad.
+  \item \textbf{Correlacion}: capacidad de relacionar multiples eventos tecnicos y funcionales dentro de una misma operacion.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Los logs deben servir para diagnostico, no para redefinir reglas del negocio.
-  \item Auditoria funcional y observabilidad tecnica deben ser complementarias, no duplicadas.
+  \item Logs, observabilidad y auditoria son complementarios y no deben confundirse.
+  \item Un log tecnico no sustituye un evento de auditoria cuando existe impacto funcional relevante.
+  \item Toda accion critica del sistema debe dejar al menos el rastro tecnico y funcional necesario para ser explicada.
+  \item Los logs deben emitirse como flujo de eventos y no como archivos locales acoplados al proceso, en linea con Twelve-Factor App.
+\end{itemize}
+
+\subsubsection{Responsabilidad de cada capa}
+
+\begin{itemize}
+  \item Logs estructurados: diagnostico tecnico, errores, latencia, resultados de integracion y ejecucion de procesos.
+  \item Observabilidad: metricas, trazas y correlacion para entender salud y comportamiento del sistema.
+  \item Auditoria: evidencia funcional de acciones criticas como aprobacion de pagos, bloqueos, overrides, recalculos y archivado.
+\end{itemize}
+
+\subsubsection{Eventos funcionales que deben auditarse}
+
+\begin{itemize}
+  \item aprobacion o rechazo de comprobantes;
+  \item bloqueo de usuarios;
+  \item actualizacion manual de kickoff o estado de partido;
+  \item carga o correccion manual de resultados;
+  \item ejecucion de recalculo;
+  \item archivado del torneo;
+  \item cualquier accion administrativa que altere scoring, acceso o verdad oficial vigente.
+\end{itemize}
+
+\subsubsection{Campos minimos esperados}
+
+\paragraph{Para logs tecnicos}
+
+\begin{itemize}
+  \item timestamp;
+  \item nivel;
+  \item modulo o servicio;
+  \item tipo de evento;
+  \item identificador de correlacion cuando exista;
+  \item contexto tecnico suficiente para diagnostico sin filtrar secretos.
+\end{itemize}
+
+\paragraph{Para eventos de auditoria}
+
+\begin{itemize}
+  \item timestamp;
+  \item actor;
+  \item accion;
+  \item entidad afectada;
+  \item valor anterior y nuevo cuando aplique;
+  \item justificacion o motivo cuando corresponda.
+\end{itemize}
+
+\subsubsection{Correlacion esperada}
+
+\begin{itemize}
+  \item Una operacion critica debe poder relacionar request, proceso interno, integracion externa y efecto funcional cuando aplique.
+  \item Un error tecnico que cause impacto funcional debe ser rastreable hacia el proceso o evento funcional afectado.
+  \item La auditoria debe permitir explicar por que un valor oficial cambio, mientras que la observabilidad debe ayudar a explicar como ocurrio tecnicamente.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de definir niveles, campos y correlacion operativa.
+  \item Una correccion de resultado puede requerir log tecnico, evento de auditoria y telemetria de recalculo sin que esos tres mecanismos repitan exactamente el mismo payload.
+  \item Un error de integracion externa puede requerir alerta tecnica sin generar por si solo un evento de auditoria, salvo que derive en una accion manual relevante.
+  \item Si una operacion administrativa falla antes de persistir cambios, puede requerir log tecnico y evidencia operativa sin convertirse en evento funcional exitoso.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ningun evento critico debe quedar sin rastro tecnico o funcional suficiente.
+  \item Ningun evento critico queda sin rastro tecnico o funcional suficiente.
+  \item La auditoria funcional no se usa como reemplazo de logs tecnicos.
+  \item Los mecanismos de trazabilidad no deben exponer secretos ni datos innecesarios en texto plano.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar estrategia de correlacion entre logs y audit events.
+  \item Confirmar la estrategia final de correlacion entre logs, trazas y audit events, incluyendo si existira un identificador comun de operacion.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir el catalogo final de eventos auditables y su esquema exacto una vez cierre la operacion administrativa real de v1.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar el nivel minimo de telemetria y alertas que se documentara formalmente en una iteracion posterior.
+\end{itemize}

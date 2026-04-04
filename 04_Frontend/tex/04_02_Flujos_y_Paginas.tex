@@ -2,40 +2,144 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la definicion de rutas, paginas y flujos principales de usuario y admin.
+Este documento define los flujos principales y las superficies de pagina esperadas del frontend para v1. Su objetivo es describir que recorrido funcional debe existir para usuarios publicos, participantes autenticados y administradores, sin entrar todavia al detalle visual fino de UI.
 
 \subsection{Alcance}
 
-Describe navegacion y comportamiento funcional, no diseno visual detallado.
+Aplica a rutas, paginas, estados visibles y accion principal de cada flujo del frontend. No define microcopy exhaustivo ni detalle final de componentes.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Flujo}: recorrido funcional completo de un usuario para lograr un objetivo.
+  \item \textbf{Flujo}: recorrido funcional completo para lograr un objetivo del producto.
+  \item \textbf{Pagina}: superficie principal de navegacion con una accion o proposito dominante.
+  \item \textbf{Estado visible}: condicion relevante que la pantalla debe expresar al usuario, aunque la validacion final pertenezca al backend.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Cada flujo debe alinearse con las reglas cerradas del dominio.
-  \item Las paginas deben declarar claramente su accion principal.
+  \item Cada flujo debe alinearse con reglas cerradas del dominio y con los contratos conceptuales del backend.
+  \item Cada pagina debe tener una accion principal reconocible y evitar mezclar demasiados objetivos funcionales.
+  \item El frontend no debe habilitar recorridos que contradigan estados funcionales del usuario, partido, pick o torneo.
+  \item Cuando una accion dependa de locks, permisos o estado de activacion, la pagina debe reflejar la restriccion de forma visible antes y despues del rechazo del backend.
+\end{itemize}
+
+\subsubsection{Inventario funcional de paginas esperadas}
+
+\begin{longtable}{p{0.26\textwidth}p{0.24\textwidth}p{0.36\textwidth}}
+\toprule
+\textbf{Pagina o vista} & \textbf{Tipo de acceso} & \textbf{Accion principal} \\
+\midrule
+Inicio / landing & publico & explicar el producto y dirigir a registro o acceso \\
+Registro & publico & crear cuenta nueva \\
+Login & publico & iniciar sesion \\
+Recuperacion de contrasena & publico & iniciar flujo de recuperacion \\
+Estado de activacion & autenticado & informar estado de cuenta y siguientes pasos \\
+Carga de comprobante & autenticado & registrar comprobante para revision \\
+Calendario y picks & autenticado & consultar partidos y capturar picks por partido \\
+Predicciones especiales & autenticado & capturar o consultar \texttt{Campeon} y \texttt{Goleador} \\
+Leaderboard & autenticado & consultar ranking general y vistas filtradas \\
+Perfil & autenticado & consultar contexto propio de cuenta \\
+Panel admin de usuarios y pagos & admin & revisar usuarios, comprobantes y resoluciones \\
+Panel admin de partidos y resultados & admin & actualizar kickoff, estados y resultados \\
+Panel admin de scoring y auditoria & admin & disparar recalculos y consultar trazabilidad \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Flujos principales de participante}
+
+\paragraph{Flujo de registro y acceso}
+
+\begin{itemize}
+  \item El usuario publico debe poder registrarse, iniciar sesion y recuperar acceso.
+  \item Despues del registro, la primera vista funcional relevante debe dejar claro que la cuenta permanece en \texttt{PENDIENTE} hasta resolucion administrativa.
+  \item Si el usuario esta autenticado pero no activado, el frontend debe priorizar el flujo de activacion sobre flujos de juego.
+\end{itemize}
+
+\paragraph{Flujo de activacion}
+
+\begin{itemize}
+  \item El usuario en \texttt{PENDIENTE} debe poder consultar instrucciones y registrar comprobante.
+  \item La pantalla debe reflejar claramente si la cuenta sigue \texttt{PENDIENTE}, fue \texttt{RECHAZADA} o ya esta \texttt{ACTIVA}.
+  \item El frontend no debe inventar un estado \texttt{EN\_REVISION}; la revision administrativa vive dentro del flujo, no como estado funcional separado del usuario.
+\end{itemize}
+
+\paragraph{Flujo de picks por partido}
+
+\begin{itemize}
+  \item Solo un usuario \texttt{ACTIVO} puede capturar o editar picks por partido.
+  \item La pantalla de picks debe mostrar el estado funcional del partido y del pick: editable, bloqueado o ausencia valida de pick.
+  \item Si el partido ya esta bloqueado, el frontend debe mostrar modo lectura y no presentar controles de edicion activos.
+  \item Si no existe prediccion guardada al momento del lock, la vista debe comunicar que el partido quedo sin pick y con cero puntos potenciales, sin fabricar valores por defecto.
+\end{itemize}
+
+\paragraph{Flujo de predicciones especiales}
+
+\begin{itemize}
+  \item \texttt{Campeon} y \texttt{Goleador} deben vivir en un flujo separado dentro del modulo funcional de picks.
+  \item Ese flujo debe reflejar su propio cierre: cinco minutos antes del kickoff oficial del primer partido del torneo.
+  \item Una vez cerradas, las predicciones especiales deben pasar a modo lectura para el participante.
+\end{itemize}
+
+\paragraph{Flujo de leaderboard}
+
+\begin{itemize}
+  \item El leaderboard debe mostrar el puntaje total acumulado como criterio principal de orden.
+  \item El frontend debe poder ofrecer desglose de aportes por picks y predicciones especiales si el producto decide exponerlo.
+  \item La consulta del ranking no debe recalcular logica en cliente; solo presenta el derivado oficial recibido del backend.
+\end{itemize}
+
+\subsubsection{Flujos principales de administracion}
+
+\begin{itemize}
+  \item El panel administrativo debe separarse funcionalmente de la experiencia de participante.
+  \item Deben existir vistas claras para:
+  \begin{itemize}
+    \item usuarios y comprobantes;
+    \item partidos y resultados;
+    \item scoring, recalculo y auditoria.
+  \end{itemize}
+  \item Las acciones criticas del admin deben exigir confirmacion visible y dejar contexto suficiente para una operacion segura.
+\end{itemize}
+
+\subsubsection{Estados visibles minimos por pagina}
+
+\begin{itemize}
+  \item Carga: mientras se espera informacion remota.
+  \item Vacio: cuando no existen datos relevantes para mostrar.
+  \item Error recuperable: cuando la operacion puede reintentarse o corregirse.
+  \item Restringido: cuando el estado funcional o el permiso no permite la accion.
+  \item Solo lectura: cuando la informacion es visible pero ya no editable.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de aterrizar cuando se cierre el detalle de estados de pantalla.
+  \item Un usuario autenticado pero \texttt{PENDIENTE}, \texttt{RECHAZADO} o \texttt{BLOQUEADO} puede acceder a partes visibles del frontend, pero no debe poder ejecutar flujos reservados a \texttt{ACTIVO}.
+  \item Un partido \texttt{POSTERGADO} puede requerir actualizar la presentacion del lock sin que eso implique permitir al frontend decidir la regla por si mismo.
+  \item Un resultado \texttt{CORREGIDO} puede requerir aviso visible al usuario sin exponer detalle operativo completo del cambio.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Un flujo frontend no puede permitir acciones que backend deba prohibir, como editar picks post-lock.
+  \item Ningun flujo del frontend puede permitir editar picks despues del lock oficial.
+  \item Ninguna pagina administrativa debe estar disponible sin autorizacion valida.
+  \item Las pantallas del frontend representan estados del dominio; no los redefinen.
+  \item Toda pagina con accion critica debe dejar claro su estado de exito, rechazo o restriccion.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar inventario final de paginas publicas, privadas y administrativas.
+  \item Confirmar si el leaderboard por jornada sera una pantalla propia o un filtro dentro de una unica superficie de ranking.
+  \item Confirmar si el aviso de resultado corregido aparecera en calendario, detalle de partido, leaderboard o en mas de una superficie del frontend.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir el inventario final de paginas administrativas de auditoria para v1 y si esa vista vive dentro del panel admin o como subseccion especializada.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar si la landing publica de v1 requiere contenido editorial extendido o si basta una superficie funcional enfocada en registro y acceso.
+\end{itemize}

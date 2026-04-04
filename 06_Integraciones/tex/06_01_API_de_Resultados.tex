@@ -2,40 +2,94 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la integracion conceptual con la API externa de resultados.
+Este documento define la integracion conceptual con la API externa de resultados. Su objetivo es dejar claro que espera el sistema de un proveedor externo, como se adapta esa informacion al dominio interno y que limites debe respetar la integracion para no contaminar reglas del juego con el modelo del proveedor.
 
 \subsection{Alcance}
 
-Aplica a consumo funcional de resultados y mapeo hacia el dominio interno.
+Aplica a la integracion de resultados de partidos y metadatos asociados necesarios para soportar scoring, cierre funcional del partido y trazabilidad. No fija todavia proveedor comercial definitivo ni su contrato tecnico exacto.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Proveedor de resultados}: servicio externo que entrega datos oficiales o candidatos a oficiales.
+  \item \textbf{Proveedor de resultados}: servicio externo que entrega datos oficiales o candidatos a oficiales sobre partidos.
+  \item \textbf{Adaptacion}: transformacion del dato externo al modelo interno del dominio.
+  \item \textbf{Resultado vigente}: valor oficial que el sistema reconoce para scoring y vistas derivadas.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item La API externa se adapta al dominio; el dominio no adopta directamente el modelo externo.
-  \item Todo resultado externo debe poder rastrearse hasta su fuente.
+  \item El modelo interno del dominio es la referencia del sistema; la API externa debe adaptarse a ese modelo y no al reves.
+  \item Todo dato recibido desde el proveedor debe poder rastrearse hasta su fuente, momento de recepcion y partido interno asociado.
+  \item La API externa no se considera autoridad absoluta; su salida puede ser validada, ignorada o reemplazada por operacion manual auditada.
+  \item El sistema solo debe consumir del proveedor la informacion necesaria para operar la quiniela y no depender de campos irrelevantes del modelo externo.
+\end{itemize}
+
+\subsubsection{Datos minimos esperados del proveedor}
+
+\begin{itemize}
+  \item identificador externo del partido;
+  \item fecha y hora oficial del kickoff;
+  \item equipos involucrados;
+  \item estado funcional del partido o equivalente interpretable;
+  \item goles oficiales utilizable para la regla de 90 minutos mas agregado;
+  \item marca temporal de actualizacion del dato externo.
+\end{itemize}
+
+\subsubsection{Adaptacion al dominio interno}
+
+\begin{itemize}
+  \item El proveedor puede usar nomenclaturas de estado distintas; el backend debe traducirlas a los estados funcionales internos del proyecto.
+  \item El sistema debe identificar un partido interno de forma unica antes de aceptar un resultado externo como candidato valido.
+  \item Si el proveedor incluye informacion no utilizable por el reglamento, como tiempo extra o penales, esa informacion no debe contaminar el resultado oficial usado para scoring.
+  \item La adaptacion debe producir un valor interpretable por el dominio aun cuando el proveedor entregue estructuras mas complejas que las necesarias para la quiniela.
+\end{itemize}
+
+\subsubsection{Criterios de aceptacion de un resultado externo}
+
+\begin{itemize}
+  \item el partido interno asociado existe;
+  \item el dato puede mapearse al estado funcional del partido;
+  \item los goles y el contexto permiten determinar un resultado compatible con el reglamento;
+  \item no existe override manual vigente que impida adoptar automaticamente el valor de API.
+\end{itemize}
+
+\subsubsection{Superficies internas consumidoras}
+
+\begin{itemize}
+  \item modulo \texttt{results}: adapta y conserva referencia de fuente;
+  \item modulo \texttt{matches}: actualiza estado funcional del partido cuando aplique;
+  \item modulo \texttt{scoring}: consume solo el resultado vigente ya adaptado;
+  \item frontend: consume el resultado visible oficial y nunca el payload externo crudo.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de completar al seleccionar proveedor definitivo y su contrato.
+  \item Si el proveedor entrega un resultado parcial o transitorio, ese dato no debe consolidarse como resultado final sin pasar por la logica interna de aceptacion.
+  \item Si el proveedor cambia el kickoff oficial, el sistema debe tratar ese cambio como dato integrable del partido y no como simple texto informativo.
+  \item Si el proveedor no puede mapear limpiamente el partido o su estado, el dato debe quedar rechazado o pendiente de revision operativa.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item El proveedor externo no sustituye la autoridad documental de las reglas del juego.
+  \item La API externa no redefine reglas del dominio.
+  \item Todo resultado vigente usado por scoring debe tener fuente identificable.
+  \item El frontend no consume directamente la estructura del proveedor externo.
+  \item Un partido no puede tener simultaneamente mas de un resultado vigente a efectos del sistema.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar proveedor oficial, frecuencia operativa y restricciones de uso.
+  \item Confirmar proveedor oficial, frecuencia operativa de consulta y limites de uso del contrato externo definitivo.
+  \item Confirmar si el sistema recibira tambien eventos de fixture y cambios de kickoff desde la misma integracion o desde una fuente separada.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{Bloquea backend}: seleccionar proveedor oficial y documentar su contrato tecnico minimo una vez aprobado.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si el sistema almacenara payload externo completo para auditoria o solo los campos adaptados y referencia de fuente.
+\end{itemize}

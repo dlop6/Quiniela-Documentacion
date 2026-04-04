@@ -2,41 +2,146 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la estructura funcional del frontend basada en features y capas claras.
+Este documento define la estructura funcional esperada del repositorio frontend para v1. Su objetivo es dejar claro como se organiza el trabajo por features, que responsabilidad tiene cada bloque del arbol del frontend y que limites deben respetarse para no mezclar UI, logica de flujo, contratos y piezas compartidas.
 
 \subsection{Alcance}
 
-Aplica al repositorio frontend y a sus criterios de organizacion.
+Aplica al repositorio frontend de la plataforma Quiniela. Describe una estructura objetivo para trabajo diario, mantenimiento y crecimiento controlado del producto. No define detalle visual ni decisiones finas de implementacion de componentes.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Feature}: agrupacion funcional del frontend con UI, estado y acceso a datos relacionados.
+  \item \textbf{Feature}: unidad funcional del frontend asociada a un objetivo claro del usuario o del administrador.
+  \item \textbf{Shared}: espacio comun reservado para piezas reutilizables que no dependen de un flujo especifico del negocio.
+  \item \textbf{Estado remoto}: datos obtenidos del backend y sincronizados en cliente.
+  \item \textbf{Estado local}: estado efimero de interfaz que no representa la verdad persistente del dominio.
+  \item \textbf{Ownership funcional}: responsabilidad principal de una feature o bloque sobre sus pantallas, validaciones de experiencia, consultas y componentes propios.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item La estructura del frontend se describira por features.
-  \item `shared` solo contendra piezas realmente reutilizables.
-  \item La organizacion no debe ocultar reglas de negocio criticas en componentes UI.
+  \item El frontend se organizara principalmente por features y no por tipo tecnico aislado de archivo.
+  \item Cada feature debe responder a un flujo reconocible del producto y tener ownership claro.
+  \item La estructura del frontend no debe ocultar reglas criticas del dominio dentro de componentes visuales o utilidades compartidas.
+  \item El frontend puede validar por experiencia de usuario, pero no redefine locks, scoring, permisos ni resultados oficiales.
+  \item \texttt{shared} solo puede contener piezas autenticamente reutilizables y neutrales respecto del dominio especifico.
+  \item Las features deben depender de contratos del backend ya definidos, no inventar modelos paralelos incompatibles.
+\end{itemize}
+
+\subsubsection{Features objetivo de v1}
+
+La estructura esperada para v1 parte del siguiente inventario funcional:
+
+\begin{itemize}
+  \item \texttt{auth}: login, recuperacion de contrasena y continuidad de sesion.
+  \item \texttt{activation}: estado de activacion, instrucciones de pago y comprobante.
+  \item \texttt{picks}: captura, edicion y consulta de picks por partido.
+  \item \texttt{special-predictions}: captura y consulta de \texttt{Campeon} y \texttt{Goleador}.
+  \item \texttt{leaderboard}: tabla general y vistas derivadas de ranking.
+  \item \texttt{profile}: datos propios del participante y estado de su cuenta.
+  \item \texttt{admin}: operaciones administrativas permitidas para usuarios con privilegios.
+\end{itemize}
+
+\subsubsection{Tree funcional sugerido}
+
+El siguiente tree es una referencia descriptiva para el repositorio frontend:
+
+\begin{verbatim}
+frontend/
+|-- app/
+|   |-- rutas y layouts
+|   |-- providers globales
+|   `-- boundaries de navegacion
+|-- features/
+|   |-- auth/
+|   |-- activation/
+|   |-- picks/
+|   |-- special-predictions/
+|   |-- leaderboard/
+|   |-- profile/
+|   `-- admin/
+|-- entities/
+|   |-- user/
+|   |-- match/
+|   |-- pick/
+|   |-- special-prediction/
+|   |-- result/
+|   `-- leaderboard-entry/
+`-- shared/
+    |-- ui/
+    |-- lib/
+    |-- config/
+    `-- contracts/
+\end{verbatim}
+
+\subsubsection{Responsabilidad por bloque}
+
+\begin{itemize}
+  \item \texttt{app}: define composicion global, rutas, layouts y configuracion de alto nivel del frontend.
+  \item \texttt{features}: concentra comportamiento orientado a flujos concretos del producto.
+  \item \texttt{entities}: concentra modelos de presentacion y adaptadores reutilizables por multiples features cuando eso reduzca duplicacion real.
+  \item \texttt{shared}: contiene primitivas visuales, utilidades generales, configuracion comun y contratos neutrales.
+\end{itemize}
+
+\subsubsection{Reglas de ownership por feature}
+
+\begin{itemize}
+  \item \texttt{auth} es duena de formularios de acceso, recuperacion de contrasena y control de sesion visible al usuario.
+  \item \texttt{activation} es duena del flujo de comprobante, estados visibles de activacion y mensajes relacionados con habilitacion de cuenta.
+  \item \texttt{picks} es duena de la captura y consulta de picks por partido, incluyendo estados de editable, bloqueado y sin pick.
+  \item \texttt{special-predictions} es duena del flujo separado de \texttt{Campeon} y \texttt{Goleador} dentro del modulo funcional de picks.
+  \item \texttt{leaderboard} es duena de la visualizacion del ranking y del desglose que el producto decida exponer.
+  \item \texttt{profile} es duena de la informacion propia del participante no administrativa.
+  \item \texttt{admin} es duena de operaciones privilegiadas, vistas administrativas y acciones auditables expuestas en frontend.
+\end{itemize}
+
+\subsubsection{Reglas para shared}
+
+\begin{itemize}
+  \item Una pieza solo entra en \texttt{shared} si puede reutilizarse en mas de una feature sin transportar reglas especificas de negocio.
+  \item Un componente visual generico puede vivir en \texttt{shared/ui} si no codifica comportamiento propio de picks, scoring, activacion o administracion.
+  \item Una validacion ligada al dominio de picks, resultados o scoring no pertenece a \texttt{shared}; pertenece al feature o entidad correspondiente.
+  \item Los contratos de red compartidos pueden vivir en \texttt{shared/contracts} si representan definiciones comunes consumidas por varias features.
+\end{itemize}
+
+\subsubsection{Reglas de dependencia}
+
+\begin{itemize}
+  \item \texttt{app} puede componer features, entities y piezas compartidas.
+  \item Una feature puede depender de entities y shared, pero no debe depender de otra feature salvo composicion muy controlada y justificada.
+  \item \texttt{shared} no debe depender de features.
+  \item Ninguna capa del frontend accede directamente a la base de datos ni a la API externa de resultados.
+  \item El frontend depende del backend como fuente de verdad para locks, permisos, resultados oficiales y puntajes.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de cerrar cuando exista un inventario real de features.
+  \item Si una feature comparte demasiada logica con otra, debe revisarse si existe una entidad comun reusable o si la separacion actual esta mal planteada.
+  \item Si una pieza ubicada en \texttt{shared} requiere conocimiento especifico de scoring, picks o activacion, debe salir de \texttt{shared}.
+  \item Si una validacion en cliente mejora la experiencia, backend sigue siendo la autoridad final para aceptar o rechazar la operacion.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item La estructura del frontend no redefine contratos del dominio.
+  \item La estructura del frontend no redefine reglas oficiales cerradas en \texttt{01\_Producto\_y\_Reglas}.
+  \item Cada feature debe mapear a un flujo reconocible del producto y no a una agrupacion arbitraria de archivos.
+  \item El estado remoto y el estado local deben mantenerse como preocupaciones distintas.
+  \item El frontend no debe asumir que un lock, permiso o puntaje es valido sin confirmacion del backend.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar mapa final de features para v1.
+  \item Confirmar si \texttt{special-predictions} quedara como feature independiente en el repositorio frontend o como subestructura interna de \texttt{picks}.
+  \item Confirmar si la capa \texttt{entities} es necesaria desde v1 o si el volumen real del frontend permite resolver esa responsabilidad dentro de \texttt{features} y \texttt{shared}.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar el inventario visual final de pantallas por feature para aterrizar la estructura definitiva de carpetas del frontend.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si la capa \texttt{entities} vivira como bloque independiente desde el inicio o se introducira solo si la complejidad del repositorio lo justifica.
+\end{itemize}

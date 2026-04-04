@@ -2,40 +2,119 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la estrategia de estado remoto, validacion y consumo de datos del frontend.
+Este documento define como debe manejar el frontend el estado remoto, el estado local de interfaz, la validacion de entradas y el consumo de datos provenientes del backend. Su objetivo es evitar que el cliente mezcle preocupaciones, replique reglas oficiales de negocio o construya contratos ambiguos.
 
 \subsection{Alcance}
 
-Aplica a contratos cliente-servidor y manejo de estado observable.
+Aplica al repositorio frontend en su integracion con backend. Describe principios y reglas de manejo de datos; no reemplaza la documentacion de contratos conceptuales del backend ni el detalle de implementacion de librerias.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Estado remoto}: informacion obtenida desde backend y sincronizada en el frontend.
+  \item \textbf{Estado remoto}: informacion obtenida del backend y considerada verdad vigente para el frontend.
+  \item \textbf{Estado local}: estado efimero de interfaz usado para composicion visual, formularios y comportamiento interactivo no persistido.
+  \item \textbf{Validacion de frontera}: validacion realizada en el punto de entrada o salida de datos entre frontend y backend.
+  \item \textbf{Contrato}: estructura esperada de entrada o salida consumida por el frontend.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Los contratos del frontend deben validarse con las mismas reglas funcionales del sistema.
-  \item El frontend debe diferenciar datos remotos, estado local de UI y validacion de inputs.
+  \item El frontend debe tratar el estado remoto y el estado local como preocupaciones separadas.
+  \item Los datos de dominio visibles en el cliente deben venir del backend y consumirse bajo contratos explicitamente validados.
+  \item La validacion del frontend existe para mejorar experiencia y reducir errores de captura, no para sustituir enforcement del backend.
+  \item El frontend no debe asumir como verdadero ningun lock, permiso, resultado o puntaje que no haya sido confirmado por el backend.
+  \item Los errores funcionales y los errores tecnicos deben mostrarse de manera diferenciada en la experiencia de usuario.
+\end{itemize}
+
+\subsubsection{Manejo de estado remoto}
+
+\begin{itemize}
+  \item El estado remoto incluye, al menos, sesion, perfil, estado de activacion, calendario de partidos, picks propios, predicciones especiales, leaderboard y resultados visibles.
+  \item El frontend debe considerar como fuente de verdad vigente el dato mas reciente validamente recibido del backend.
+  \item Los datos remotos deben poder invalidarse o refrescarse cuando una mutacion cambie el estado funcional del sistema.
+  \item Las vistas derivadas del frontend no deben persistirse como verdad paralela si pueden obtenerse de respuestas oficiales del backend.
+\end{itemize}
+
+\subsubsection{Manejo de estado local}
+
+\begin{itemize}
+  \item El estado local se limita a composicion visual, estado temporal de formularios, controles abiertos o cerrados, filtros no persistidos y feedback inmediato de interaccion.
+  \item Un dato local no puede usarse como sustituto durable de una respuesta oficial del backend.
+  \item Cuando una accion critica depende de informacion remota, el frontend debe reconciliar su estado local con la respuesta del servidor despues de la operacion.
+\end{itemize}
+
+\subsubsection{Reglas de validacion}
+
+\begin{itemize}
+  \item El frontend debe validar entradas visibles del usuario antes de enviar la solicitud cuando eso mejore claridad o reduzca errores evitables.
+  \item La validacion de picks debe respetar que los goles permitidos son enteros entre \texttt{0} y \texttt{9}.
+  \item La validacion de predicciones especiales debe respetar su cierre propio y el formato esperado de seleccion.
+  \item La validacion de formularios no debe ocultar errores devueltos por backend; debe integrarlos y mostrarlos de forma comprensible.
+  \item Si una operacion es rechazada por lock, permiso o estado funcional, el frontend debe privilegiar el mensaje funcional sobre el detalle tecnico.
+\end{itemize}
+
+\subsubsection{Contratos y acceso a datos}
+
+\begin{itemize}
+  \item El frontend consumira contratos conceptuales estables del backend y adaptara sus respuestas a modelos de presentacion cuando sea necesario.
+  \item Las adaptaciones de contrato deben vivir cerca del acceso a datos o de la entidad correspondiente, no dispersas en componentes visuales.
+  \item El frontend no debe construir contratos paralelos incompatibles con backend para simplificar localmente una pantalla.
+  \item Toda mutacion relevante debe definir que consultas deben refrescarse o invalidarse despues de completarse.
+\end{itemize}
+
+\subsubsection{Datos minimos por feature}
+
+\begin{longtable}{p{0.22\textwidth}p{0.32\textwidth}p{0.30\textwidth}}
+\toprule
+\textbf{Feature} & \textbf{Datos remotos principales} & \textbf{Estado local frecuente} \\
+\midrule
+\texttt{auth} & sesion y contexto basico de cuenta & estado de formulario y feedback de acceso \\
+\texttt{activation} & estado de usuario, comprobante e instrucciones visibles & carga de archivo, confirmacion y mensajes de revision \\
+\texttt{picks} & partidos, kickoff, picks propios y estado funcional del partido & valores editables, filtros y confirmaciones de guardado \\
+\texttt{special-predictions} & predicciones especiales propias y su estado de cierre & seleccion temporal antes de guardar \\
+\texttt{leaderboard} & ranking general, filtros y desglose disponible & filtros activos y preferencia de vista \\
+\texttt{profile} & datos propios del participante & expansion de secciones y edicion local si aplica \\
+\texttt{admin} & usuarios, comprobantes, partidos, resultados, recalculos y auditoria visible & filtros, confirmaciones y contexto de accion critica \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Reglas de error y feedback}
+
+\begin{itemize}
+  \item Un error funcional debe explicar que regla impidio la accion, por ejemplo lock vencido, cuenta no activa o falta de permisos.
+  \item Un error tecnico debe comunicar que la operacion no pudo completarse y ofrecer reintento cuando corresponda.
+  \item El frontend no debe esconder el estado final de una mutacion critica; siempre debe dejar feedback de exito, rechazo o fallo tecnico.
+  \item Cuando exista resultado corregido, el frontend debe poder mostrar un aviso explicito y breve sin reconstruir la auditoria interna.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de aterrizar junto con los endpoints conceptuales del backend.
+  \item Si el frontend muestra un formulario editable y el backend rechaza por lock reciente, la vista debe reconciliarse con el nuevo estado funcional y pasar a modo lectura.
+  \item Si un dato remoto cambia por recalculo o correccion, las vistas derivadas deben invalidarse para evitar mostrar ranking o puntajes obsoletos.
+  \item Si una consulta administrativa retorna informacion parcial por permisos, el frontend debe degradar la vista de forma controlada y no asumir acceso total.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item El frontend no asume datos no garantizados por el backend.
+  \item El backend sigue siendo la autoridad final para validar y persistir operaciones del dominio.
+  \item Ningun componente del frontend debe depender de datos no garantizados por contrato.
+  \item La logica de presentacion no debe contener reglas oficiales unicas de scoring, lock o permisos.
+  \item Toda mutacion critica debe tener un camino claro de refresco o invalidacion del estado remoto afectado.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar convenciones finales de queries, mutaciones y esquemas compartidos.
+  \item Confirmar si los esquemas Zod de frontend se mantendran totalmente independientes o si existira una estrategia posterior de comparticion controlada de contratos con backend.
+  \item Confirmar cuantas superficies del frontend mostraran desglose de puntaje y con que precision visual se representaran los decimales.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir la politica exacta de invalidacion y refresco para leaderboard y picks despues de una correccion de resultado.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si los mensajes funcionales del frontend tendran catalogo centralizado por feature o un inventario transversal de microcopy operativo.
+\end{itemize}
