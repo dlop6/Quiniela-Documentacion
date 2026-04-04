@@ -2,31 +2,39 @@
 
 \subsection{Descripcion}
 
-Este documento formaliza el calculo de puntos, el uso de multiplicadores y la logica oficial de desempate del leaderboard.
+Este documento define el calculo oficial de puntajes del torneo, el uso de multiplicadores, la integracion de predicciones especiales y el orden de desempates del leaderboard.
 
 \subsection{Alcance}
 
-Aplica al calculo de puntajes por partido, puntaje acumulado y orden de ranking.
+Aplica a:
+
+\begin{itemize}
+  \item puntaje por partido;
+  \item puntaje acumulado del torneo;
+  \item predicciones especiales de Campeon y Goleador;
+  \item ordenamiento del leaderboard.
+\end{itemize}
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Puntaje base}: suma de outcome correcto y marcador exacto antes de multiplicador.
-  \item \textbf{Puntaje acumulado}: suma de puntajes validos del usuario en el torneo.
-  \item \textbf{Desempate}: regla para ordenar usuarios con el mismo puntaje acumulado.
+  \item \textbf{Puntaje base}: suma de puntos obtenidos antes de aplicar multiplicador.
+  \item \textbf{Puntaje acumulado}: suma total de puntajes validos del participante en el torneo.
+  \item \textbf{Desempate}: regla de ordenamiento entre participantes con el mismo puntaje acumulado.
+  \item \textbf{Desglose}: separacion visible del origen de puntos sin alterar el total oficial.
 \end{itemize}
 
 \subsection{Reglas}
 
-Puntaje base por partido:
+\subsubsection{Puntaje por partido}
 
 \begin{itemize}
-  \item Outcome correcto: 3 puntos.
-  \item Marcador exacto correcto: 2 puntos adicionales.
-  \item Maximo base por partido: 5 puntos.
+  \item Acertar el outcome otorga 3 puntos.
+  \item Acertar el marcador exacto otorga 2 puntos adicionales.
+  \item El puntaje base maximo por partido es 5 puntos.
 \end{itemize}
 
-Multiplicadores por fase:
+\subsubsection{Multiplicadores por fase}
 
 \begin{center}
 \begin{tabular}{lr}
@@ -43,12 +51,41 @@ Final & x2.0 \\
 \end{tabular}
 \end{center}
 
-Predicciones especiales:
+\begin{itemize}
+  \item El multiplicador se aplica al puntaje del partido conforme a la fase oficial del torneo.
+  \item El calculo conserva precision exacta al aplicar el multiplicador.
+  \item La logica interna de scoring no debe redondear el valor calculado.
+  \item La representacion visual del puntaje puede formatearse con precision controlada, pero ese formato no modifica el valor oficial de calculo.
+\end{itemize}
+
+\subsubsection{Predicciones especiales}
 
 \begin{itemize}
-  \item Campeon correcto: 20 puntos.
-  \item Goleador correcto: 15 puntos.
+  \item Campeon correcto otorga 20 puntos.
+  \item Goleador correcto otorga 15 puntos.
+  \item Las predicciones especiales forman parte del puntaje total acumulado del torneo.
+  \item Las predicciones especiales no crean un leaderboard separado por defecto.
 \end{itemize}
+
+\subsubsection{Leaderboard}
+
+\begin{itemize}
+  \item El leaderboard se ordena por puntaje total acumulado.
+  \item El puntaje total acumulado integra:
+    \begin{itemize}
+      \item puntaje de picks por partido;
+      \item puntaje de predicciones especiales.
+    \end{itemize}
+  \item El sistema debe poder mostrar desglose del origen de puntos sin alterar el total oficial.
+  \item Las vistas esperadas del leaderboard son:
+    \begin{itemize}
+      \item general;
+      \item por jornada;
+      \item por fase.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Desempates}
 
 Orden oficial de desempates:
 
@@ -59,39 +96,33 @@ Orden oficial de desempates:
   \item fecha y hora de registro mas temprana.
 \end{enumerate}
 
-Vistas esperadas del leaderboard:
-
-\begin{itemize}
-  \item general;
-  \item por jornada;
-  \item por fase.
-\end{itemize}
-
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Si un resultado se corrige, el puntaje asociado debe recalcularse de forma deterministica.
-  \item Si un partido fue cancelado sin resultado oficial utilizable, ese partido no debe alterar el ranking.
+  \item Si un resultado oficial se corrige, el puntaje afectado debe recalcularse de forma deterministica.
+  \item Si un partido fue cancelado sin resultado oficial utilizable, ese partido no altera el ranking.
+  \item Si el formato visual del puntaje usa redondeo o truncamiento para mostrar datos, ese formato no puede alterar el orden real del leaderboard.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Dos usuarios con el mismo puntaje total deben ordenarse siempre con el mismo algoritmo de desempate.
-  \item El recalculo no debe producir duplicacion de puntos.
+  \item Dos participantes con el mismo puntaje total deben ordenarse siempre con el mismo algoritmo de desempate.
+  \item El recalculo no puede producir duplicacion de puntos.
   \item El leaderboard refleja solo resultados oficiales vigentes.
+  \item El total acumulado es la unica base oficial de ranking.
+  \item Las predicciones especiales suman al total, aunque puedan mostrarse en desglose.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si las predicciones especiales se muestran en el leaderboard general, en una vista aparte o en ambos.
+  \item Confirmar la precision visual exacta con la que se mostraran puntajes no enteros en la interfaz.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item `Decision pendiente` `Bloquea frontend`: definir la presentacion exacta del impacto de predicciones especiales en UI.
-  \item `Decision pendiente` `No bloqueante`: confirmar si el multiplicador aplica con redondeo explicito o si el sistema opera siempre con precision exacta y formato final controlado.
+  \item `Decision pendiente` `Bloquea frontend`: definir como se presenta visualmente el desglose de puntos en leaderboard, perfil y detalle de rendimiento.
+  \item `Decision pendiente` `No bloqueante`: confirmar si el leaderboard por jornada excluye visualmente las predicciones especiales aunque el total general las incluya.
 \end{itemize}
-

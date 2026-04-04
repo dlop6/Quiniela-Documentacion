@@ -2,7 +2,7 @@
 
 \subsection{Descripcion}
 
-La solucion se documenta como un sistema web dividido en tres repositorios: frontend, backend y documentacion. El dominio del juego es el centro del sistema y condiciona el diseno de las demas capas.
+La solucion se documenta como un sistema web dividido en tres repositorios: frontend, backend y documentacion. El dominio del juego es el centro del sistema y condiciona el diseno de las demas capas, contratos y procesos de operacion.
 
 \subsection{Alcance}
 
@@ -29,6 +29,47 @@ Vista de alto nivel:
   \item La documentacion define reglas antes de que se cierren interfaces de implementacion.
 \end{itemize}
 
+\subsubsection{Vista logica de ejecucion}
+
+\begin{docnote}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.18\textwidth} >{\centering\arraybackslash}p{0.06\textwidth} >{\raggedright\arraybackslash}p{0.22\textwidth} >{\centering\arraybackslash}p{0.06\textwidth} >{\raggedright\arraybackslash}p{0.34\textwidth}}
+Usuarios y administradores & $\rightarrow$ & Frontend web & $\rightarrow$ & Backend API y dominio \\
+ &  &  & $\searrow$ & PostgreSQL como sistema de registro \\
+ &  &  & $\nearrow$ & API externa de resultados y override manual auditado \\
+\end{tabularx}
+\end{docnote}
+
+Interpretacion de la vista:
+
+\begin{itemize}
+  \item El frontend es la unica superficie interactiva para participantes y administradores.
+  \item El backend concentra las reglas oficiales del juego, incluso cuando la interfaz muestre validaciones preliminares.
+  \item La base de datos conserva el estado persistente del sistema y la evidencia necesaria para recalculo y auditoria.
+  \item La integracion externa de resultados no define por si sola la verdad oficial vigente cuando exista override manual autorizado.
+\end{itemize}
+
+\subsubsection{Tree conceptual de repositorios}
+
+El siguiente tree es conceptual y describe distribucion de responsabilidades, no nombres fisicos definitivos de carpetas:
+
+\begin{verbatim}
+quiniela/
+|-- frontend/
+|   |-- aplicacion web para participantes y administradores
+|   |-- UI, navegacion y consumo de API
+|   `-- validacion de entrada y manejo de estado cliente
+|-- backend/
+|   |-- API HTTP
+|   |-- modulos de dominio
+|   |-- integraciones externas
+|   `-- persistencia y auditoria
+`-- documentacion/
+    |-- reglas de negocio
+    |-- arquitectura y datos
+    `-- decisiones y trazabilidad documental
+\end{verbatim}
+
 Principios estructurales:
 
 \begin{itemize}
@@ -37,6 +78,15 @@ Principios estructurales:
   \item La validacion de entradas ocurre en la frontera de entrada.
   \item Las acciones criticas deben quedar auditadas.
   \item El sistema debe poder recalcular sin romper consistencia.
+\end{itemize}
+
+Limites de responsabilidad:
+
+\begin{itemize}
+  \item El frontend es responsable de experiencia de usuario, composicion de vistas y validaciones de entrada que mejoren usabilidad.
+  \item El backend es responsable de enforcement real de permisos, locks, scoring, desempates, overrides y auditoria.
+  \item La documentacion es responsable de definir reglas, vocabulario y limites antes de que las implementaciones los materialicen.
+  \item Las integraciones externas quedan encapsuladas en backend y no deben filtrarse como dependencia directa al frontend.
 \end{itemize}
 
 \subsection{Casos borde}
@@ -52,6 +102,7 @@ Principios estructurales:
   \item El frontend no accede directamente a la base de datos.
   \item El backend es responsable de enforcement de locks y scoring.
   \item La documentacion es el origen de definiciones funcionales.
+  \item Ninguna integracion externa puede modificar directamente el estado oficial del sistema sin pasar por las reglas del backend.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
@@ -59,4 +110,3 @@ Principios estructurales:
 \begin{itemize}
   \item Ninguna por ahora.
 \end{itemize}
-

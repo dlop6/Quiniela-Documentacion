@@ -2,11 +2,18 @@
 
 \subsection{Descripcion}
 
-Este documento concentra los escenarios funcionales no triviales que pueden generar disputa, recalculo o intervencion administrativa.
+Este documento define los escenarios funcionales no triviales que pueden afectar justicia competitiva, trazabilidad, recalc ulo o intervencion administrativa. Su objetivo es evitar interpretaciones ad hoc cuando el comportamiento ordinario del torneo no sea suficiente.
 
 \subsection{Alcance}
 
-Aplica a partidos, resultados, lock, scoring y visibilidad.
+Aplica a:
+
+\begin{itemize}
+  \item partidos suspendidos, postergados, cancelados o corregidos;
+  \item correcciones de resultados;
+  \item prioridad entre fuentes de resultado;
+  \item comunicacion funcional al usuario cuando el resultado vigente cambie.
+\end{itemize}
 
 \subsection{Definiciones}
 
@@ -15,25 +22,56 @@ Aplica a partidos, resultados, lock, scoring y visibilidad.
   \item \textbf{Postergado}: partido movido a una nueva fecha.
   \item \textbf{Cancelado}: partido sin resultado oficial utilizable para la quiniela.
   \item \textbf{Corregido}: resultado oficial ajustado posteriormente.
+  \item \textbf{Override manual}: correccion administrativa autorizada sobre el resultado de un partido.
 \end{itemize}
 
 \subsection{Reglas}
 
+\subsubsection{Partidos postergados}
+
 \begin{enumerate}
   \item Si un partido se posterga antes del lock, el lock se recalcula con el nuevo kickoff oficial.
   \item Si un partido se posterga despues del lock, los picks ya guardados permanecen validos y bloqueados, salvo decision administrativa extraordinaria auditada.
-  \item Si un partido se suspende y luego se completa con resultado oficial compatible con la regla de 90 minutos mas agregado, el sistema puntua cuando ese resultado exista.
-  \item Si un partido se cancela y no existe resultado oficial utilizable, no genera puntaje para ningun usuario.
-  \item Si un resultado se corrige por fuente valida o override manual autorizado, se debe recalcular el puntaje afectado y dejar trazabilidad completa.
-  \item Todo override manual de resultado debe registrar actor, momento, valor anterior, valor nuevo y justificacion.
+\end{enumerate}
+
+\subsubsection{Partidos suspendidos}
+
+\begin{enumerate}
+  \item Si un partido se suspende y luego se completa con resultado oficial compatible con la regla de 90 minutos mas tiempo agregado, el sistema puntua cuando ese resultado exista.
+  \item Mientras no exista un resultado oficial utilizable, el partido no debe cerrar scoring definitivo.
+\end{enumerate}
+
+\subsubsection{Partidos cancelados}
+
+\begin{enumerate}
+  \item Si un partido se cancela y no existe resultado oficial utilizable para la quiniela, no genera puntaje para ningun usuario.
+  \item Un partido cancelado no debe alterar ranking, desempates ni estadisticas de acierto del torneo.
+\end{enumerate}
+
+\subsubsection{Resultados corregidos}
+
+\begin{enumerate}
+  \item Si un resultado se corrige por fuente valida o por override manual autorizado, el sistema debe recalcular el puntaje afectado y dejar trazabilidad completa.
+  \item Toda correccion manual de resultado debe registrar actor, momento, valor anterior, valor nuevo y justificacion.
+  \item Cuando exista un override manual autorizado, ese valor se considera la verdad oficial vigente hasta que una nueva accion explicita y auditada lo modifique.
+  \item La sincronizacion automatica de la API no debe sobrescribir un override manual vigente sin una accion administrativa explicita.
+\end{enumerate}
+
+\subsubsection{Comunicacion funcional al usuario}
+
+\begin{enumerate}
+  \item Cuando un resultado oficial previamente publicado sea corregido, el sistema debe comunicar al usuario que el resultado vigente cambio y que los puntajes fueron recalculados.
+  \item El mensaje funcional al usuario debe ser explicito, breve y orientado a transparencia.
+  \item El mensaje no necesita mostrar por defecto el valor anterior y el valor nuevo; ese nivel de detalle pertenece a auditoria y operacion administrativa.
 \end{enumerate}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Si el proveedor de resultados entrega un valor temporal y luego otro definitivo, solo el resultado oficial vigente debe quedar activo.
-  \item Si el sistema recalcula varias veces el mismo partido corregido, el proceso debe ser idempotente.
-  \item Si un usuario intenta disputar un resultado, la evidencia operativa debe salir de la auditoria y de la fuente oficial aplicada.
+  \item Si el proveedor de resultados entrega primero un valor temporal y luego otro definitivo, solo el resultado oficial vigente debe permanecer activo.
+  \item Si el sistema recalcula varias veces el mismo partido corregido, el proceso debe seguir siendo idempotente.
+  \item Si un usuario disputa un cambio de puntaje, la evidencia operativa debe salir de la auditoria y de la fuente oficial vigente aplicada.
+  \item Si una correccion manual reemplaza un dato de API y luego la API vuelve a sincronizar, el valor manual no debe perderse por sincronizacion automatica.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -42,17 +80,18 @@ Aplica a partidos, resultados, lock, scoring y visibilidad.
   \item Ninguna correccion manual debe borrar la historia del valor anterior.
   \item Ningun caso borde debe resolverse fuera de trazabilidad.
   \item Un partido cancelado no asigna puntos.
+  \item Un override manual vigente tiene prioridad operativa sobre la API automatica hasta nueva accion explicita.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar la politica exacta de comunicacion al usuario cuando un resultado sea corregido despues de haberse mostrado.
+  \item Confirmar en que superficies de la interfaz debe mostrarse el mensaje de resultado corregido: detalle de partido, mis picks, leaderboard o varias de ellas.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item `Decision pendiente` `Bloquea ambos`: definir el mensaje funcional al usuario para partidos corregidos.
-  \item `Riesgo` `Bloquea backend`: confirmar criterios de prioridad entre API externa y override manual si ambos entregan cambios en ventanas cercanas.
+  \item `Decision pendiente` `Bloquea frontend`: definir exactamente donde y durante cuanto tiempo se muestra el aviso de resultado corregido al usuario.
+  \item `Decision pendiente` `No bloqueante`: confirmar si la UI debe distinguir visualmente entre resultado corregido por API y resultado corregido por override manual.
 \end{itemize}

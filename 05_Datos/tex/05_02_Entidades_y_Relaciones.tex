@@ -30,7 +30,7 @@ Phase & Segmentacion oficial del torneo para scoring y vistas. \\
 Team & Equipo participante del torneo. \\
 Match & Partido con kickoff, fase y estado operativo. \\
 Pick & Prediccion de marcador exacto por usuario y partido. \\
-SpecialPrediction & Prediccion especial de Campeon o Goleador. \\
+SpecialPrediction & Prediccion especial de Campeon o Goleador dentro del subdominio de picks. \\
 Result & Resultado oficial o corregido de un partido. \\
 ScoreEntry & Registro derivado del puntaje aplicado a un pick. \\
 LeaderboardSnapshot & Vista derivada opcional del ranking en un momento dado. \\
@@ -38,14 +38,24 @@ AuditEvent & Evento auditable generado por accion critica o correccion. \\
 \bottomrule
 \end{longtable}
 
+Notas de modelado conceptual:
+
+\begin{itemize}
+  \item `Pick` y `SpecialPrediction` se documentan como conceptos distintos porque tienen distinta cardinalidad, distinta ventana de lock y distinta forma de evaluacion.
+  \item Esta distincion conceptual no obliga por si misma a una implementacion fisica especifica en base de datos.
+  \item `LeaderboardSnapshot` se mantiene como entidad derivada opcional; la fuente normativa del ranking sigue siendo el scoring reproducible.
+\end{itemize}
+
 Relaciones principales:
 
 \begin{itemize}
   \item `User` genera `PaymentProof`.
   \item `User` crea `Pick` y `SpecialPrediction`.
   \item `Tournament` contiene `Phase`, `Team` y `Match`.
+  \item `Tournament` define tambien el contexto unico de cada `SpecialPrediction`.
   \item `Match` tiene cero o un `Result` vigente.
   \item `Pick` se evalua contra `Result` para producir `ScoreEntry`.
+  \item `SpecialPrediction` se evalua contra el cierre oficial del torneo o contra su estadistica oficial correspondiente para producir puntaje acumulable.
   \item `AuditEvent` puede referenciar acciones sobre usuarios, pagos, partidos, resultados y recalculos.
 \end{itemize}
 
@@ -53,6 +63,7 @@ Relaciones principales:
 
 \begin{itemize}
   \item Un `Match` puede pasar por estados no lineales como postergado o corregido; el modelo debe preservar historia suficiente para auditar.
+  \item Un `User` puede permanecer en \texttt{PENDIENTE} mientras su `PaymentProof` atraviesa revision administrativa sin que eso implique nuevos estados funcionales del usuario.
   \item `LeaderboardSnapshot` es opcional; el ranking puede derivarse o persistirse segun necesidad operativa.
 \end{itemize}
 
@@ -60,6 +71,7 @@ Relaciones principales:
 
 \begin{itemize}
   \item Un `Pick` pertenece a un solo `User` y a un solo `Match`.
+  \item Una `SpecialPrediction` pertenece a un solo `User`, a un solo `Tournament` y a un solo tipo de prediccion.
   \item Un `Result` vigente a efectos de scoring debe ser unico por `Match`.
   \item Cada `AuditEvent` debe poder asociarse a un actor o a un proceso identificable.
 \end{itemize}
@@ -67,6 +79,5 @@ Relaciones principales:
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si `SpecialPrediction` se persiste como entidad separada o como variante de `Pick`.
+  \item Confirmar si `ScoreEntry` registrara tambien de forma explicita el puntaje de `SpecialPrediction` o si ese puntaje vivira en una estructura derivada distinta.
 \end{itemize}
-

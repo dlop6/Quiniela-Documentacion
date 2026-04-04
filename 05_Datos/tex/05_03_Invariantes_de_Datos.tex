@@ -19,11 +19,13 @@ Aplica a la consistencia logica de usuarios, partidos, picks, resultados, scorin
 \begin{itemize}
   \item Un usuario no activo no puede registrar picks validos.
   \item No puede existir mas de un pick vigente por usuario y partido.
+  \item No puede existir mas de una prediccion especial vigente por usuario, torneo y tipo de prediccion.
   \item Un pick bloqueado no puede mutar.
   \item Un partido tiene un solo kickoff oficial vigente a la vez.
   \item Un resultado vigente por partido debe ser unico.
   \item El scoring debe poder recalcularse sin duplicar puntajes.
   \item Un partido cancelado no produce puntaje.
+  \item La ausencia de pick antes del lock no puede persistirse como un pick fabricado con valores por defecto.
   \item Toda correccion de resultado debe preservar referencia al valor anterior mediante auditoria.
   \item El ranking debe ser reproducible a partir de resultados oficiales y reglas de desempate.
 \end{itemize}
@@ -33,6 +35,7 @@ Aplica a la consistencia logica de usuarios, partidos, picks, resultados, scorin
 \begin{itemize}
   \item Si se persisten snapshots del leaderboard, estos no reemplazan la posibilidad de reconstruccion a partir de datos fuente.
   \item Si un usuario es bloqueado despues de haber jugado, sus datos historicos se conservan para trazabilidad salvo una politica explicita distinta.
+  \item Si existe un override manual vigente sobre un resultado, ninguna sincronizacion automatica debe reemplazarlo sin una nueva accion explicita y auditada.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -40,6 +43,7 @@ Aplica a la consistencia logica de usuarios, partidos, picks, resultados, scorin
 \begin{itemize}
   \item Ninguna entidad critica del dominio puede quedar sin identificacion suficiente para auditoria.
   \item Toda operacion administrativa sensible debe dejar evidencia trazable.
+  \item Todo ranking publicado debe poder explicarse desde resultados vigentes, scoring reproducible y desempates oficiales.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
@@ -53,4 +57,3 @@ Aplica a la consistencia logica de usuarios, partidos, picks, resultados, scorin
 \begin{itemize}
   \item `Decision pendiente` `No bloqueante`: definir estrategia de retencion historica de snapshots de leaderboard.
 \end{itemize}
-

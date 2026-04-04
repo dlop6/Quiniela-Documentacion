@@ -2,7 +2,7 @@
 
 \subsection{Descripcion}
 
-Este documento delimita que puede saber y hacer cada capa del sistema. Su objetivo es evitar acoplamiento accidental entre dominio, frontend, backend, datos e integraciones.
+Este documento delimita que puede saber, consumir y modificar cada capa del sistema. Su objetivo es evitar acoplamiento accidental entre dominio, frontend, backend, datos e integraciones, y dejar claras las fronteras que protegen la coherencia del producto.
 
 \subsection{Alcance}
 
@@ -26,6 +26,20 @@ Contratos entre repositorios:
   \item El backend encapsula integraciones externas y expone al frontend una vista de dominio estable.
 \end{itemize}
 
+Matriz de limites entre capas principales:
+
+\begin{longtable}{p{0.22\textwidth}p{0.33\textwidth}p{0.35\textwidth}}
+\toprule
+\textbf{Capa o repositorio} & \textbf{Puede depender de} & \textbf{No debe depender de} \\
+\midrule
+Frontend & Backend por contratos HTTP, definiciones funcionales del repositorio documental & Base de datos, API externa de resultados, reglas privadas de infraestructura \\
+Backend dominio & Modelos y reglas internas del propio backend & Componentes de UI, contratos crudos del proveedor externo, decisiones visuales de frontend \\
+Backend infraestructura & Base de datos, proveedores externos, correo, logging, observabilidad & Decisiones funcionales que pertenecen al dominio \\
+Integraciones externas & Contratos del proveedor adaptados en backend & Frontend o reglas oficiales del juego \\
+Documentacion & Fuentes del proyecto y decisiones aprobadas & Detalles de implementacion que contradigan reglas no cerradas \\
+\bottomrule
+\end{longtable}
+
 Limites internos esperados del backend:
 
 \begin{itemize}
@@ -42,6 +56,23 @@ Limites internos esperados del backend:
   \item `notifications`: correos y avisos del sistema.
 \end{itemize}
 
+Reglas de dependencia internas esperadas:
+
+\begin{itemize}
+  \item \texttt{scoring} depende de resultados vigentes, picks validos y fases oficiales, pero no de detalles de interfaz.
+  \item \texttt{leaderboard} consume scoring y datos de usuario, pero no redefine la formula del puntaje.
+  \item \texttt{admin} coordina acciones autorizadas sobre modulos de dominio, pero no se convierte en una fuente paralela de reglas.
+  \item \texttt{audit} y \texttt{notifications} pueden observar eventos de otros modulos, pero no deben introducir mutaciones funcionales no autorizadas.
+\end{itemize}
+
+Limites internos esperados del frontend:
+
+\begin{itemize}
+  \item Las features consumen contratos del backend y modelos de presentacion, no queries directas a infraestructura.
+  \item \texttt{shared} no absorbe logica propia de un feature como picks, activacion o scoring.
+  \item La navegacion y la composicion de pantallas no redefinen permisos ni estados oficiales del dominio.
+\end{itemize}
+
 Contratos de documentacion:
 
 \begin{itemize}
@@ -50,11 +81,20 @@ Contratos de documentacion:
   \item Backend y frontend consumen estas definiciones, no las reemplazan.
 \end{itemize}
 
+Reglas de adaptacion en frontera:
+
+\begin{itemize}
+  \item Todo contrato externo debe adaptarse al lenguaje del dominio antes de ser consumido por modulos internos.
+  \item Todo contrato expuesto al frontend debe representar una vista estable del dominio y no detalles internos de infraestructura.
+  \item Toda validacion de entrada en frontend mejora usabilidad, pero la validacion oficial vive en backend.
+\end{itemize}
+
 \subsection{Casos borde}
 
 \begin{itemize}
   \item Si una integracion externa entrega un modelo incompatible con el dominio, se adapta en el limite de integracion, no en el frontend.
   \item Si una regla de negocio obliga a recalculo, el contrato del dominio prevalece sobre cualquier cache o vista derivada.
+  \item Si un proceso administrativo necesita afectar multiples modulos, la coordinacion debe respetar ownership del dominio y dejar auditoria de cada cambio relevante.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -62,12 +102,14 @@ Contratos de documentacion:
 \begin{itemize}
   \item Ninguna capa consume directamente internals de otra sin contrato definido.
   \item Ninguna integracion externa define la logica oficial del juego por si sola.
+  \item Ninguna vista derivada puede convertirse en sustituto de la fuente normativa del dominio.
+  \item Ninguna validacion de frontend reemplaza la validacion oficial del backend.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si notifications vivira como modulo independiente o como servicio transversal.
+  \item Confirmar si \texttt{notifications} vivira como modulo independiente o como servicio transversal con ownership distribuido.
 \end{itemize}
 
 \subsection{Decisiones pendientes}

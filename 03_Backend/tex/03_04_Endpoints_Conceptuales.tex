@@ -2,16 +2,17 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el catalogo conceptual de endpoints y payloads de alto nivel del backend.
+Este documento define el catalogo conceptual de endpoints y operaciones esperadas del backend. Su objetivo es describir que capacidades debe exponer el API para soportar frontend y operacion administrativa, sin caer todavia en una especificacion exhaustiva tipo OpenAPI.
 
 \subsection{Alcance}
 
-La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo OpenAPI.
+La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo OpenAPI ni fija detalles finales de verbos HTTP, codigos de estado o esquemas fisicos.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Endpoint conceptual}: operacion esperada del backend expresada a nivel funcional.
+  \item \textbf{Operacion administrativa}: endpoint reservado a acciones autorizadas del panel de administracion.
 \end{itemize}
 
 \subsection{Reglas}
@@ -19,23 +20,82 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
 \begin{itemize}
   \item El documento describira proposito, entrada esperada y salida esperada por operacion.
   \item Los endpoints no podran contradecir reglas del dominio ni limites arquitectonicos.
+  \item Toda operacion conceptual debe pertenecer claramente a un modulo duenio.
+  \item El frontend consume contratos de dominio estables, no detalles internos de persistencia o integracion.
+\end{itemize}
+
+\subsubsection{Operaciones publicas y autenticadas esperadas}
+
+\begin{longtable}{p{0.16\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.25\textwidth}}
+\toprule
+\textbf{Modulo} & \textbf{Operacion conceptual} & \textbf{Entrada esperada} & \textbf{Salida esperada} \\
+\midrule
+\texttt{auth} & iniciar sesion & credenciales validas & sesion o token utilizable por frontend \\
+\texttt{auth} & recuperar acceso & identificador del usuario o correo & confirmacion del flujo de recuperacion \\
+\texttt{users} & registrar usuario & datos de registro & usuario creado en estado \texttt{PENDIENTE} \\
+\texttt{users} & consultar perfil propio & sesion valida & datos de cuenta, estado y contexto del usuario \\
+\texttt{payments} & registrar comprobante & referencia o evidencia de pago & comprobante recibido para revision \\
+\texttt{matches} & listar partidos visibles & filtros opcionales por fase o jornada & calendario visible con estado y kickoff \\
+\texttt{picks} & guardar pick por partido & partido, goles local y visita & pick persistido o rechazo por regla funcional \\
+\texttt{picks} & consultar picks propios & sesion valida, filtros opcionales & picks propios y su estado funcional \\
+\texttt{picks} & guardar prediccion especial & tipo de prediccion y valor elegido & prediccion especial persistida o rechazo por lock \\
+\texttt{leaderboard} & consultar leaderboard general & filtros opcionales & ranking general con puntaje acumulado \\
+\texttt{leaderboard} & consultar leaderboard por fase o jornada & identificador de fase o jornada & vista filtrada del ranking \\
+\texttt{results} & consultar resultado visible de partido & identificador del partido & resultado oficial vigente visible para frontend \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Operaciones administrativas esperadas}
+
+\begin{longtable}{p{0.16\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.25\textwidth}}
+\toprule
+\textbf{Modulo} & \textbf{Operacion conceptual} & \textbf{Entrada esperada} & \textbf{Salida esperada} \\
+\midrule
+\texttt{payments} & aprobar comprobante & identificador de comprobante y resolucion & usuario activado y evento auditado \\
+\texttt{payments} & rechazar comprobante & identificador de comprobante y motivo & usuario rechazado y evento auditado \\
+\texttt{users} & bloquear usuario & identificador de usuario y motivo & cuenta bloqueada y trazabilidad registrada \\
+\texttt{matches} & actualizar kickoff o estado de partido & identificador de partido y nuevo valor & partido actualizado con auditoria \\
+\texttt{results} & cargar o corregir resultado manualmente & identificador de partido, valor y justificacion & resultado vigente actualizado y recalculo habilitado \\
+\texttt{scoring} & ejecutar recalculo & alcance del recalculo y motivo & scoring y ranking recalculados \\
+\texttt{admin} & archivar torneo & identificador de torneo y confirmacion autorizada & torneo archivado en modo solo lectura \\
+\texttt{audit} & consultar eventos auditables & filtros administrativos & eventos auditables visibles para operacion \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Reglas de contrato conceptual}
+
+\begin{itemize}
+  \item Ninguna operacion de picks debe asumir que el frontend es autoridad de lock; el backend siempre revalida.
+  \item Las operaciones de resultados deben devolver solo la verdad oficial vigente y no exponer al frontend la complejidad interna del proveedor externo.
+  \item Las operaciones administrativas deben exigir autorizacion, justificacion cuando aplique y salida trazable.
+  \item Las vistas de leaderboard deben responder con el ranking derivado oficial, no con datos parciales sin contexto de scoring.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de completar despues de cerrar flujos y contratos base.
+  \item Una operacion conceptualmente valida puede terminar rechazada por estado funcional del usuario, lock o falta de permisos.
+  \item Una operacion de sincronizacion o correccion de resultado puede disparar recalculo sin que el frontend invoque ese proceso de forma directa.
+  \item Si un partido fue cancelado sin resultado utilizable, las operaciones de scoring derivado no deben producir puntaje asociado.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item Los contratos conceptuales deben mantener consistencia entre frontend y backend.
+  \item Ningun endpoint conceptual redefine reglas oficiales ya cerradas en dominio.
+  \item Ninguna operacion administrativa critica existe sin posibilidad de auditoria.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar agrupacion final de endpoints por modulo.
+  \item Confirmar si el backend expondra operaciones separadas para predicciones especiales o si esas acciones viviran bajo un mismo grupo de picks con distincion por tipo.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: definir si el contrato conceptual documentara nombres de rutas y verbos HTTP en una iteracion posterior o si eso quedara fuera de este repositorio.
+  \item `Decision pendiente` `No bloqueante`: confirmar si la consulta administrativa de auditoria se expone como endpoint propio del modulo \texttt{audit} o como capacidad interna del panel admin.
+\end{itemize}

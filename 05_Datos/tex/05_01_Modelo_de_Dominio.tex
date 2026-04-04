@@ -2,7 +2,7 @@
 
 \subsection{Descripcion}
 
-Este documento presenta el dominio funcional del sistema y sus agrupaciones conceptuales principales. Su objetivo es expresar el lenguaje del negocio antes de cualquier detalle de tablas o endpoints.
+Este documento presenta el dominio funcional del sistema y sus agrupaciones conceptuales principales. Su objetivo es expresar el lenguaje del negocio antes de cualquier detalle de tablas, endpoints o decisiones fisicas de persistencia.
 
 \subsection{Alcance}
 
@@ -21,9 +21,9 @@ Subdominios principales:
 
 \begin{itemize}
   \item `Identidad y acceso`: registro, autenticacion y estado de usuario.
-  \item `Activacion y pagos`: comprobante, validacion manual y habilitacion.
+  \item `Activacion y pagos`: comprobante, revision administrativa y habilitacion posterior del usuario.
   \item `Torneo y calendario`: torneo, equipos, partidos, fases y kickoff.
-  \item `Picks`: predicciones por partido y predicciones especiales.
+  \item `Picks`: predicciones por partido y predicciones especiales de torneo.
   \item `Resultados`: recepcion de resultados oficiales y correcciones.
   \item `Scoring`: calculo de puntos, multiplicadores y desempates.
   \item `Leaderboard`: posicionamiento general y filtrado.
@@ -32,14 +32,25 @@ Subdominios principales:
   \item `Notificaciones`: eventos comunicables por correo.
 \end{itemize}
 
+Reglas de separacion conceptual:
+
+\begin{itemize}
+  \item El estado funcional del usuario pertenece a `Identidad y acceso`.
+  \item La revision del comprobante pertenece a `Activacion y pagos` y no crea por si misma un nuevo estado de usuario distinto de \texttt{PENDIENTE}.
+  \item Las predicciones especiales pertenecen al subdominio `Picks`, aunque su ventana de captura y su evaluacion sean distintas de los picks por partido.
+  \item `Resultados` mantiene una unica verdad vigente por partido para efectos de scoring, aunque pueda existir historia de correcciones y overrides.
+  \item `Leaderboard` es un subdominio derivado: no define reglas propias de juego, solo expresa el resultado acumulado del scoring y sus desempates.
+\end{itemize}
+
 Relaciones de dominio:
 
 \begin{itemize}
-  \item Un usuario participa en un torneo mediante picks.
-  \item Un partido pertenece a una fase del torneo.
-  \item Un resultado oficial alimenta el scoring.
-  \item El scoring actualiza el leaderboard.
-  \item Acciones administrativas y correcciones generan auditoria.
+  \item Un usuario participa en un torneo mediante picks por partido y predicciones especiales.
+  \item Un comprobante de pago puede sustentar la activacion manual de un usuario, pero no equivale por si mismo a habilitacion competitiva.
+  \item Un partido pertenece a una fase del torneo y usa un kickoff oficial vigente para su lock.
+  \item Un resultado oficial vigente alimenta el scoring de todos los picks asociados al partido.
+  \item El scoring consolida puntaje por partido y puntaje de predicciones especiales para actualizar el leaderboard.
+  \item Acciones administrativas, correcciones y recalculos generan auditoria.
 \end{itemize}
 
 \subsection{Casos borde}
@@ -47,6 +58,7 @@ Relaciones de dominio:
 \begin{itemize}
   \item El dominio distingue entre resultado oficial y override manual, pero ambos deben converger a una sola verdad vigente.
   \item El dominio debe soportar ausencia de pick sin convertirla en un pick implicito.
+  \item El dominio debe soportar partidos postergados, suspendidos, cancelados o corregidos sin romper la trazabilidad de scoring.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -54,11 +66,12 @@ Relaciones de dominio:
 \begin{itemize}
   \item Las reglas del juego pertenecen al dominio y no a UI ni a integraciones.
   \item Un resultado oficial vigente debe ser unico por partido a efectos de scoring.
+  \item Ninguna correccion de resultado puede eliminar la historia operativa previa.
+  \item La ausencia de pick es un resultado funcional valido del dominio, no un valor por defecto fabricado por el sistema.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si las predicciones especiales se modelan dentro de `Picks` o como subdominio propio de `Bonus`.
+  \item Confirmar si el modelo conceptual necesita distinguir explicitamente entre puntaje calculado y snapshot persistido de leaderboard cuando se documente el modelo derivado.
 \end{itemize}
-

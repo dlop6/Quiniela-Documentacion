@@ -2,16 +2,18 @@
 
 \subsection{Descripcion}
 
-Este documento reserva la especificacion de modulos backend y su reparto de responsabilidades.
+Este documento define los modulos esperados del backend y su reparto de responsabilidades. Su objetivo es dejar claro que le pertenece a cada modulo, que tipo de entradas y salidas maneja, y que dependencias son aceptables dentro del modular monolith.
 
 \subsection{Alcance}
 
-Describira responsabilidades por modulo sin duplicar reglas del dominio.
+Aplica al repositorio backend y a su organizacion por dominio. No redefine reglas del negocio ya cerradas; solo distribuye ownership tecnico-funcional.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Modulo}: unidad de organizacion del backend alrededor de una responsabilidad de dominio.
+  \item \textbf{Ownership}: responsabilidad principal de un modulo sobre una parte del comportamiento o de los datos del sistema.
+  \item \textbf{Dependencia permitida}: relacion entre modulos aceptable dentro del diseno del backend.
 \end{itemize}
 
 \subsection{Reglas}
@@ -20,22 +22,80 @@ Describira responsabilidades por modulo sin duplicar reglas del dominio.
   \item El backend se documentara por modulos de dominio.
   \item Cada modulo debera declarar sus entradas, salidas y dependencias permitidas.
   \item La logica de negocio no se documentara como responsabilidad de controllers.
+  \item Un modulo no debe absorber responsabilidades ajenas solo por conveniencia de implementacion.
+\end{itemize}
+
+\subsubsection{Tree modular esperado}
+
+\begin{verbatim}
+modules/
+|-- auth/
+|-- users/
+|-- payments/
+|-- matches/
+|-- picks/
+|-- results/
+|-- scoring/
+|-- leaderboard/
+|-- admin/
+|-- audit/
+`-- notifications/
+\end{verbatim}
+
+\subsubsection{Responsabilidades por modulo}
+
+\begin{longtable}{p{0.16\textwidth}p{0.24\textwidth}p{0.23\textwidth}p{0.25\textwidth}}
+\toprule
+\textbf{Modulo} & \textbf{Ownership principal} & \textbf{Entradas / salidas esperadas} & \textbf{Dependencias permitidas} \\
+\midrule
+\texttt{auth} & autenticacion, sesion y acceso inicial & credenciales, tokens, sesion valida o rechazada & \texttt{users}, servicios transversales \\
+\texttt{users} & identidad y estado funcional de cuenta & registro, consulta y cambio de estado de usuario & \texttt{audit}, \texttt{notifications} \\
+\texttt{payments} & comprobantes, revision y activacion administrativa & carga y revision de comprobante, resolucion administrativa & \texttt{users}, \texttt{audit}, \texttt{notifications} \\
+\texttt{matches} & calendario, fases, kickoff y estado de partido & partidos, fases, horarios y cambios de estado & \texttt{audit} \\
+\texttt{picks} & captura, edicion y lock de picks y predicciones especiales & picks validos o rechazados, estado de lock & \texttt{users}, \texttt{matches}, \texttt{audit} \\
+\texttt{results} & resultado vigente, sincronizacion externa y overrides & resultados externos o manuales, verdad oficial vigente & \texttt{matches}, \texttt{audit} \\
+\texttt{scoring} & calculo de puntos, multiplicadores y desempates & score entries, recalculo y total acumulado & \texttt{picks}, \texttt{results}, \texttt{matches}, \texttt{audit} \\
+\texttt{leaderboard} & vistas derivadas del ranking & ranking general, por jornada o fase & \texttt{scoring}, \texttt{users} \\
+\texttt{admin} & coordinacion de acciones administrativas autorizadas & comandos administrativos, ejecucion auditada & cualquier modulo de dominio por casos de uso explicitos \\
+\texttt{audit} & trazabilidad de acciones y procesos & eventos auditables persistidos y consultables & servicio transversal observado por otros modulos \\
+\texttt{notifications} & envio de correos y avisos funcionales & mensajes y disparadores de comunicacion & \texttt{users}, \texttt{payments}, \texttt{results}, \texttt{admin} \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Reglas de colaboracion entre modulos}
+
+\begin{itemize}
+  \item \texttt{payments} no activa usuarios por mutacion directa informal; la activacion debe quedar trazada y reflejada en \texttt{users}.
+  \item \texttt{picks} controla captura y lock, pero no calcula puntaje.
+  \item \texttt{results} decide la verdad vigente del resultado, pero no recalcula ranking por si solo; esa responsabilidad pertenece a \texttt{scoring} y \texttt{leaderboard}.
+  \item \texttt{leaderboard} consume resultados de scoring y no redefine desempates ni formulas de puntos.
+  \item \texttt{admin} coordina, no reemplaza ownership de los modulos de dominio.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de detallar con la arquitectura backend definitiva.
+  \item Si una accion administrativa impacta varios modulos, cada cambio relevante debe seguir perteneciendo a su modulo duenio y quedar auditado.
+  \item Si \texttt{notifications} se implementa como servicio transversal en lugar de modulo independiente, su ownership funcional debe seguir documentado para no quedar difuso.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item Ningun modulo debe redefinir reglas centrales de \texttt{01\_Producto\_y\_Reglas}.
+  \item Ningun controller debe convertirse en duenio efectivo de reglas de dominio.
+  \item Toda colaboracion entre modulos debe preservar un ownership principal identificable.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar fronteras finales entre `admin`, `audit` y `notifications`.
+  \item Confirmar la frontera final entre \texttt{admin}, \texttt{audit} y \texttt{notifications} cuando se documenten procesos backend detallados.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: decidir si \texttt{notifications} queda como modulo propio o como capacidad transversal con ownership distribuido.
+  \item `Decision pendiente` `No bloqueante`: confirmar si \texttt{audit} expone consultas administrativas como modulo propio o solo como infraestructura observable por otros modulos.
 \end{itemize}

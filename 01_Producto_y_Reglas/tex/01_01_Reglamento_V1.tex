@@ -2,81 +2,133 @@
 
 \subsection{Descripcion}
 
-Este documento fija el reglamento funcional de la quiniela v1 del Mundial. Su objetivo es dejar cerradas las reglas de participacion, picks, resultado oficial, puntuacion y criterios generales de competencia.
+Este documento establece el reglamento oficial de participacion de la quiniela v1 del Mundial. Su funcion es fijar las reglas base del juego de forma clara, estable y verificable, sin entrar en detalle tecnico de implementacion.
 
 \subsection{Alcance}
 
-Aplica a la unica quiniela oficial del torneo en v1.
+Este reglamento aplica a:
+
+\begin{itemize}
+  \item la unica quiniela oficial habilitada para el torneo en v1;
+  \item todos los participantes registrados y activados;
+  \item la operacion administrativa del torneo en aquello que afecta directamente la validez de la competencia.
+\end{itemize}
+
+Este documento no reemplaza los documentos de detalle sobre estados, picks, scoring o casos borde. Cuando una regla requiera precision operativa adicional, se complementa con los documentos especializados de la misma seccion.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Participante}: usuario activo habilitado para jugar.
-  \item \textbf{Predicciones especiales}: picks de Campeon y Goleador definidos una sola vez para el torneo.
-  \item \textbf{Resultado oficial}: marcador valido para puntuar segun la regla de 90 minutos mas agregado.
+  \item \textbf{Participante}: usuario en estado \texttt{ACTIVO} habilitado para competir.
+  \item \textbf{Pick}: prediccion de un participante para un partido.
+  \item \textbf{Marcador exacto}: prediccion de goles del equipo local y del equipo visita.
+  \item \textbf{Outcome}: resultado del partido en terminos de victoria local, empate o victoria visita.
+  \item \textbf{Lock}: momento a partir del cual un pick deja de ser editable.
+  \item \textbf{Resultado oficial}: marcador valido para puntaje conforme a la regla de 90 minutos mas tiempo agregado.
+  \item \textbf{Predicciones especiales}: predicciones unicas de Campeon y Goleador para el torneo.
 \end{itemize}
 
 \subsection{Reglas}
 
+\subsubsection{Participacion}
+
 \begin{enumerate}
-  \item La participacion inicia con registro publico y activacion manual posterior a validacion de pago con comprobante.
-  \item Solo un usuario en estado `ACTIVO` puede competir.
-  \item Cada pick por partido consiste en un marcador exacto: goles local y goles visita.
-  \item El lock ocurre automaticamente 5 minutos antes del kickoff.
-  \item Despues del lock, el pick no puede editarse.
-  \item El resultado oficial para puntuar corresponde a 90 minutos reglamentarios mas tiempo agregado.
-  \item Tiempo extra y penales no alteran el puntaje.
-  \item En fases eliminatorias, un empate al final de 90 minutos mas agregado se considera empate para la quiniela.
-  \item El usuario obtiene 3 puntos si acierta el outcome.
-  \item El usuario obtiene 2 puntos adicionales si acierta el marcador exacto.
-  \item El puntaje base maximo por partido es 5 puntos antes de multiplicadores.
-  \item Las predicciones especiales forman parte de v1.
-  \item Campeon correcto otorga 20 puntos.
-  \item Goleador correcto otorga 15 puntos.
-  \item Multiplicadores oficiales por fase:
+  \item La participacion inicia con registro publico en la plataforma.
+  \item La activacion del participante requiere validacion manual de pago con comprobante.
+  \item Solo un usuario en estado \texttt{ACTIVO} puede competir.
+  \item Un usuario que no este en estado \texttt{ACTIVO} no puede generar picks validos ni acumular puntaje competitivo.
 \end{enumerate}
 
-\begin{itemize}
-  \item Grupos: x1.0
-  \item Octavos de final: x1.25
-  \item Cuartos de final: x1.5
-  \item Semifinales: x1.75
-  \item Tercer lugar: x1.75
-  \item Final: x2.0
-\end{itemize}
+\subsubsection{Picks por partido}
 
-\begin{enumerate}[resume]
+\begin{enumerate}
+  \item Cada pick por partido consiste en un marcador exacto.
+  \item El participante puede crear o modificar su pick mientras el partido permanezca abierto.
+  \item El lock ocurre automaticamente 5 minutos antes del kickoff oficial del partido.
+  \item A partir del lock, el pick queda cerrado y no puede modificarse.
+  \item Si el participante no dejo pick antes del lock, ese partido se considera sin pick y otorga 0 puntos.
+\end{enumerate}
+
+\subsubsection{Resultado oficial del partido}
+
+\begin{enumerate}
+  \item El resultado oficial para puntaje corresponde a los 90 minutos reglamentarios mas tiempo agregado.
+  \item El tiempo extra y los penales no alteran el puntaje de la quiniela.
+  \item En fases eliminatorias, un empate al final de 90 minutos mas tiempo agregado cuenta como empate para efectos de la quiniela.
+\end{enumerate}
+
+\subsubsection{Scoring}
+
+\begin{enumerate}
+  \item Acertar el outcome otorga 3 puntos.
+  \item Acertar el marcador exacto otorga 2 puntos adicionales.
+  \item El puntaje base maximo por partido es 5 puntos.
+  \item Los partidos aplican multiplicador segun la fase oficial del torneo.
+  \item Las predicciones especiales forman parte de v1.
+  \item Las predicciones especiales de Campeon y Goleador pueden crearse o modificarse hasta 5 minutos antes del kickoff oficial del primer partido del torneo.
+  \item A partir de ese momento, las predicciones especiales quedan bloqueadas.
+  \item Campeon correcto otorga 20 puntos.
+  \item Goleador correcto otorga 15 puntos.
+\end{enumerate}
+
+Multiplicadores oficiales por fase:
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Fase & Multiplicador \\
+\midrule
+Grupos & x1.0 \\
+Octavos de final & x1.25 \\
+Cuartos de final & x1.5 \\
+Semifinales & x1.75 \\
+Tercer lugar & x1.75 \\
+Final & x2.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Leaderboard y visibilidad}
+
+\begin{enumerate}
   \item El torneo mantiene leaderboard general y vistas filtradas por jornada o fase.
-  \item Los picks de otros usuarios se vuelven visibles solo despues de que el partido haya cerrado.
-  \item Si un usuario no dejo pick antes del lock, ese partido cuenta como sin pick y otorga 0 puntos.
-  \item El torneo se archiva al finalizar y pasa a modo solo lectura.
+  \item Los picks de otros participantes permanecen ocultos mientras el partido no haya cerrado.
+  \item Los picks de otros participantes solo pueden hacerse visibles cuando el partido ya haya cerrado.
+\end{enumerate}
+
+\subsubsection{Cierre del torneo}
+
+\begin{enumerate}
+  \item Al finalizar el torneo, la quiniela pasa a estado archivado.
+  \item Un torneo archivado queda en modo solo lectura.
 \end{enumerate}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Si el kickoff cambia antes del lock, el lock se recalcula con la nueva hora oficial.
-  \item Si el partido entra en escenario suspendido, postergado, cancelado o corregido, aplican las reglas especificas del documento \texttt{01\_05\_Casos\_Borde}.
+  \item Si el kickoff oficial cambia antes del lock, el lock debe recalcularse con la nueva hora.
+  \item Si un partido entra en estado suspendido, postergado, cancelado o corregido, aplican las reglas especificas del documento \texttt{01\_05\_Casos\_Borde}.
+  \item Si un resultado oficial se corrige despues de haber sido publicado, el puntaje y el leaderboard deben recalcularse conforme a la verdad oficial vigente.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ningun usuario no activo participa en el scoring.
+  \item Ningun usuario no activo participa validamente en la competencia.
   \item Ningun pick bloqueado puede modificarse.
-  \item Todo puntaje por partido usa el mismo criterio de resultado oficial.
-  \item El puntaje base por partido no excede 5 puntos antes de multiplicador.
+  \item Todo puntaje por partido usa exactamente el mismo criterio de resultado oficial.
+  \item El puntaje base por partido nunca excede 5 puntos antes de multiplicadores.
+  \item La visibilidad de picks ajenos nunca ocurre antes del cierre del partido correspondiente.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar en una iteracion posterior si las predicciones especiales se registran en el onboarding, en un flujo dedicado o dentro del modulo de picks.
+  \item No hay preguntas abiertas activas en este documento de reglamento; las definiciones operativas abiertas viven en los documentos especializados de la misma seccion.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item `Decision pendiente` `No bloqueante`: definir si las predicciones especiales tienen fecha de cierre igual al primer partido del torneo o una fecha de corte independiente.
-  \item `Decision pendiente` `No bloqueante`: definir si los multiplicadores aplican solo a picks por partido o tambien a otras metricas derivadas del leaderboard.
+  \item `Decision pendiente` `No bloqueante`: confirmar si la vista reglamentaria publica necesita incluir una version resumida para participantes y una version extendida para operacion interna.
 \end{itemize}

@@ -2,7 +2,7 @@
 
 \subsection{Descripcion}
 
-Este documento reserva la especificacion descriptiva del frontend. Su enfoque sera organizacion por features, separacion entre UI, logica y acceso a datos, y uso controlado de `shared`.
+Este documento describe la arquitectura objetivo del frontend para v1. Su enfoque es una organizacion por features con separacion entre UI, logica y acceso a datos, y un uso restringido de \texttt{shared} a piezas autenticamente reutilizables.
 
 \subsection{Alcance}
 
@@ -13,6 +13,8 @@ Describe la arquitectura del repositorio frontend, no su implementacion detalle 
 \begin{itemize}
   \item \textbf{Feature}: unidad funcional autocontenida del frontend.
   \item \textbf{Shared}: espacio comun reservado para elementos verdaderamente reutilizables.
+  \item \textbf{Estado remoto}: datos obtenidos del backend y sincronizados en cliente.
+  \item \textbf{Estado local}: estado efimero de interfaz que no representa verdad persistente del dominio.
 \end{itemize}
 
 \subsection{Reglas}
@@ -21,22 +23,90 @@ Describe la arquitectura del repositorio frontend, no su implementacion detalle 
   \item El frontend seguira un esquema simplificado de organizacion por features.
   \item La logica de negocio del juego no se resolvera exclusivamente en cliente.
   \item Los contratos de entrada y salida se validaran con Zod donde aplique.
+  \item El estado remoto se gestionara como una preocupacion distinta del estado local de UI.
+  \item \texttt{shared} no debe convertirse en un contenedor ambiguo de logica sin ownership claro.
+\end{itemize}
+
+\subsubsection{Capas funcionales esperadas}
+
+\begin{itemize}
+  \item Capa de presentacion: componentes de pantalla, layout y estados visuales.
+  \item Capa de feature: logica de interaccion propia de cada flujo funcional.
+  \item Capa de acceso a datos: queries, mutaciones y adaptacion de contratos del backend.
+  \item Capa compartida: primitivas reutilizables, utilidades neutrales y convenciones comunes.
+\end{itemize}
+
+\subsubsection{Tree arquitectonico sugerido}
+
+El siguiente tree es una referencia descriptiva de organizacion, no una imposicion literal de nombres finales:
+
+\begin{verbatim}
+frontend/
+|-- app/
+|   |-- rutas, layouts y composicion de pantallas
+|   `-- boundaries de navegacion
+|-- features/
+|   |-- auth/
+|   |-- activation/
+|   |-- picks/
+|   |-- special-predictions/
+|   |-- leaderboard/
+|   |-- profile/
+|   `-- admin/
+|-- entities/
+|   |-- user/
+|   |-- match/
+|   |-- pick/
+|   |-- result/
+|   `-- leaderboard-entry/
+`-- shared/
+    |-- ui/
+    |-- lib/
+    |-- config/
+    `-- contracts/
+\end{verbatim}
+
+\subsubsection{Responsabilidades por bloque}
+
+\begin{itemize}
+  \item \texttt{app}: define rutas, layouts y composicion de alto nivel.
+  \item \texttt{features}: encapsula comportamiento orientado a objetivos del usuario o del admin.
+  \item \texttt{entities}: concentra modelos de presentacion y adaptaciones cercanas al dominio reutilizables por multiples features.
+  \item \texttt{shared}: contiene piezas neutrales sin dependencia de un flujo especifico.
+\end{itemize}
+
+\subsubsection{Criterios de uso de shared}
+
+\begin{itemize}
+  \item Una pieza solo entra en \texttt{shared} si es reusable en mas de un feature sin conocimiento de negocio especifico.
+  \item Una validacion propia de picks, activacion o scoring no pertenece a \texttt{shared}; pertenece al feature o entidad correspondiente.
+  \item Un componente visual generico puede vivir en \texttt{shared/ui} si no codifica reglas de dominio.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de detallar cuando la estructura real del frontend exista o se confirme.
+  \item Si una validacion existe en frontend por experiencia de usuario, backend sigue siendo la autoridad final de enforcement.
+  \item Si una feature necesita compartir demasiada logica con otra, debe revisarse si esa logica es de entidad comun o si la frontera entre features esta mal definida.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item El documento futuro no debe duplicar reglas del dominio ya definidas en \texttt{01\_Producto\_y\_Reglas}.
+  \item La arquitectura frontend no redefine reglas oficiales del dominio ya cerradas en \texttt{01\_Producto\_y\_Reglas}.
+  \item Ninguna pantalla debe asumir permisos, locks o scoring sin respaldo del backend.
+  \item El frontend no accede directamente a base de datos ni a la API externa de resultados.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Definir estructura final de features y criterios exactos para `shared`.
+  \item Confirmar si \texttt{special-predictions} vive como feature independiente o como subflujo interno de \texttt{picks} en la estructura final del frontend.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `Bloquea frontend`: confirmar el inventario final de features visibles en v1 para aterrizar la estructura real del repositorio frontend.
+  \item `Decision pendiente` `No bloqueante`: decidir si el frontend requerira una carpeta \texttt{entities} separada o si la complejidad de v1 permite resolver esa capa dentro de features y shared.
 \end{itemize}

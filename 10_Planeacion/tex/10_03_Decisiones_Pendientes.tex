@@ -2,16 +2,19 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el registro centralizado de decisiones aun abiertas del proyecto.
+Este documento concentra las decisiones aun abiertas del proyecto en un registro unico, visible y trazable. Su funcion es evitar que reglas importantes queden dispersas en conversaciones o notas informales.
 
 \subsection{Alcance}
 
-Aplica a reglas de negocio, arquitectura, datos e integraciones.
+Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios operativos que todavia no han sido cerrados formalmente.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Decision pendiente}: definicion necesaria aun no cerrada formalmente.
+  \item \textbf{Bloqueante}: decision cuya ausencia impide documentar o construir correctamente una parte relevante del sistema.
+  \item \textbf{Riesgo}: decision abierta que no bloquea por completo, pero puede introducir retrabajo, inconsistencia o deuda de producto.
+  \item \textbf{Criticidad}: alcance del impacto de una decision abierta sobre frontend, backend o ambos.
 \end{itemize}
 
 \subsection{Reglas}
@@ -19,23 +22,97 @@ Aplica a reglas de negocio, arquitectura, datos e integraciones.
 \begin{itemize}
   \item Toda decision pendiente debe clasificarse por tipo y criticidad.
   \item Una decision cerrada debe actualizar su documento fuente y el changelog.
+  \item La version mas reciente aprobada en este repositorio prevalece sobre notas previas y conversaciones no integradas al registro.
+  \item Este registro no reemplaza al documento fuente de cada regla; solo centraliza el estado de las definiciones abiertas.
 \end{itemize}
+
+\subsection{Registro activo}
+
+\subsubsection{Prioridad alta}
+
+\begin{enumerate}
+  \item \textbf{Politica de visibilidad de Campeon y Goleador frente a otros usuarios}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{Bloquea frontend}\\
+  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks}\\
+  Motivo: falta definir si estas predicciones se ocultan siempre, se publican al cierre del primer partido o se revelan en otro momento controlado.
+
+  \item \textbf{Superficies y duracion del aviso de resultado corregido}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{Bloquea frontend}\\
+  Documento duenio: \texttt{01\_05\_Casos\_Borde}\\
+  Motivo: falta definir en que vistas aparece el aviso al usuario y durante cuanto tiempo debe mantenerse visible.
+
+  \item \textbf{Presentacion visual del desglose de puntos}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{Bloquea frontend}\\
+  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Motivo: falta definir donde se muestra el aporte de picks por partido y predicciones especiales sin alterar el ranking oficial.
+\end{enumerate}
+
+\subsubsection{Prioridad media}
+
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item \textbf{Precision visual de puntajes no enteros}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{Bloquea frontend}\\
+  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Motivo: la logica interna ya conserva precision exacta, pero falta fijar con cuantos decimales se mostrara el puntaje al usuario.
+
+  \item \textbf{Presentacion del flujo separado de predicciones especiales}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{Bloquea frontend}\\
+  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks}\\
+  Motivo: la separacion funcional ya esta cerrada, pero falta bajar la decision a comportamiento de interfaz y navegacion.
+
+  \item \textbf{Tratamiento visual de predicciones especiales en leaderboard por jornada}\\
+  Tipo: \texttt{Riesgo}\\
+  Criticidad: \texttt{No bloqueante}\\
+  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Motivo: falta confirmar si la vista por jornada excluye visualmente los puntos de Campeon y Goleador aunque el total general los integre.
+\end{enumerate}
+
+\subsubsection{Prioridad baja}
+
+\begin{enumerate}
+  \setcounter{enumi}{6}
+  \item \textbf{Persistencia explicita de \texttt{SIN\_PICK}}\\
+  Tipo: \texttt{Decision pendiente}\\
+  Criticidad: \texttt{No bloqueante}\\
+  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks} y \texttt{05\_Datos}\\
+  Motivo: la regla funcional ya esta cerrada, pero falta decidir si se persiste como estado explicito o si solo se deriva del negocio.
+
+  \item \textbf{Distincion visual entre correccion por API y override manual}\\
+  Tipo: \texttt{Riesgo}\\
+  Criticidad: \texttt{No bloqueante}\\
+  Documento duenio: \texttt{01\_05\_Casos\_Borde}\\
+  Motivo: la prioridad operativa ya esta definida, pero falta decidir si la interfaz hace visible el origen de la correccion.
+
+  \item \textbf{Version resumida del reglamento para participantes}\\
+  Tipo: \texttt{Riesgo}\\
+  Criticidad: \texttt{No bloqueante}\\
+  Documento duenio: \texttt{01\_01\_Reglamento\_V1}\\
+  Motivo: el reglamento actual sirve como fuente normativa, pero aun no se decide si se publicara una version mas breve para consumo general.
+\end{enumerate}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de consolidar las decisiones abiertas ya detectadas en Fase 1.
+  \item Una decision puede bajar de criticidad si el documento fuente ya define un comportamiento por defecto suficiente para desarrollo interno.
+  \item Una decision cerrada en conversacion no se considera resuelta hasta que quede reflejada en su documento fuente y en este registro.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item No debe haber decisiones relevantes abiertas solo en conversaciones informales.
+  \item Toda decision abierta de producto debe tener un documento duenio identificable.
+  \item La lista priorizada debe poder leerse sin necesidad de revisar todos los documentos fuente.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar formato final del registro y su frecuencia de actualizacion.
+  \item No hay preguntas abiertas sobre el formato del registro en esta fase; el siguiente paso es mantenerlo sincronizado conforme avancemos documento por documento.
 \end{itemize}
-

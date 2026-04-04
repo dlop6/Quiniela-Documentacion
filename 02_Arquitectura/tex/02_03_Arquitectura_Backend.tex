@@ -2,7 +2,7 @@
 
 \subsection{Descripcion}
 
-Este documento reserva la especificacion descriptiva del backend. Su enfoque sera modular monolith por dominio, validacion en fronteras de entrada y logica fuera de controllers.
+Este documento describe la arquitectura objetivo del backend para v1. Su enfoque es un modular monolith por dominio, con validacion en fronteras de entrada, logica fuera de controllers y separacion clara entre dominio, integraciones y preocupaciones transversales.
 
 \subsection{Alcance}
 
@@ -13,6 +13,7 @@ Describe la arquitectura del repositorio backend a nivel conceptual.
 \begin{itemize}
   \item \textbf{Modulo}: agrupacion de responsabilidad de dominio dentro del backend.
   \item \textbf{Frontera de entrada}: punto donde el sistema recibe solicitudes y valida contratos.
+  \item \textbf{Servicio transversal}: capacidad compartida que asiste a multiples modulos sin redefinir sus reglas de dominio.
 \end{itemize}
 
 \subsection{Reglas}
@@ -21,23 +22,109 @@ Describe la arquitectura del repositorio backend a nivel conceptual.
   \item El backend seguira una arquitectura modular por dominio.
   \item La logica de negocio critica vivira fuera de controllers.
   \item Las integraciones externas no deben contaminar el dominio con contratos ajenos.
+  \item Cada modulo debe exponer una responsabilidad clara y dependencias limitadas.
+  \item La persistencia debe servir al dominio y no imponer reglas funcionales por omision.
+\end{itemize}
+
+\subsubsection{Modulos de dominio esperados}
+
+\begin{itemize}
+  \item \texttt{auth}: autenticacion y sesion.
+  \item \texttt{users}: identidad y estado funcional de cuenta.
+  \item \texttt{payments}: comprobantes, revision administrativa y activacion.
+  \item \texttt{matches}: calendario, kickoff, fases y estado operativo del partido.
+  \item \texttt{picks}: captura, edicion y bloqueo de picks.
+  \item \texttt{results}: resultados oficiales, sincronizacion externa y overrides.
+  \item \texttt{scoring}: calculo de puntos, multiplicadores y desempates.
+  \item \texttt{leaderboard}: vistas de ranking y consolidaciones derivadas.
+  \item \texttt{admin}: acciones administrativas sobre el sistema.
+  \item \texttt{audit}: eventos auditables y trazabilidad.
+  \item \texttt{notifications}: correos y eventos comunicables.
+\end{itemize}
+
+\subsubsection{Capas internas esperadas}
+
+\begin{itemize}
+  \item Capa de entrada: controllers, handlers o routers con validacion de frontera.
+  \item Capa de aplicacion: coordinacion de casos de uso y secuencias de proceso.
+  \item Capa de dominio: reglas de negocio, invariantes y decisiones funcionales.
+  \item Capa de infraestructura: persistencia, integraciones externas, correo, logging y observabilidad.
+\end{itemize}
+
+\subsubsection{Tree arquitectonico sugerido}
+
+El siguiente tree es una referencia descriptiva del modular monolith y no obliga nombres fisicos exactos:
+
+\begin{verbatim}
+backend/
+|-- src/
+|   |-- modules/
+|   |   |-- auth/
+|   |   |-- users/
+|   |   |-- payments/
+|   |   |-- matches/
+|   |   |-- picks/
+|   |   |-- results/
+|   |   |-- scoring/
+|   |   |-- leaderboard/
+|   |   |-- admin/
+|   |   |-- audit/
+|   |   `-- notifications/
+|   |-- shared/
+|   |   |-- config/
+|   |   |-- db/
+|   |   |-- logging/
+|   |   |-- observability/
+|   |   `-- contracts/
+|   `-- app/
+|       |-- server bootstrap
+|       `-- cross-cutting wiring
+\end{verbatim}
+
+\subsubsection{Servicios transversales esperados}
+
+\begin{itemize}
+  \item configuracion;
+  \item acceso a base de datos;
+  \item logging estructurado;
+  \item observabilidad;
+  \item manejo comun de errores;
+  \item utilidades de validacion y contratos compartidos.
+\end{itemize}
+
+\subsubsection{Limites de responsabilidad}
+
+\begin{itemize}
+  \item Controllers o routers reciben solicitudes, validan y delegan; no deciden reglas del juego.
+  \item El dominio decide activacion, locks, scoring, desempates y prioridad entre override manual y API.
+  \item Infraestructura adapta Prisma, correo, logs y proveedor de resultados al contrato interno del backend.
+  \item \texttt{admin} no redefine reglas del dominio; orquesta acciones administrativas autorizadas sobre modulos existentes.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de detallar al aterrizar los modulos concretos y sus limites.
+  \item Si una integracion externa cambia su contrato, la adaptacion debe quedar aislada en infraestructura o en el modulo de integracion correspondiente.
+  \item Si una accion administrativa impacta multiples modulos, la coordinacion debe vivir en aplicacion sin romper ownership del dominio.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item Ningun modulo backend debe redefinir por su cuenta reglas oficiales de scoring, locks o activacion.
+  \item Ninguna regla critica del juego debe depender de un controller o de una tarea externa sin pasar por el dominio.
+  \item Ningun proveedor externo debe convertirse en fuente de verdad directa sin mediacion del backend.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar estructura final de modulos y servicios transversales.
+  \item Confirmar si \texttt{notifications} vivira como modulo propio o como servicio transversal con ownership compartido.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: cerrar el limite exacto entre \texttt{admin} y los modulos de dominio al aterrizar procesos backend detallados.
+  \item `Decision pendiente` `No bloqueante`: definir si el backend necesita una capa \texttt{shared/contracts} separada o si los contratos quedaran encapsulados por modulo.
+\end{itemize}

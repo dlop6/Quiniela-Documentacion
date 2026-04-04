@@ -51,6 +51,9 @@ Estructura general:
 - Formato de pagina: `Letter`.
 - Engine oficial: `xelatex`.
 - Orquestador oficial: `latexmk`.
+- En `02_Arquitectura` se priorizan diagramas y trees estructurales.
+- En `03_Backend` y `04_Frontend` se deben incluir al menos trees de modulos o carpetas, y diagramas solo cuando aporten claridad adicional real.
+- Un diagrama debe usarse cuando un tree no alcance para explicar limites, dependencias, flujos o relaciones entre componentes.
 - Cada documento debe incluir:
   - descripcion;
   - alcance;
@@ -73,6 +76,28 @@ Criticidad:
 - `Bloquea frontend`
 - `Bloquea ambos`
 - `No bloqueante`
+
+## Convenciones visuales para arquitectura
+
+Objetivo:
+
+- hacer visible la estructura del sistema sin depender solo de texto corrido;
+- facilitar lectura rapida de limites, ownership y relaciones entre modulos.
+
+Reglas:
+
+- `02_Arquitectura` debe incluir diagramas de alto nivel y trees complementarios.
+- `03_Backend` debe incluir trees de modulos y puede incluir diagramas simples de procesos o dependencias internas cuando el texto no sea suficiente.
+- `04_Frontend` debe incluir trees por features y puede incluir diagramas de flujo o composicion de vistas cuando sea util.
+- los trees deben mostrarse en bloques monoespaciados para conservar jerarquia visual.
+- los diagramas deben ser sobrios, tecnicos y faciles de mantener; no deben introducir detalle decorativo.
+- si un diagrama resulta costoso de mantener y no agrega informacion real, se prefiere un tree claro antes que un diagrama innecesario.
+
+Formato recomendado:
+
+- trees en bloques `verbatim` o equivalentes dentro de LaTeX;
+- diagramas simples directamente en LaTeX cuando sea razonable;
+- si un diagrama complejo se genera fuera de LaTeX, debe integrarse al documento final sin romper trazabilidad ni versionado.
 
 ## Flujo de trabajo
 
@@ -114,4 +139,3 @@ La misma estructura aplica a cada carpeta principal, cambiando el nombre de la s
 - Fase 1 iniciada.
 - Nucleo documental redactado para `00_Overview`, `01_Producto_y_Reglas`, `02_Arquitectura` y `05_Datos`.
 - Resto de secciones creadas con estructura base y alcance declarado para trabajo iterativo.
-

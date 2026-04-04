@@ -2,17 +2,19 @@
 
 \subsection{Descripcion}
 
-Este documento reservara lineamientos de validacion de entrada, manejo de errores e idempotencia a nivel backend.
+Este documento define los lineamientos backend para validacion de entrada, manejo de errores e idempotencia. Su objetivo es separar con claridad errores funcionales de errores tecnicos, dejar explicitas las fronteras de validacion y evitar efectos incorrectos en reintentos o recalculos.
 
 \subsection{Alcance}
 
-Aplica a contratos de entrada y comportamiento de error del backend.
+Aplica a contratos de entrada, respuestas de error, procesos criticos e interaccion entre validacion, observabilidad y auditoria.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Validacion de frontera}: verificacion de entradas en el limite del sistema.
   \item \textbf{Idempotencia}: repeticion segura de una operacion sin efectos incorrectos adicionales.
+  \item \textbf{Error funcional}: error derivado de una regla del dominio o de una accion no permitida.
+  \item \textbf{Error tecnico}: error derivado de infraestructura, integracion, persistencia o fallas de ejecucion.
 \end{itemize}
 
 \subsection{Reglas}
@@ -21,23 +23,102 @@ Aplica a contratos de entrada y comportamiento de error del backend.
   \item Toda entrada backend debe validarse en la frontera.
   \item Los errores funcionales deben separarse de errores tecnicos.
   \item Recalculo y sincronizacion deben describirse con criterio de idempotencia.
+  \item Ningun mensaje de error debe exponer detalles internos innecesarios al consumidor del API.
+\end{itemize}
+
+\subsubsection{Validacion de frontera}
+
+\begin{itemize}
+  \item Toda solicitud entrante debe validarse antes de ejecutar logica de dominio.
+  \item La validacion de frontera debe cubrir forma, tipos, rangos, obligatoriedad y consistencia basica del contrato.
+  \item Las reglas del dominio se validan despues de la frontera, dentro de la capa de aplicacion o dominio segun corresponda.
+  \item La validacion de frontend mejora usabilidad, pero no reemplaza la validacion oficial del backend.
+\end{itemize}
+
+Ejemplos de validacion de frontera esperada:
+
+\begin{itemize}
+  \item rango de goles de 0 a 9;
+  \item formato valido de identificadores;
+  \item campos obligatorios presentes;
+  \item estructura valida de payloads administrativos;
+  \item tipos correctos para fechas, puntajes y estados.
+\end{itemize}
+
+\subsubsection{Taxonomia de errores}
+
+Errores funcionales esperados:
+
+\begin{itemize}
+  \item usuario no autorizado para la accion;
+  \item usuario no activo intentando guardar picks;
+  \item intento de editar pick despues del lock;
+  \item resultado o partido en estado incompatible con la accion solicitada;
+  \item payload valido en forma, pero incompatible con una regla del dominio.
+\end{itemize}
+
+Errores tecnicos esperados:
+
+\begin{itemize}
+  \item falla de base de datos;
+  \item timeout o error del proveedor externo;
+  \item error inesperado de proceso o serializacion;
+  \item imposibilidad de persistir auditoria o logs operativos.
+\end{itemize}
+
+Reglas de respuesta:
+
+\begin{itemize}
+  \item Un error funcional debe comunicar que regla impide la accion sin filtrar detalles internos de implementacion.
+  \item Un error tecnico debe responder de forma segura, con mensaje estable para cliente y detalle tecnico en logs.
+  \item La misma condicion debe producir la misma categoria de error de forma consistente entre endpoints equivalentes.
+\end{itemize}
+
+\subsubsection{Idempotencia}
+
+\begin{itemize}
+  \item La sincronizacion de resultados debe ser idempotente cuando reciba repetidamente el mismo valor oficial vigente.
+  \item El recalculo de scoring debe ser idempotente frente a reintentos sobre el mismo conjunto de datos fuente.
+  \item El archivado del torneo no debe producir multiples estados finales incompatibles si el comando se repite.
+  \item Una correccion manual de resultado debe dejar un solo valor vigente aunque la accion administrativa se procese mas de una vez por error operativo.
+\end{itemize}
+
+\subsubsection{Relacion entre error, log y auditoria}
+
+\begin{itemize}
+  \item Todo error tecnico relevante debe quedar en log estructurado.
+  \item Toda accion funcional sensible, incluso si falla parcialmente, debe evaluarse para dejar rastro auditable cuando aplique.
+  \item Logs tecnicos y auditoria funcional son complementarios: los logs explican diagnostico tecnico y la auditoria explica el efecto funcional.
+  \item Ningun error critico debe impedir el intento de registrar contexto suficiente para diagnostico.
 \end{itemize}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de desarrollar por flujo y modulo.
+  \item Si una solicitud pasa la validacion de forma pero falla por regla de dominio, debe responderse como error funcional y no como error tecnico.
+  \item Si un proceso automatico falla despues de un cambio parcial, el sistema debe reflejar el estado real alcanzado y dejar rastro operativo del fallo.
+  \item Si la API externa entrega un valor repetido, la sincronizacion no debe duplicar efectos ni producir nuevas auditorias innecesarias.
+  \item Si la auditoria no puede persistirse durante una accion critica, el sistema debe tratarlo como incidente operativo relevante.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item Ningun error critico debe impedir auditoria de acciones relevantes.
+  \item Ninguna entrada llega al dominio sin pasar por validacion de frontera.
+  \item Ningun reintento legitimo debe duplicar scoring ni corromper el estado oficial.
+  \item Ninguna respuesta al cliente debe exponer secretos, stack traces ni detalles internos sensibles.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar taxonomia final de errores funcionales y tecnicos.
+  \item Confirmar si el contrato conceptual del backend documentara explicitamente una taxonomia de codigos de error estable por modulo.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: definir si cada modulo expondra codigos de error funcional propios o si existira una taxonomia comun transversal.
+  \item `Decision pendiente` `No bloqueante`: confirmar que operaciones administrativas exigiran persistencia obligatoria de auditoria antes de considerar exitosa la accion.
+\end{itemize}

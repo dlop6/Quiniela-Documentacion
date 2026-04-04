@@ -46,6 +46,17 @@ Principios arquitectonicos confirmados:
   \item Logica de negocio fuera de controllers.
 \end{itemize}
 
+Principios de representacion documental para arquitectura:
+
+\begin{itemize}
+  \item La arquitectura no debe depender solo de texto corrido cuando existan limites o relaciones que puedan expresarse mejor visualmente.
+  \item \texttt{02\_Arquitectura} debe incluir diagramas de alto nivel y trees estructurales complementarios.
+  \item \texttt{03\_Backend} debe incluir al menos trees de modulos o carpetas con responsabilidad visible.
+  \item \texttt{04\_Frontend} debe incluir al menos trees por features y limites de \texttt{shared}.
+  \item Un diagrama debe usarse cuando un tree no sea suficiente para explicar dependencias, flujos o contratos entre partes.
+  \item Si un diagrama no agrega claridad real o genera alto costo de mantenimiento, se prefiere un tree claro y estable.
+\end{itemize}
+
 Lineamientos de produccion:
 
 \begin{itemize}
@@ -80,6 +91,7 @@ Baseline aprobado:
   \item La documentacion debe justificar limites y responsabilidades; no solo listarlos.
   \item Ningun contrato relevante debe quedar implicito.
   \item Las decisiones tecnicas deben preservar claridad operativa y trazabilidad.
+  \item Arquitectura, backend y frontend deben mostrar su estructura de forma visual al menos mediante trees, y mediante diagramas cuando aporten claridad material.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
@@ -87,4 +99,3 @@ Baseline aprobado:
 \begin{itemize}
   \item Ninguna por ahora.
 \end{itemize}
-

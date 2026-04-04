@@ -2,16 +2,18 @@
 
 \subsection{Descripcion}
 
-Este documento reservara los procesos backend clave: activacion, lock, scoring, sincronizacion, recalculo y archivado.
+Este documento describe los procesos backend clave que sostienen el comportamiento del sistema. Su objetivo es dejar claras las secuencias funcionales, sus disparadores, validaciones y resultados esperados sin bajar todavia al nivel de implementacion de codigo.
 
 \subsection{Alcance}
 
-Describe secuencias funcionales del backend, no implementacion de codigo.
+Describe secuencias funcionales del backend para activacion, lock, resultados, scoring, recalculo y archivado.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Proceso}: secuencia de pasos del sistema para cumplir una regla funcional.
+  \item \textbf{Trigger}: evento que inicia un proceso.
+  \item \textbf{Recalculo}: ejecucion controlada del scoring y ranking a partir de datos vigentes.
 \end{itemize}
 
 \subsection{Reglas}
@@ -19,23 +21,167 @@ Describe secuencias funcionales del backend, no implementacion de codigo.
 \begin{itemize}
   \item Cada proceso debe ser trazable y consistente con el dominio.
   \item Los procesos criticos deben describir triggers, validaciones y resultado esperado.
+  \item Todo proceso critico debe identificar su modulo duenio aunque involucre colaboracion de varios modulos.
+  \item Todo proceso que cambie estados o puntajes debe dejar auditoria suficiente.
 \end{itemize}
+
+\subsubsection{Proceso de activacion por comprobante}
+
+\textbf{Modulo duenio}: \texttt{payments} en colaboracion con \texttt{users}
+
+\begin{enumerate}
+  \item Trigger: un usuario registrado carga o presenta un comprobante de pago para revision administrativa.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el usuario existe y se encuentra en estado \texttt{PENDIENTE};
+      \item el comprobante es aceptable para revision administrativa;
+      \item la resolucion administrativa es explicita.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item se registra el comprobante;
+      \item se revisa administrativamente;
+      \item si se aprueba, el usuario transiciona a \texttt{ACTIVO};
+      \item si se rechaza, el usuario transiciona a \texttt{RECHAZADO}.
+    \end{itemize}
+  \item Resultado esperado: el usuario queda en un estado funcional resolutivo y el proceso deja trazabilidad.
+\end{enumerate}
+
+\subsubsection{Proceso de captura y lock de picks}
+
+\textbf{Modulo duenio}: \texttt{picks} en colaboracion con \texttt{matches}
+
+\begin{enumerate}
+  \item Trigger: un usuario intenta guardar o editar un pick, o el sistema alcanza el umbral de lock por kickoff.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el usuario esta en estado \texttt{ACTIVO};
+      \item el partido o prediccion especial sigue en ventana abierta;
+      \item los valores cumplen el rango y formato definido;
+      \item la validacion usa el kickoff oficial vigente del backend.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item mientras la ventana esta abierta, el pick puede crearse o editarse;
+      \item al llegar el lock, el sistema bloquea la edicion;
+      \item si no existe pick guardado, el resultado funcional es \texttt{SIN\_PICK} sin fabricar una prediccion por defecto.
+    \end{itemize}
+  \item Resultado esperado: ningun pick editable sobrevive despues del lock.
+\end{enumerate}
+
+\subsubsection{Proceso de sincronizacion de resultados}
+
+\textbf{Modulo duenio}: \texttt{results}
+
+\begin{enumerate}
+  \item Trigger: ejecucion programada, accion manual de sincronizacion o carga administrativa de resultado.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el partido existe y puede recibir actualizacion de resultado;
+      \item la fuente externa o la accion manual produce un valor interpretable por el dominio;
+      \item si existe override manual vigente, la API automatica no puede sobrescribirlo por si sola.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item se recibe un resultado externo o manual;
+      \item el backend lo adapta al contrato interno;
+      \item se determina la verdad oficial vigente;
+      \item si hubo cambio efectivo, se registra auditoria y se habilita recalculo.
+    \end{itemize}
+  \item Resultado esperado: cada partido conserva un solo resultado vigente a efectos de scoring.
+\end{enumerate}
+
+\subsubsection{Proceso de scoring por partido}
+
+\textbf{Modulo duenio}: \texttt{scoring}
+
+\begin{enumerate}
+  \item Trigger: existe un resultado oficial vigente utilizable para un partido.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el partido no esta cancelado sin resultado utilizable;
+      \item los picks asociados son validos o se interpreta correctamente \texttt{SIN\_PICK};
+      \item la fase del partido y su multiplicador oficial son conocidos.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item se calcula outcome y marcador exacto;
+      \item se aplica puntaje base;
+      \item se aplica multiplicador con precision exacta;
+      \item se generan o actualizan registros de puntaje reproducibles.
+    \end{itemize}
+  \item Resultado esperado: el puntaje del partido queda determinado de manera unica y reproducible.
+\end{enumerate}
+
+\subsubsection{Proceso de recalculo de ranking}
+
+\textbf{Modulo duenio}: \texttt{scoring} en colaboracion con \texttt{leaderboard}
+
+\begin{enumerate}
+  \item Trigger: correccion de resultado, override manual, cambio relevante de datos oficiales o accion administrativa de recalc ulo.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el recalculo parte de resultados vigentes;
+      \item el proceso es idempotente;
+      \item los desempates oficiales son aplicados de forma consistente.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item se identifican partidos o participantes afectados;
+      \item se recomputa scoring derivado;
+      \item se reconstruye o actualiza el leaderboard;
+      \item se registra auditoria del evento y su motivo.
+    \end{itemize}
+  \item Resultado esperado: el ranking resultante puede explicarse desde los datos fuente vigentes.
+\end{enumerate}
+
+\subsubsection{Proceso de archivado del torneo}
+
+\textbf{Modulo duenio}: \texttt{admin} en colaboracion con \texttt{leaderboard}, \texttt{audit} y modulos de dominio
+
+\begin{enumerate}
+  \item Trigger: cierre oficial del torneo y decision administrativa de archivado.
+  \item Validaciones principales:
+    \begin{itemize}
+      \item el torneo ya no requiere operacion competitiva ordinaria;
+      \item los resultados oficiales vigentes ya fueron consolidados;
+      \item el archivado se ejecuta como accion explicita y auditada.
+    \end{itemize}
+  \item Secuencia esperada:
+    \begin{itemize}
+      \item el torneo pasa a estado \texttt{ARCHIVADO};
+      \item el sistema queda en modo solo lectura para la competencia cerrada;
+      \item se preserva evidencia historica para consulta y auditoria.
+    \end{itemize}
+  \item Resultado esperado: ningun flujo ordinario vuelve a abrir la competencia archivada.
+\end{enumerate}
 
 \subsection{Casos borde}
 
 \begin{itemize}
-  \item Pendiente de desarrollar por proceso en iteraciones posteriores.
+  \item Si un kickoff cambia antes del lock, el proceso de lock debe recalcularse con la nueva hora oficial.
+  \item Si un kickoff cambia despues del lock por postergacion, el pick ya bloqueado permanece valido salvo accion administrativa extraordinaria auditada.
+  \item Si un partido se cancela sin resultado utilizable, el proceso de scoring no debe asignar puntos.
+  \item Si un resultado corregido dispara mas de un recalculo, todos los intentos deben converger al mismo estado final.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item Un proceso critico no puede quedar sin criterio de error ni de auditoria.
+  \item Todo proceso de scoring o recalculo debe partir de una unica verdad oficial vigente por partido.
+  \item Ningun proceso ordinario puede reabrir picks bloqueados ni torneos archivados.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar priorizacion interna de procesos para documentacion detallada.
+  \item Confirmar si el recalculo sera siempre selectivo por partido afectado o si algunas acciones administrativas permitiran recalculo global del torneo.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item `Decision pendiente` `No bloqueante`: definir si el archivado de torneo incluye snapshots finales obligatorios del leaderboard o si basta con reconstruccion desde datos fuente.
+  \item `Decision pendiente` `No bloqueante`: confirmar si la sincronizacion de resultados corre solo por scheduler y accion manual o si tambien puede dispararse por eventos adicionales.
+\end{itemize}

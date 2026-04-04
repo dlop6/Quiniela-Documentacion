@@ -13,6 +13,7 @@ Aplica a usuarios, partidos, picks, resultados y torneo.
 \begin{itemize}
   \item \textbf{Transicion}: cambio valido entre dos estados.
   \item \textbf{Estado terminal}: estado desde el cual no se espera retorno ordinario.
+  \item \textbf{Proceso de revision de pago}: evaluacion administrativa del comprobante previo a la activacion del usuario.
 \end{itemize}
 
 \subsection{Reglas}
@@ -20,10 +21,18 @@ Aplica a usuarios, partidos, picks, resultados y torneo.
 Estados de usuario:
 
 \begin{itemize}
-  \item `PENDIENTE`: registrado, con pago aun no validado o en revision.
+  \item `PENDIENTE`: registrado, con activacion aun no aprobada.
   \item `ACTIVO`: habilitado para participar.
   \item `RECHAZADO`: activacion denegada.
   \item `BLOQUEADO`: acceso revocado por accion administrativa.
+\end{itemize}
+
+Reglas de interpretacion del estado de usuario:
+
+\begin{itemize}
+  \item \texttt{EN\_REVISION} no se define como estado de usuario en este documento.
+  \item El proceso de revision del comprobante de pago pertenece al flujo administrativo de activacion y no altera por si mismo el estado funcional del usuario fuera de \texttt{PENDIENTE}.
+  \item Mientras la activacion no haya sido aprobada, el usuario permanece en \texttt{PENDIENTE}.
 \end{itemize}
 
 Transiciones validas de usuario:
@@ -77,6 +86,7 @@ Estados de torneo:
 
 \begin{itemize}
   \item Un usuario rechazado no se reactiva sin una accion administrativa explicita y documentada.
+  \item Un usuario en \texttt{PENDIENTE} puede tener actividad administrativa sobre su comprobante sin cambiar todavia de estado funcional.
   \item Un partido corregido conserva su historial previo mediante auditoria; la correccion no borra la trazabilidad.
   \item \texttt{SIN\_PICK} no es una prediccion; es la ausencia valida de una prediccion antes del cierre.
 \end{itemize}
@@ -85,6 +95,7 @@ Estados de torneo:
 
 \begin{itemize}
   \item Un usuario no puede ser simultaneamente `ACTIVO` y `BLOQUEADO`.
+  \item Todo usuario no activado permanece en \texttt{PENDIENTE} hasta una resolucion administrativa explicita.
   \item Un torneo archivado no vuelve a estado activo dentro del flujo ordinario.
   \item Un pick bloqueado no vuelve a estado abierto por flujo ordinario.
 \end{itemize}
@@ -92,11 +103,11 @@ Estados de torneo:
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si se necesita un estado funcional explicito para pago \texttt{EN\_REVISION} como entidad separada del estado de usuario.
+  \item No hay preguntas abiertas activas en este documento despues de cerrar la separacion entre estado de usuario y revision administrativa del pago.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item `Decision pendiente` `No bloqueante`: formalizar los estados internos del comprobante de pago si el backend los modela como entidad propia.
+  \item `Decision pendiente` `No bloqueante`: si el backend modela el comprobante de pago como entidad propia, sus estados internos deben documentarse fuera de este documento para no mezclar ejes de estado.
 \end{itemize}
