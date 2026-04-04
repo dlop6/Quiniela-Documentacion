@@ -2,40 +2,92 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el inventario de escenarios de negocio que no deben romperse.
+Este documento define el inventario minimo de escenarios de negocio que no deben romperse. Su objetivo es proteger la justicia competitiva, la consistencia operativa y la confianza del sistema sobre los puntos de mayor riesgo del producto.
 
 \subsection{Alcance}
 
-Aplica a activacion, picks, lock, resultados, scoring, leaderboard y admin.
+Aplica a activacion, picks, lock, resultados, scoring, leaderboard, administracion y contingencias relevantes para v1.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Caso critico}: escenario cuya falla afecta justicia, operacion o confianza del sistema.
+  \item \textbf{Resultado esperado}: comportamiento verificable que debe cumplirse sin ambiguedad.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Los casos criticos se definiran por riesgo funcional, no solo por complejidad tecnica.
-  \item Los escenarios de lock y scoring tendran prioridad alta.
+  \item Los casos criticos se definen por impacto funcional, no solo por complejidad tecnica.
+  \item Toda regla critica del juego debe tener al menos un caso de prueba asociado.
+  \item Los casos deben poder mapearse claramente al documento responsable de la regla que protegen.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Inventario minimo de casos criticos}
+
+\begin{longtable}{p{0.06\textwidth}p{0.34\textwidth}p{0.22\textwidth}p{0.24\textwidth}}
+\toprule
+\textbf{ID} & \textbf{Escenario} & \textbf{Area principal} & \textbf{Resultado esperado} \\
+\midrule
+CT-01 & usuario \texttt{PENDIENTE} intenta guardar pick & activacion y picks & operacion rechazada por estado funcional \\
+CT-02 & usuario \texttt{ACTIVO} guarda pick valido antes del lock & picks & pick persistido correctamente \\
+CT-03 & usuario intenta editar pick despues del lock & locks & operacion rechazada y pick permanece bloqueado \\
+CT-04 & partido llega al lock sin prediccion guardada & locks y scoring & se interpreta \texttt{SIN\_PICK} y no se fabrica valor \\
+CT-05 & prediccion especial intenta editarse despues del cierre del primer partido & predicciones especiales & operacion rechazada por lock especial \\
+CT-06 & resultado oficial llega y se calcula scoring base & scoring & puntaje por outcome y exacto coincide con la regla \\
+CT-07 & partido de fase con multiplicador aplica precision exacta & scoring & total calculado sin redondeo interno arbitrario \\
+CT-08 & partido cancelado sin resultado utilizable & Edge Cases & no genera puntaje para ningun usuario \\
+CT-09 & resultado corregido dispara recalculo & resultados y leaderboard & ranking y puntajes se actualizan desde verdad vigente \\
+CT-10 & override manual vigente recibe nueva sincronizacion automatica & integraciones & el valor manual no es sobrescrito automaticamente \\
+CT-11 & admin aprueba comprobante valido & activacion admin & usuario pasa a \texttt{ACTIVO} con auditoria \\
+CT-12 & admin rechaza comprobante & activacion admin & usuario pasa a \texttt{RECHAZADO} con trazabilidad \\
+CT-13 & accion administrativa sin permisos suficientes & seguridad & operacion rechazada y sin cambio de estado \\
+CT-14 & archivado del torneo bloquea operacion competitiva ordinaria & admin y operacion & competencia queda en modo solo lectura \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Casos criticos adicionales recomendados}
 
 \begin{itemize}
-  \item Pendiente de aterrizar con base en el dominio ya cerrado.
+  \item cambio de kickoff antes del lock recalcula correctamente la ventana abierta;
+  \item postergacion despues del lock preserva picks ya bloqueados salvo accion extraordinaria auditada;
+  \item leaderboard muestra total acumulado coherente con desglose cuando ese desglose se exponga;
+  \item mensaje funcional por resultado corregido aparece en la superficie definida sin exponer detalle operativo excesivo.
+\end{itemize}
+
+\subsubsection{Asignacion por nivel de prueba}
+
+\begin{itemize}
+  \item \texttt{CT-01} a \texttt{CT-07}: backend e integracion como minimo, con apoyo end to end en flujos principales.
+  \item \texttt{CT-08} a \texttt{CT-10}: integracion y pruebas operativas por su dependencia de estados no ordinarios.
+  \item \texttt{CT-11} a \texttt{CT-14}: integracion y end to end administrativo.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un mismo caso critico puede requerir mas de una prueba si existe riesgo tanto en backend como en frontend.
+  \item Algunos casos criticos dependen de datos temporales o scheduler; en esos casos la automatizacion puede requerir dobles o fixtures controlados.
+  \item Un caso visible en UI no se considera cubierto si falta verificacion del comportamiento real del backend.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ninguna regla critica del juego debe quedar sin un caso de prueba asociado.
+  \item Ninguna regla critica del juego queda sin un caso de prueba asociado.
+  \item Todo caso critico debe tener resultado esperado verificable.
+  \item Los escenarios de lock, scoring y correccion de resultados mantienen prioridad alta en cualquier iteracion.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar la lista final de escenarios minimos para salida a operacion.
+  \item Confirmar si el proyecto quiere formalizar una matriz trazable completa entre cada caso critico y su tipo de prueba exacto por repositorio.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si se agregara una codificacion oficial de casos de prueba para rastreo transversal entre repositorios.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si v1 exigira cobertura automatizada obligatoria para todos los casos de este inventario o si algunos podran validarse manualmente en salida controlada.
+\end{itemize}

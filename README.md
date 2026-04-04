@@ -59,7 +59,7 @@ Estructura general:
   - alcance;
   - definiciones;
   - reglas;
-  - casos borde;
+  - Edge Cases;
   - invariantes;
   - preguntas abiertas;
   - decisiones pendientes, si aplica.

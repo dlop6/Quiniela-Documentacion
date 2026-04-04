@@ -2,40 +2,92 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la estrategia general de pruebas del proyecto.
+Este documento define la estrategia general de pruebas del proyecto Quiniela. Su objetivo es asegurar que las reglas del dominio, los procesos criticos y los flujos visibles del producto se validen con el nivel de prueba adecuado segun su riesgo funcional y operativo.
 
 \subsection{Alcance}
 
-Incluira pruebas unitarias, integracion, end to end y validacion operativa.
+Aplica a pruebas unitarias, de integracion, end to end y validacion operativa. Cubre backend, frontend e integraciones en el nivel necesario para proteger reglas del negocio y confianza competitiva del sistema.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Estrategia de testing}: forma planeada de validar calidad por nivel y riesgo.
+  \item \textbf{Prueba unitaria}: validacion acotada de una regla o componente aislado.
+  \item \textbf{Prueba de integracion}: validacion del comportamiento conjunto entre modulos, capas o contratos.
+  \item \textbf{Prueba end to end}: validacion de un flujo funcional completo desde la perspectiva del usuario o del operador.
+  \item \textbf{Prueba operativa}: validacion de procesos o contingencias relevantes para salida a operacion.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El testing debe priorizar reglas del dominio y flujos criticos.
-  \item Los escenarios que puedan generar disputa deben tener cobertura prioritaria.
+  \item El testing debe priorizar riesgo funcional antes que volumen de casos triviales.
+  \item Las reglas que puedan producir disputa competitiva o error operativo deben tener cobertura prioritaria.
+  \item Las pruebas deben distribuirse por nivel segun donde viva realmente el riesgo: dominio, contrato, flujo o integracion.
+  \item Una validacion del frontend no reemplaza una prueba del enforcement real del backend.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Prioridades de riesgo}
 
 \begin{itemize}
-  \item Pendiente de desarrollar por capa y herramienta.
+  \item Prioridad alta: activacion de usuarios, lock de picks, scoring, resultados corregidos, recalculo, permisos administrativos y archivado.
+  \item Prioridad media: visualizacion de leaderboard, feedback funcional, flujos de perfil y recuperacion de acceso.
+  \item Prioridad baja: detalles de presentacion no normativos, siempre que no alteren acciones criticas.
+\end{itemize}
+
+\subsubsection{Distribucion recomendada por nivel}
+
+\begin{longtable}{p{0.25\textwidth}p{0.25\textwidth}p{0.38\textwidth}}
+\toprule
+\textbf{Nivel} & \textbf{Enfoque} & \textbf{Que debe proteger} \\
+\midrule
+unitario & reglas acotadas y transformaciones puras & scoring, desempates, validaciones de rango, traduccion de estados, adaptacion de resultados \\
+integracion & colaboracion entre modulos y contratos & activacion por comprobante, locks, sincronizacion de resultados, recalculo, permisos y respuestas de API \\
+end to end & flujo visible completo & registro, activacion, captura de picks, bloqueo, leaderboard, admin y correccion manual \\
+operativo & continuidad y contingencia & fallback manual, override, archivado y trazabilidad minima para operacion \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Cobertura esperada por area}
+
+\begin{itemize}
+  \item Backend: enfasis en reglas del dominio, procesos criticos, validacion de frontera, idempotencia y contratos conceptuales.
+  \item Frontend: enfasis en flujos visibles, estados de pantalla, validacion de experiencia y restricciones funcionales recibidas desde backend.
+  \item Integraciones: enfasis en adaptacion de proveedor externo, prioridad de override manual y tolerancia a datos incompletos o tardios.
+\end{itemize}
+
+\subsubsection{Herramientas base aprobadas}
+
+\begin{itemize}
+  \item \texttt{Vitest} para pruebas unitarias y parte de integracion backend.
+  \item \texttt{Playwright} para pruebas end to end del frontend y flujos principales.
+  \item Validacion de contratos con \texttt{Zod} como apoyo al enforcement, sin sustituir pruebas funcionales.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un flujo puede requerir mas de un nivel de prueba para quedar realmente protegido; por ejemplo lock de picks debe existir en backend y en end to end.
+  \item Un caso simple de UI puede volverse critico si comunica incorrectamente un estado de activacion, resultado corregido o restriccion por lock.
+  \item Una integracion estable puede seguir necesitando pruebas de contingencia por su impacto operativo.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item No se considera listo un flujo critico sin criterio de prueba.
+  \item Ningun flujo critico se considera listo sin criterio de prueba verificable.
+  \item Ninguna regla clave del dominio depende de una sola prueba de interfaz.
+  \item Las pruebas deben poder explicar por que una regla critica esta protegida y en que nivel lo esta.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar distribucion final de cobertura por nivel de prueba.
+  \item Confirmar el umbral minimo de cobertura formal que el proyecto exigira por repositorio y por nivel de prueba.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir metas cuantitativas de cobertura por backend y frontend si el proyecto decide imponerlas.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar si las pruebas operativas de contingencia viviran dentro de suites automatizadas o como checklist manual controlado.
+\end{itemize}

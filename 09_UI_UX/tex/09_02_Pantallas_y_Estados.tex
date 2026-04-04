@@ -2,40 +2,101 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el inventario de pantallas y sus estados visibles.
+Este documento define el inventario funcional de pantallas y los estados visibles minimos que cada una debe contemplar. Su objetivo es reducir ambiguedad entre flujo, contrato y comportamiento visible del frontend.
 
 \subsection{Alcance}
 
-Aplica a vistas publicas, privadas y administrativas.
+Aplica a vistas publicas, autenticadas y administrativas de v1. No define wireframes finales, pero si que estados deben existir para que la experiencia sea correcta.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{Estado de pantalla}: combinacion de datos y permisos que altera el comportamiento visible de una vista.
+  \item \textbf{Estado de pantalla}: combinacion de datos, permisos y contexto funcional que altera el comportamiento visible de una vista.
+  \item \textbf{Modo solo lectura}: estado en el que la informacion es visible pero no editable por regla del sistema.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Cada pantalla debe declarar estados vacios, cargando, error y exito cuando aplique.
+  \item Cada pantalla debe declarar explicitamente estados de carga, vacio, error y restriccion cuando apliquen.
   \item Los estados visibles deben alinearse con estados reales del backend.
+  \item Un cambio de estado funcional relevante debe reflejarse sin obligar al usuario a inferirlo.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Inventario minimo de pantallas}
+
+\begin{longtable}{p{0.28\textwidth}p{0.18\textwidth}p{0.40\textwidth}}
+\toprule
+\textbf{Pantalla} & \textbf{Acceso} & \textbf{Estados visibles minimos} \\
+\midrule
+Landing & publico & normal, vacio editorial, error basico de carga si consume datos \\
+Registro & publico & editable, validacion, exito, error funcional, error tecnico \\
+Login & publico & editable, validacion, error funcional, error tecnico \\
+Recuperacion de acceso & publico & editable, confirmacion, error \\
+Estado de activacion & autenticado & \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO}, \texttt{BLOQUEADO}, carga, error \\
+Carga de comprobante & autenticado & editable, confirmacion, rechazo funcional, error tecnico \\
+Calendario y picks & autenticado & carga, lista, vacio, editable, bloqueado, solo lectura, error \\
+Predicciones especiales & autenticado & editable, bloqueado, solo lectura, error \\
+Leaderboard & autenticado & carga, lista, vacio, error, estado con desglose si aplica \\
+Perfil & autenticado & carga, datos visibles, vacio parcial, error \\
+Admin usuarios y pagos & admin & carga, lista, vacio, accion permitida, accion restringida, error \\
+Admin partidos y resultados & admin & carga, lista, edicion, confirmacion, error, resultado corregido \\
+Admin scoring y auditoria & admin & carga, lista, confirmacion critica, error, sin permisos \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Estados visibles especialmente sensibles}
 
 \begin{itemize}
-  \item Pendiente de desarrollar junto con flujos frontend y contratos conceptuales.
+  \item \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO} y \texttt{BLOQUEADO} en activacion y contexto de cuenta.
+  \item Partido editable o bloqueado en captura de picks.
+  \item \texttt{SIN\_PICK} como ausencia valida de prediccion guardada.
+  \item Resultado corregido cuando el sistema deba comunicar una actualizacion relevante.
+  \item Accion administrativa restringida cuando falten permisos o contexto funcional valido.
+\end{itemize}
+
+\subsubsection{Reglas para estados de error}
+
+\begin{itemize}
+  \item Un error funcional debe indicar que regla impidio la accion.
+  \item Un error tecnico debe permitir distinguir que la falla no fue del usuario cuando eso sea cierto.
+  \item Un error no debe dejar la pantalla en un estado ambiguo sobre si la accion se aplico o no.
+\end{itemize}
+
+\subsubsection{Reglas para estados de carga y vacio}
+
+\begin{itemize}
+  \item La carga debe sugerir que dato se esta esperando cuando eso mejore comprension.
+  \item Un estado vacio debe orientar al siguiente paso util y no parecer una falla silenciosa.
+  \item El vacio de picks no debe confundirse con \texttt{SIN\_PICK} ya consolidado tras el lock.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Una pantalla puede pasar de editable a solo lectura entre carga inicial y envio de accion por un lock reciente; la vista debe reconciliarse correctamente.
+  \item Un leaderboard puede requerir refresco visible cuando un resultado corregido cambie posiciones.
+  \item Una pantalla administrativa puede tener acceso valido al modulo pero restricciones a una accion puntual segun permiso o contexto.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item El frontend no debe mostrar un estado funcional que el backend no pueda sostener.
+  \item El frontend no muestra un estado funcional que el backend no pueda sostener.
+  \item Toda pantalla critica tiene un estado visible para exito, restriccion y error.
+  \item Los estados visibles reducen ambiguedad operativa y no la aumentan.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar inventario definitivo de pantallas por rol.
+  \item Confirmar si el detalle de partido existira como pantalla propia o si toda la experiencia de picks se resolvera desde una unica superficie de calendario.
+  \item Confirmar en que superficies exactas vivira el aviso de resultado corregido.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{Bloquea frontend}: cerrar las superficies exactas donde se muestra el aviso de resultado corregido al participante.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si el leaderboard por fase o jornada se representa como pantalla propia o como variante filtrada de una unica vista.
+\end{itemize}

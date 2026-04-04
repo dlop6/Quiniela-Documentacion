@@ -21,13 +21,13 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 \begin{itemize}
   \item Cada proceso debe ser trazable y consistente con el dominio.
   \item Los procesos criticos deben describir triggers, validaciones y resultado esperado.
-  \item Todo proceso critico debe identificar su modulo duenio aunque involucre colaboracion de varios modulos.
+  \item Todo proceso critico debe identificar su modulo responsable aunque involucre colaboracion de varios modulos.
   \item Todo proceso que cambie estados o puntajes debe dejar auditoria suficiente.
 \end{itemize}
 
 \subsubsection{Proceso de activacion por comprobante}
 
-\textbf{Modulo duenio}: \texttt{payments} en colaboracion con \texttt{users}
+\textbf{Modulo responsable}: \texttt{payments} en colaboracion con \texttt{users}
 
 \begin{enumerate}
   \item Trigger: un usuario registrado carga o presenta un comprobante de pago para revision administrativa.
@@ -49,7 +49,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 
 \subsubsection{Proceso de captura y lock de picks}
 
-\textbf{Modulo duenio}: \texttt{picks} en colaboracion con \texttt{matches}
+\textbf{Modulo responsable}: \texttt{picks} en colaboracion con \texttt{matches}
 
 \begin{enumerate}
   \item Trigger: un usuario intenta guardar o editar un pick, o el sistema alcanza el umbral de lock por kickoff.
@@ -71,7 +71,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 
 \subsubsection{Proceso de sincronizacion de resultados}
 
-\textbf{Modulo duenio}: \texttt{results}
+\textbf{Modulo responsable}: \texttt{results}
 
 \begin{enumerate}
   \item Trigger: ejecucion programada, accion manual de sincronizacion o carga administrativa de resultado.
@@ -93,7 +93,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 
 \subsubsection{Proceso de scoring por partido}
 
-\textbf{Modulo duenio}: \texttt{scoring}
+\textbf{Modulo responsable}: \texttt{scoring}
 
 \begin{enumerate}
   \item Trigger: existe un resultado oficial vigente utilizable para un partido.
@@ -115,7 +115,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 
 \subsubsection{Proceso de recalculo de ranking}
 
-\textbf{Modulo duenio}: \texttt{scoring} en colaboracion con \texttt{leaderboard}
+\textbf{Modulo responsable}: \texttt{scoring} en colaboracion con \texttt{leaderboard}
 
 \begin{enumerate}
   \item Trigger: correccion de resultado, override manual, cambio relevante de datos oficiales o accion administrativa de recalc ulo.
@@ -137,7 +137,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 
 \subsubsection{Proceso de archivado del torneo}
 
-\textbf{Modulo duenio}: \texttt{admin} en colaboracion con \texttt{leaderboard}, \texttt{audit} y modulos de dominio
+\textbf{Modulo responsable}: \texttt{admin} en colaboracion con \texttt{leaderboard}, \texttt{audit} y modulos de dominio
 
 \begin{enumerate}
   \item Trigger: cierre oficial del torneo y decision administrativa de archivado.
@@ -156,7 +156,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
   \item Resultado esperado: ningun flujo ordinario vuelve a abrir la competencia archivada.
 \end{enumerate}
 
-\subsection{Casos borde}
+\subsection{Edge Cases}
 
 \begin{itemize}
   \item Si un kickoff cambia antes del lock, el proceso de lock debe recalcularse con la nueva hora oficial.

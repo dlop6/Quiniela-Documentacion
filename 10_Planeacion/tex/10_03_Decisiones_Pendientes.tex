@@ -34,19 +34,19 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   \item \textbf{Politica de visibilidad de Campeon y Goleador frente a otros usuarios}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
-  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks}\\
+  Documento responsable: \texttt{01\_03\_Picks\_y\_Locks}\\
   Motivo: falta definir si estas predicciones se ocultan siempre, se publican al cierre del primer partido o se revelan en otro momento controlado.
 
   \item \textbf{Superficies y duracion del aviso de resultado corregido}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
-  Documento duenio: \texttt{01\_05\_Casos\_Borde}\\
+  Documento responsable: \texttt{01\_05\_Casos\_Borde}\\
   Motivo: falta definir en que vistas aparece el aviso al usuario y durante cuanto tiempo debe mantenerse visible.
 
   \item \textbf{Presentacion visual del desglose de puntos}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
-  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
   Motivo: falta definir donde se muestra el aporte de picks por partido y predicciones especiales sin alterar el ranking oficial.
 \end{enumerate}
 
@@ -57,19 +57,19 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   \item \textbf{Precision visual de puntajes no enteros}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
-  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
   Motivo: la logica interna ya conserva precision exacta, pero falta fijar con cuantos decimales se mostrara el puntaje al usuario.
 
   \item \textbf{Presentacion del flujo separado de predicciones especiales}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
-  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks}\\
+  Documento responsable: \texttt{01\_03\_Picks\_y\_Locks}\\
   Motivo: la separacion funcional ya esta cerrada, pero falta bajar la decision a comportamiento de interfaz y navegacion.
 
   \item \textbf{Tratamiento visual de predicciones especiales en leaderboard por jornada}\\
   Tipo: \texttt{Riesgo}\\
   Criticidad: \texttt{No bloqueante}\\
-  Documento duenio: \texttt{01\_04\_Scoring\_y\_Desempates}\\
+  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
   Motivo: falta confirmar si la vista por jornada excluye visualmente los puntos de Campeon y Goleador aunque el total general los integre.
 \end{enumerate}
 
@@ -80,23 +80,23 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   \item \textbf{Persistencia explicita de \texttt{SIN\_PICK}}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{No bloqueante}\\
-  Documento duenio: \texttt{01\_03\_Picks\_y\_Locks} y \texttt{05\_Datos}\\
+  Documento responsable: \texttt{01\_03\_Picks\_y\_Locks} y \texttt{05\_Datos}\\
   Motivo: la regla funcional ya esta cerrada, pero falta decidir si se persiste como estado explicito o si solo se deriva del negocio.
 
   \item \textbf{Distincion visual entre correccion por API y override manual}\\
   Tipo: \texttt{Riesgo}\\
   Criticidad: \texttt{No bloqueante}\\
-  Documento duenio: \texttt{01\_05\_Casos\_Borde}\\
+  Documento responsable: \texttt{01\_05\_Casos\_Borde}\\
   Motivo: la prioridad operativa ya esta definida, pero falta decidir si la interfaz hace visible el origen de la correccion.
 
   \item \textbf{Version resumida del reglamento para participantes}\\
   Tipo: \texttt{Riesgo}\\
   Criticidad: \texttt{No bloqueante}\\
-  Documento duenio: \texttt{01\_01\_Reglamento\_V1}\\
+  Documento responsable: \texttt{01\_01\_Reglamento\_V1}\\
   Motivo: el reglamento actual sirve como fuente normativa, pero aun no se decide si se publicara una version mas breve para consumo general.
 \end{enumerate}
 
-\subsection{Casos borde}
+\subsection{Edge Cases}
 
 \begin{itemize}
   \item Una decision puede bajar de criticidad si el documento fuente ya define un comportamiento por defecto suficiente para desarrollo interno.
@@ -107,7 +107,7 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 
 \begin{itemize}
   \item No debe haber decisiones relevantes abiertas solo en conversaciones informales.
-  \item Toda decision abierta de producto debe tener un documento duenio identificable.
+  \item Toda decision abierta de producto debe tener un documento responsable identificable.
   \item La lista priorizada debe poder leerse sin necesidad de revisar todos los documentos fuente.
 \end{itemize}
 

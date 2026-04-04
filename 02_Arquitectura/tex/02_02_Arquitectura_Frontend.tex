@@ -83,7 +83,7 @@ frontend/
   \item Un componente visual generico puede vivir en \texttt{shared/ui} si no codifica reglas de dominio.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsection{Edge Cases}
 
 \begin{itemize}
   \item Si una validacion existe en frontend por experiencia de usuario, backend sigue siendo la autoridad final de enforcement.
@@ -93,7 +93,7 @@ frontend/
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item La arquitectura frontend no redefine reglas oficiales del dominio ya cerradas en \texttt{01\_Producto\_y\_Reglas}.
+  \item La arquitectura frontend no redefine reglas oficiales del dominio ya cerradas en la seccion \texttt{01\_Producto\_y\_Reglas}.
   \item Ninguna pantalla debe asumir permisos, locks o scoring sin respaldo del backend.
   \item El frontend no accede directamente a base de datos ni a la API externa de resultados.
 \end{itemize}
@@ -107,6 +107,6 @@ frontend/
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item `Decision pendiente` `Bloquea frontend`: confirmar el inventario final de features visibles en v1 para aterrizar la estructura real del repositorio frontend.
-  \item `Decision pendiente` `No bloqueante`: decidir si el frontend requerira una carpeta \texttt{entities} separada o si la complejidad de v1 permite resolver esa capa dentro de features y shared.
+  \item \texttt{Decision pendiente} \texttt{Bloquea frontend}: confirmar el inventario final de features visibles en v1 para aterrizar la estructura real del repositorio frontend.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el frontend requerira una carpeta \texttt{entities} separada o si la complejidad de v1 permite resolver esa capa dentro de features y \texttt{shared}.
 \end{itemize}

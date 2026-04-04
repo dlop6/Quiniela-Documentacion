@@ -2,40 +2,94 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el inventario ordenado de pendientes documentales del repositorio.
+Este documento define el inventario ordenado de pendientes documentales del repositorio. Su objetivo es distinguir claramente trabajo faltante de decisiones abiertas, revisiones editoriales y tareas de consolidacion transversal.
 
 \subsection{Alcance}
 
-Aplica a contenido faltante, revisiones y refinamientos posteriores.
+Aplica a contenido faltante, revisiones, consistencia cruzada, maquetacion y cierres de iteracion posteriores.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Backlog documental}: lista priorizada de trabajo pendiente sobre la documentacion.
+  \item \textbf{Refinamiento}: mejora de claridad, consistencia o mantenibilidad sobre un documento ya existente.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
   \item Todo pendiente nuevo debe entrar al backlog con prioridad visible.
-  \item El backlog no reemplaza `Decisiones pendientes`; la complementa.
+  \item El backlog no reemplaza \texttt{Decisiones pendientes}; la complementa.
+  \item Un pendiente editorial no debe confundirse con una decision de producto aun abierta.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Backlog activo por prioridad}
+
+\paragraph{Prioridad alta}
 
 \begin{itemize}
-  \item Pendiente de desarrollar con criterios de prioridad y estado.
+  \item ejecutar una pasada de consistencia cruzada entre:
+  \begin{itemize}
+    \item \texttt{01\_Producto\_y\_Reglas};
+    \item \texttt{05\_Datos};
+    \item \texttt{02\_Arquitectura};
+    \item \texttt{03\_Backend};
+    \item \texttt{04\_Frontend}.
+  \end{itemize}
+  \item consolidar y limpiar preguntas abiertas ya resueltas en documentos de dominio y frontend;
+  \item compilar y validar el PDF maestro del repositorio.
+\end{itemize}
+
+\paragraph{Prioridad media}
+
+\begin{itemize}
+  \item reducir warnings de maquetacion en tablas largas de backend, frontend, testing y UI/UX;
+  \item decidir si algunos trees o tablas requieren convertirse en diagramas o anexos mas legibles;
+  \item revisar uniformidad de redaccion entre secciones operativas y secciones normativas.
+\end{itemize}
+
+\paragraph{Prioridad baja}
+
+\begin{itemize}
+  \item evaluar si conviene una version resumida del reglamento para participantes;
+  \item evaluar si conviene una plantilla mas rica para anexos o tablas extensas;
+  \item evaluar si se agregan referencias cruzadas internas mas explicitas entre documentos.
+\end{itemize}
+
+\subsubsection{Tipos de trabajo admitidos en backlog}
+
+\begin{itemize}
+  \item contenido faltante;
+  \item refinamiento de claridad;
+  \item consistencia cruzada;
+  \item maquetacion;
+  \item compilacion y validacion;
+  \item reorganizacion documental justificada.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un backlog puede crecer aunque la documentacion avance; eso es aceptable si los nuevos pendientes estan mejor delimitados y no mas ambiguos.
+  \item Una decision cerrada puede generar tareas nuevas de backlog para propagarla a varias secciones.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ningun trabajo documental relevante debe quedar fuera del backlog o del changelog.
+  \item Ningun trabajo documental relevante queda fuera del backlog o del changelog.
+  \item Un pendiente de contenido no debe esconderse como simple tarea editorial.
+  \item El backlog debe poder leerse sin revisar todo el historial conversacional.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar si se desea clasificacion por prioridad, area y dependencia.
+  \item Confirmar si el backlog se quiere clasificar en el futuro por prioridad, dependencia y estado de ejecucion formal.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el backlog documental mantendra estados formales como pendiente, en curso y cerrado o si bastara con prioridad y changelog.
+\end{itemize}

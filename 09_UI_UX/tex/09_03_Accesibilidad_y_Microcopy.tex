@@ -2,40 +2,104 @@
 
 \subsection{Descripcion}
 
-Este documento reservara lineamientos de accesibilidad y tono funcional del producto.
+Este documento define lineamientos funcionales de accesibilidad y de microcopy para Quiniela. Su objetivo es asegurar que el producto comunique acciones, restricciones, errores y estados con lenguaje claro, accesible y consistente con el comportamiento real del sistema.
 
 \subsection{Alcance}
 
-Aplica a textos, mensajes de estado, errores y accesibilidad basica.
+Aplica a textos de botones, mensajes de estado, validaciones, errores, confirmaciones y accesibilidad basica de la interfaz. No define una guia editorial completa de marca.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Microcopy}: texto corto orientado a guiar acciones, estados o errores.
+  \item \textbf{Accesibilidad basica}: minimo de buenas practicas para que la interfaz sea comprensible y operable por una audiencia amplia.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El lenguaje debe ser simple y no tecnico.
-  \item La accesibilidad no debe depender solo de color.
+  \item El lenguaje debe ser simple, directo y no tecnico para el participante.
+  \item Los mensajes del panel administrativo pueden ser mas precisos, pero no ambiguos ni cripticos.
+  \item La accesibilidad no puede depender solo del color.
+  \item Ningun mensaje debe ocultar una regla real del sistema o sugerir una accion inexistente.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Principios de microcopy}
 
 \begin{itemize}
-  \item Pendiente de aterrizar mensajes por flujo y por error.
+  \item describir primero el estado o problema y luego la accion siguiente;
+  \item evitar tecnicismos cuando el usuario no los necesita;
+  \item usar la misma palabra para el mismo concepto en todas las pantallas;
+  \item no prometer exito hasta que la operacion haya sido confirmada.
+\end{itemize}
+
+\subsubsection{Mensajes funcionales prioritarios}
+
+\begin{itemize}
+  \item cuenta pendiente de activacion;
+  \item comprobante recibido;
+  \item activacion aprobada o rechazada;
+  \item pick guardado correctamente;
+  \item pick bloqueado por cierre;
+  \item partido sin pick al llegar el lock;
+  \item prediccion especial bloqueada por cierre;
+  \item resultado corregido y puntajes recalculados;
+  \item accion administrativa realizada o rechazada.
+\end{itemize}
+
+\subsubsection{Lineamientos de accesibilidad minima}
+
+\begin{itemize}
+  \item los estados importantes deben apoyarse en texto y no solo en color o icono;
+  \item los CTA deben tener etiquetas claras y especificas;
+  \item los errores de formulario deben aparecer cerca del campo o accion afectada;
+  \item la jerarquia visual debe permitir identificar rapidamente titulo, accion principal y estado relevante;
+  \item las tablas o rankings deben seguir siendo interpretables cuando cambie el orden o exista recalculo.
+\end{itemize}
+
+\subsubsection{Tono recomendado}
+
+\begin{itemize}
+  \item claro;
+  \item respetuoso;
+  \item orientado a accion;
+  \item transparente cuando el sistema corrige o restringe algo.
+\end{itemize}
+
+\subsubsection{Mensajes que deben evitarse}
+
+\begin{itemize}
+  \item mensajes vagos como ``ocurrio un problema'' sin contexto util;
+  \item mensajes que culpen al usuario cuando el fallo es tecnico;
+  \item textos que sugieran que un pick fue guardado si la operacion aun no se confirmo;
+  \item mensajes administrativos que oculten impacto real de una accion critica.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un error tecnico puede requerir lenguaje diferente al error funcional aunque aparezca en la misma pantalla.
+  \item El aviso de resultado corregido debe ser claro, pero no necesita exponer por defecto detalle profundo de auditoria.
+  \item Un estado de cuenta bloqueada requiere tono firme y claro sin dejar ambiguedad sobre la restriccion.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Los mensajes no deben ocultar reglas reales del sistema.
+  \item Los mensajes no ocultan reglas reales del sistema.
+  \item La accesibilidad no depende solo del color.
+  \item El microcopy mantiene consistencia terminologica con la documentacion del dominio.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar estilo final de mensajes y tono institucional.
+  \item Confirmar si el proyecto quiere un glosario corto de microcopy prohibido y recomendado para mantener consistencia entre frontend y operacion.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir un catalogo operativo de mensajes clave por feature si el proyecto quiere controlar microcopy con mayor detalle.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar el tono institucional final para mensajes administrativos y comunicaciones visibles al participante.
+\end{itemize}

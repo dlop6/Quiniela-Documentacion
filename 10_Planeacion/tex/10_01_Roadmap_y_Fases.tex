@@ -2,40 +2,102 @@
 
 \subsection{Descripcion}
 
-Este documento reservara la secuencia de fases del trabajo documental y su relacion con el desarrollo.
+Este documento define la secuencia de fases del trabajo documental y su relacion con el desarrollo del proyecto. Su objetivo es ordenar el avance del repositorio por reduccion real de ambiguedad y no por un simple orden superficial de carpetas.
 
 \subsection{Alcance}
 
-Aplica al repositorio documental y su avance esperado.
+Aplica al repositorio documental y a su uso como base de trabajo para backend y frontend.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Fase}: agrupacion de entregables con un objetivo comun.
+  \item \textbf{Cierre funcional}: momento en que una seccion ya es suficientemente consistente para servir como referencia de trabajo.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El trabajo documental se prioriza por reduccion de ambiguedad, no por orden superficial de carpetas.
-  \item Dominio y datos se cierran antes de detalle tecnico fino.
+  \item El trabajo documental se prioriza por reduccion de ambiguedad.
+  \item Dominio y datos se cierran antes del detalle tecnico fino.
+  \item Ninguna fase debe avanzar ignorando contradicciones abiertas de la fase anterior.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Fases del roadmap documental}
+
+\paragraph{Fase 1: nucleo del dominio}
 
 \begin{itemize}
-  \item Pendiente de refinar segun el avance real del proyecto.
+  \item objetivo: cerrar reglas de producto, estados, picks, locks, scoring, desempates y Edge Cases;
+  \item entregables principales: \texttt{00\_Overview}, \texttt{01\_Producto\_y\_Reglas}, partes nucleares de \texttt{05\_Datos};
+  \item resultado esperado: lenguaje comun y reglas del juego sin ambiguedad fuerte.
+\end{itemize}
+
+\paragraph{Fase 2: arquitectura y aterrizaje tecnico}
+
+\begin{itemize}
+  \item objetivo: traducir el dominio ya cerrado a arquitectura, modulos, fronteras y contratos conceptuales;
+  \item entregables principales:
+  \begin{itemize}
+    \item \texttt{02\_Arquitectura};
+    \item \texttt{03\_Backend};
+    \item \texttt{04\_Frontend};
+    \item \texttt{06\_Integraciones};
+    \item \texttt{07\_Seguridad\_y\_Operacion}.
+  \end{itemize}
+  \item resultado esperado: base tecnica coherente para construir ambos repositorios de implementacion.
+\end{itemize}
+
+\paragraph{Fase 3: calidad, experiencia y gestion}
+
+\begin{itemize}
+  \item objetivo: cerrar testing, UI/UX, backlog documental, riesgos y ciclo de aceptacion;
+  \item entregables principales: \texttt{08\_Testing}, \texttt{09\_UI\_UX}, \texttt{10\_Planeacion};
+  \item resultado esperado: documentacion lista para trabajo iterativo, revision y salida controlada.
+\end{itemize}
+
+\subsubsection{Estado actual del roadmap}
+
+Al momento de esta iteracion:
+
+\begin{itemize}
+  \item la Fase 1 esta sustancialmente cubierta;
+  \item la Fase 2 esta mayormente cubierta en arquitectura, backend, frontend, integraciones y operacion;
+  \item la Fase 3 esta en consolidacion documental y editorial.
+\end{itemize}
+
+\subsubsection{Siguiente tramo recomendado}
+
+\begin{itemize}
+  \item pasada de consistencia cruzada entre secciones;
+  \item limpieza editorial y de maquetacion;
+  \item compilacion del PDF maestro;
+  \item refinamiento puntual de decisiones pendientes que aun bloquean frontend.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Una fase puede requerir retrocesos puntuales si una decision abierta descubierta tarde afecta documentos ya avanzados.
+  \item Un cierre parcial de fase es aceptable si los pendientes quedaron explicitamente registrados y no se presentan como decisiones ya resueltas.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item No se adelanta arquitectura detallada cuando el dominio aun esta abierto.
+  \item No se adelanta detalle tecnico fino cuando el dominio aun esta abierto.
+  \item Ninguna fase se considera cerrada si deja contradicciones normativas sin registrar.
+  \item El roadmap documental debe poder explicar por que una seccion se trabajo antes que otra.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar hitos documentales por sprint o semana si se desea ese nivel de detalle.
+  \item Confirmar si el proyecto quiere convertir estas fases en hitos formales por semana, sprint o solo mantenerlas como secuencia logica de trabajo.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el roadmap documental se seguira manteniendo como documento vivo o si solo reflejara grandes cortes de avance.
+\end{itemize}

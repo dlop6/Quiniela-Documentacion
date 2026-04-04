@@ -2,39 +2,83 @@
 
 \subsection{Descripcion}
 
-Este documento reservara el catalogo de riesgos funcionales, operativos y documentales del proyecto.
+Este documento define el catalogo de riesgos funcionales, operativos y documentales del proyecto, junto con una mitigacion propuesta. Su objetivo es tratar la incertidumbre del producto y de la documentacion como parte real de la planeacion.
 
 \subsection{Alcance}
 
-Aplica a riesgos que afecten construccion, operacion o claridad del sistema.
+Aplica a riesgos que afecten construccion, operacion, claridad normativa, integraciones y sostenibilidad documental.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Riesgo}: evento potencial con impacto negativo sobre producto, operacion o desarrollo.
+  \item \textbf{Mitigacion}: accion propuesta para reducir probabilidad, impacto o retrabajo.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Todo riesgo relevante debe tener una mitigacion propuesta o una decision explicita de aceptacion.
+  \item Todo riesgo relevante debe tener mitigacion propuesta o aceptacion explicita.
   \item Los riesgos documentales se tratan como riesgos reales del proyecto.
+  \item Un riesgo repetido no debe reaparecer sin trazabilidad de su estado anterior.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Catalogo minimo de riesgos}
+
+\begin{longtable}{p{0.30\textwidth}p{0.18\textwidth}p{0.34\textwidth}}
+\toprule
+\textbf{Riesgo} & \textbf{Impacto relativo} & \textbf{Mitigacion propuesta} \\
+\midrule
+reglas abiertas sobre visibilidad de predicciones especiales & alto & cerrar decision en documento responsable y propagar a frontend, UI/UX y backlog \\
+ambiguedad sobre superficies del aviso de resultado corregido & alto & resolver la decision en dominio y reflejarla en frontend y microcopy \\
+desalineacion entre frontend, backend y dominio & alto & ejecutar pasada de consistencia cruzada antes de cierre de iteracion \\
+dependencia de proveedor externo aun no seleccionado & alto & mantener integracion en nivel conceptual y documentar contrato minimo esperado \\
+maquetacion deficiente en tablas largas & medio & refinar tablas, dividir contenido o mover detalle a anexos si se vuelve necesario \\
+sobredocumentacion o duplicacion de reglas & medio & conservar documento responsable por tema y eliminar duplicados en pasada editorial \\
+decision tardia sobre roles admin y super admin & medio & mantener diferencia documentada como pendiente no bloqueante hasta cierre funcional real \\
+documentacion desactualizada respecto a decisiones nuevas & alto & actualizar documento fuente, registro de decisiones y changelog en el mismo ciclo de cambio \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Riesgos documentales especificos}
 
 \begin{itemize}
-  \item Pendiente de consolidar riesgos del dominio, integraciones y operacion.
+  \item que un pendiente siga vivo en conversacion pero no en su documento fuente;
+  \item que una seccion tecnica asuma decisiones aun no cerradas en producto;
+  \item que la modularidad del repo se pierda por mover demasiadas reglas a un solo archivo.
+\end{itemize}
+
+\subsubsection{Riesgos operativos especificos}
+
+\begin{itemize}
+  \item correccion manual de resultado sin suficiente contexto;
+  \item recalculo que no deje trazabilidad entendible;
+  \item acciones administrativas criticas con poca claridad en UI.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un riesgo puede bajar de prioridad sin desaparecer si su mitigacion depende de una decision futura aun no cerrada.
+  \item Un riesgo tecnico puede transformarse en riesgo documental si la documentacion no refleja correctamente la restriccion real del sistema.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Un riesgo repetido no debe reaparecer sin trazabilidad de su estado anterior.
+  \item Todo riesgo relevante tiene una mitigacion propuesta o una aceptacion explicita.
+  \item Los riesgos documentales no se consideran de menor importancia por no vivir en codigo.
+  \item El registro de riesgos debe poder usarse para priorizar refinamientos del repositorio documental.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar escala final de probabilidad e impacto si se desea una matriz formal.
+  \item Confirmar si el proyecto quiere formalizar una matriz adicional de probabilidad e impacto o si este catalogo cualitativo es suficiente para v1.
+\end{itemize}
+
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el registro de riesgos se mantendra como lista cualitativa o migrara a una matriz mas formal en iteraciones futuras.
 \end{itemize}

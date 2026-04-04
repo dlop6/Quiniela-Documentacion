@@ -13,7 +13,7 @@
 - Se oficializa el flujo de compilacion en `WSL Ubuntu` usando `latexmk` y `xelatex`.
 - Se cierra en `01_02_Estados_y_Flujos` que `EN_REVISION` no es un estado de usuario y que la revision del comprobante pertenece al flujo administrativo de activacion.
 - Se sincroniza `01_01_Reglamento_V1` con las decisiones ya cerradas sobre predicciones especiales y se eliminan preguntas abiertas resueltas.
-- Se consolida en `10_03_Decisiones_Pendientes` el registro priorizado de pendientes activos de `01_Producto_y_Reglas`, con criticidad y documento duenio.
+- Se consolida en `10_03_Decisiones_Pendientes` el registro priorizado de pendientes activos de `01_Producto_y_Reglas`, con criticidad y documento responsable.
 - Se alinea `05_Datos` con las reglas ya cerradas del dominio: predicciones especiales dentro de `Picks`, separacion entre estado de usuario y revision de pago, unicidad de resultado vigente y ausencia de pick sin valor implicito.
 - Se formaliza la convencion visual del repo para `02_Arquitectura`, `03_Backend` y `04_Frontend`: usar diagramas cuando aporten claridad y al menos trees estructurales en backend y frontend.
 - Se itera `02_01_Vision_Arquitectonica` con una vista logica de ejecucion, tree conceptual de repositorios y limites de responsabilidad entre frontend, backend, datos, integraciones y documentacion.
@@ -34,3 +34,13 @@
 - Se itera `07_02_Seguridad_Aplicativa` con controles minimos esperados, reglas de autenticacion, autorizacion, validacion de entradas y manejo seguro de configuracion y errores.
 - Se itera `07_03_Logging_Observabilidad_y_Auditoria` con separacion entre diagnostico tecnico, observabilidad y evidencia funcional, incluyendo campos minimos y reglas de correlacion.
 - Se itera `07_04_Contingencia_de_Resultados` con eventos que activan contingencia, secuencia minima de fallback manual y criterios de comunicacion y trazabilidad.
+- Se itera `08_01_Estrategia_de_Testing` con distribucion por nivel de prueba, prioridades de riesgo y cobertura esperada por area del sistema.
+- Se itera `08_02_Casos_Criticos_de_Prueba` con inventario minimo de escenarios de alto impacto para activacion, lock, scoring, resultados, admin y archivado.
+- Se itera `08_03_Criterios_de_Aceptacion` con criterios verificables por flujo y base de UAT para participante, administracion y operacion minima de v1.
+- Se itera `09_01_Principios_UI_UX` con principios funcionales de claridad, friccion util, separacion entre experiencia de participante y admin, y patrones esperados para acciones criticas.
+- Se itera `09_02_Pantallas_y_Estados` con inventario minimo de pantallas, estados visibles por vista y reglas para carga, vacio, restriccion, error y modo solo lectura.
+- Se itera `09_03_Accesibilidad_y_Microcopy` con lineamientos de lenguaje, accesibilidad basica, mensajes prioritarios del producto y criterios para evitar microcopy ambiguo.
+- Se itera `10_01_Roadmap_y_Fases` con fases del trabajo documental, estado actual del roadmap y siguiente tramo recomendado para cierre de iteracion.
+- Se itera `10_02_Backlog_Documental` con backlog activo por prioridad, tipos de trabajo admitidos y reglas para distinguir backlog de decisiones pendientes.
+- Se itera `10_04_Riesgos_y_Mitigaciones` con catalogo minimo de riesgos funcionales, operativos y documentales junto con mitigaciones propuestas.
+- Se amplia `tex/master.tex` para que el PDF maestro incluya las secciones ya iteradas de arquitectura, backend, frontend, datos, integraciones, seguridad, testing, UI/UX y planeacion.

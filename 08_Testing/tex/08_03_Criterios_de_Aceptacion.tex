@@ -2,40 +2,107 @@
 
 \subsection{Descripcion}
 
-Este documento reservara los criterios de aceptacion funcional y UAT del proyecto.
+Este documento define los criterios de aceptacion funcional y la base de UAT para Quiniela. Su objetivo es dejar claro cuando un flujo puede considerarse aceptable para trabajo y salida controlada, evitando criterios vagos o dependientes de interpretacion libre.
 
 \subsection{Alcance}
 
-Aplica a validacion final con usuarios y responsables del proyecto.
+Aplica a validacion funcional de participante, administracion y operacion minima de v1. No reemplaza la estrategia de testing tecnica, sino que define la barra de aceptacion observable del producto.
 
 \subsection{Definiciones}
 
 \begin{itemize}
-  \item \textbf{UAT}: validacion con usuarios o responsables antes de considerar un flujo aceptado.
+  \item \textbf{Criterio de aceptacion}: condicion observable y verificable que un flujo debe cumplir.
+  \item \textbf{UAT}: validacion con responsables del proyecto o usuarios representativos antes de considerar un flujo aceptado.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item Un criterio de aceptacion debe ser observable y verificable.
-  \item Los criterios deben alinearse con reglas del dominio y objetivos operativos.
+  \item Todo criterio de aceptacion debe ser observable, verificable y trazable a una regla del producto.
+  \item Ningun criterio debe depender de interpretacion subjetiva abierta.
+  \item Los criterios de aceptacion deben cubrir comportamiento normal, restricciones funcionales y resultado esperado ante rechazo.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Criterios minimos por flujo}
+
+\paragraph{Registro y acceso}
 
 \begin{itemize}
-  \item Pendiente de aterrizar por flujo y prioridad.
+  \item Un usuario puede registrarse con datos validos y queda en estado \texttt{PENDIENTE}.
+  \item Un usuario puede iniciar sesion con credenciales validas.
+  \item Un usuario puede iniciar el flujo de recuperacion de acceso.
+\end{itemize}
+
+\paragraph{Activacion}
+
+\begin{itemize}
+  \item Un usuario \texttt{PENDIENTE} puede registrar comprobante.
+  \item La resolucion administrativa aprobada cambia al usuario a \texttt{ACTIVO}.
+  \item La resolucion administrativa rechazada cambia al usuario a \texttt{RECHAZADO}.
+  \item Un usuario no \texttt{ACTIVO} no puede participar en flujos de picks.
+\end{itemize}
+
+\paragraph{Picks y predicciones especiales}
+
+\begin{itemize}
+  \item Un usuario \texttt{ACTIVO} puede crear y editar picks antes del lock.
+  \item Un usuario no puede editar picks despues del lock del partido.
+  \item Un partido sin pick guardado al llegar el lock se interpreta como \texttt{SIN\_PICK}.
+  \item Las predicciones especiales pueden editarse hasta cinco minutos antes del kickoff del primer partido del torneo y luego quedan bloqueadas.
+\end{itemize}
+
+\paragraph{Resultados, scoring y leaderboard}
+
+\begin{itemize}
+  \item El sistema calcula correctamente puntos por outcome y marcador exacto.
+  \item El sistema aplica multiplicadores de fase con precision exacta.
+  \item El leaderboard se ordena por puntaje total acumulado.
+  \item Una correccion de resultado actualiza puntajes y ranking conforme al resultado vigente.
+\end{itemize}
+
+\paragraph{Administracion y operacion}
+
+\begin{itemize}
+  \item Un admin autorizado puede aprobar o rechazar comprobantes.
+  \item Un admin autorizado puede registrar o corregir resultado manual con trazabilidad.
+  \item Una accion administrativa sin permisos suficientes es rechazada.
+  \item El archivado del torneo deja la competencia en modo solo lectura.
+\end{itemize}
+
+\subsubsection{Criterios de UAT minimo}
+
+\begin{itemize}
+  \item El responsable funcional puede seguir el flujo de activacion sin ambiguedad.
+  \item El participante puede entender cuando un pick esta editable, bloqueado o ausente.
+  \item El ranking visible coincide con los resultados y reglas definidas.
+  \item El panel admin permite resolver comprobantes y resultados sin comportamiento ambiguo.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Un flujo puede cumplir happy path y seguir sin aceptarse si no comunica bien restricciones funcionales como lock o cuenta no activa.
+  \item Un flujo administrativo puede funcionar tecnicamente pero no aceptarse si no deja trazabilidad suficiente.
+  \item Un criterio puede depender de mas de un repositorio; en esos casos la aceptacion final requiere validacion integrada.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
   \item No se aceptan criterios ambiguos ni dependientes de interpretacion libre.
+  \item Ningun flujo critico se considera aceptado sin verificar restricciones y rechazos relevantes.
+  \item La aceptacion funcional no contradice reglas ya cerradas del dominio.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar matriz final de aprobacion por flujo.
+  \item Confirmar quien aprueba formalmente cada flujo en UAT y si existira una matriz de firmas o simplemente validacion conjunta de trabajo.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir la matriz final de aprobacion por flujo y responsable una vez se acerque la salida operativa.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el proyecto mantendra una checklist UAT separada y ejecutable fuera de este documento.
+\end{itemize}

@@ -72,10 +72,10 @@ modules/
   \item \texttt{admin} coordina, no reemplaza ownership de los modulos de dominio.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsection{Edge Cases}
 
 \begin{itemize}
-  \item Si una accion administrativa impacta varios modulos, cada cambio relevante debe seguir perteneciendo a su modulo duenio y quedar auditado.
+  \item Si una accion administrativa impacta varios modulos, cada cambio relevante debe seguir perteneciendo a su modulo responsable y quedar auditado.
   \item Si \texttt{notifications} se implementa como servicio transversal en lugar de modulo independiente, su ownership funcional debe seguir documentado para no quedar difuso.
 \end{itemize}
 
@@ -83,7 +83,7 @@ modules/
 
 \begin{itemize}
   \item Ningun modulo debe redefinir reglas centrales de \texttt{01\_Producto\_y\_Reglas}.
-  \item Ningun controller debe convertirse en duenio efectivo de reglas de dominio.
+  \item Ningun controller debe convertirse en responsable efectivo de reglas de dominio.
   \item Toda colaboracion entre modulos debe preservar un ownership principal identificable.
 \end{itemize}
 

@@ -2,40 +2,89 @@
 
 \subsection{Descripcion}
 
-Este documento reservara los principios funcionales de interfaz y experiencia para la v1.
+Este documento define los principios funcionales de interfaz y experiencia para la v1 de Quiniela. Su objetivo es asegurar que la experiencia del producto favorezca claridad, baja friccion y confianza operativa, sin contradecir nunca las reglas reales del dominio.
 
 \subsection{Alcance}
 
-Aplica a usuario participante y administracion.
+Aplica a la experiencia de participante y administracion. No define estilo visual final ni identidad grafica completa; define criterios funcionales para construir pantallas correctas y usables.
 
 \subsection{Definiciones}
 
 \begin{itemize}
   \item \textbf{Accion principal}: CTA dominante de una pantalla.
+  \item \textbf{Friccion util}: friccion intencional que protege una accion critica o reduce error operativo.
+  \item \textbf{Estado visible}: manifestacion clara de una condicion funcional relevante para el usuario.
 \end{itemize}
 
 \subsection{Reglas}
 
 \begin{itemize}
   \item Cada pantalla debe tener una accion principal clara.
-  \item La UX debe favorecer claridad, accesibilidad y baja friccion.
+  \item La experiencia debe priorizar comprension del estado actual por encima de densidad de informacion.
+  \item Las restricciones del dominio deben comunicarse de forma visible antes de convertirse en sorpresa para el usuario.
+  \item La interfaz no debe insinuar que una accion es posible si el sistema probablemente la rechazara por lock, permisos o estado funcional.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsubsection{Principios de experiencia para participante}
 
 \begin{itemize}
-  \item Pendiente de expandir con estados y patrones UI finales.
+  \item El usuario debe entender rapidamente si su cuenta puede jugar o si aun depende de activacion.
+  \item El flujo de picks debe reducir error de captura y dejar claro si un partido esta editable, bloqueado o sin pick.
+  \item El leaderboard debe ser facil de interpretar y no depender de calculos mentales del usuario.
+  \item Las predicciones especiales deben sentirse relacionadas con picks, pero claramente separadas de los picks por partido.
+\end{itemize}
+
+\subsubsection{Principios de experiencia para administracion}
+
+\begin{itemize}
+  \item Las acciones administrativas criticas deben priorizar seguridad, contexto y trazabilidad por encima de velocidad ciega.
+  \item La interfaz administrativa debe separar claramente resolucion de comprobantes, gestion de resultados y acciones de recalculo.
+  \item Toda accion de alto impacto debe mostrar suficiente contexto para evitar errores operativos.
+\end{itemize}
+
+\subsubsection{Patrones funcionales esperados}
+
+\begin{itemize}
+  \item CTA unico o dominante por pantalla.
+  \item restricciones visibles antes del intento fallido cuando el frontend ya conoce la limitacion;
+  \item modo solo lectura cuando una entidad ya no es editable;
+  \item feedback inmediato y comprensible tras mutaciones criticas;
+  \item separacion visual entre experiencia de participante y experiencia administrativa.
+\end{itemize}
+
+\subsubsection{Friccion aceptable}
+
+\begin{itemize}
+  \item confirmacion de acciones administrativas criticas;
+  \item advertencias cuando una accion cambia resultados, scoring o estado de usuarios;
+  \item mensajes claros antes de abandonar una captura relevante si existe riesgo de perdida visible.
+\end{itemize}
+
+\subsection{Edge Cases}
+
+\begin{itemize}
+  \item Una pantalla puede ser visualmente simple pero funcionalmente incorrecta si esconde locks, restricciones o estados de cuenta.
+  \item Una accion administrativa demasiado rapida puede elevar riesgo operativo aunque reduzca clics.
+  \item Una experiencia de baja friccion no es aceptable si compromete auditabilidad o claridad competitiva.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item Ninguna decision visual puede contradecir una restriccion funcional del dominio.
+  \item Ninguna decision visual contradice una restriccion funcional del dominio.
+  \item Ninguna pantalla critica carece de accion principal identificable.
+  \item La UX prioriza comprension del estado real del sistema sobre adornos o atajos ambiguos.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar patrones definitivos de navegacion y wizard.
+  \item Confirmar si la navegacion final de picks y predicciones especiales se resolvera como tabs, rutas separadas o un contenedor unico con secciones diferenciadas.
 \end{itemize}
 
+\subsection{Decisiones pendientes}
+
+\begin{itemize}
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir el patron final de navegacion del modulo de picks sin romper la separacion funcional ya aprobada.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: confirmar si la experiencia admin de v1 requiere vistas independientes por area o un panel unico con subsecciones.
+\end{itemize}

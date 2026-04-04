@@ -20,7 +20,7 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
 \begin{itemize}
   \item El documento describira proposito, entrada esperada y salida esperada por operacion.
   \item Los endpoints no podran contradecir reglas del dominio ni limites arquitectonicos.
-  \item Toda operacion conceptual debe pertenecer claramente a un modulo duenio.
+  \item Toda operacion conceptual debe pertenecer claramente a un modulo responsable.
   \item El frontend consume contratos de dominio estables, no detalles internos de persistencia o integracion.
 \end{itemize}
 
@@ -71,7 +71,7 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
   \item Las vistas de leaderboard deben responder con el ranking derivado oficial, no con datos parciales sin contexto de scoring.
 \end{itemize}
 
-\subsection{Casos borde}
+\subsection{Edge Cases}
 
 \begin{itemize}
   \item Una operacion conceptualmente valida puede terminar rechazada por estado funcional del usuario, lock o falta de permisos.
