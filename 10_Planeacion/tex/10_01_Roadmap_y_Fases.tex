@@ -2,102 +2,317 @@
 
 \subsection{Descripcion}
 
-Este documento define la secuencia de fases del trabajo documental y su relacion con el desarrollo del proyecto. Su objetivo es ordenar el avance del repositorio por reduccion real de ambiguedad y no por un simple orden superficial de carpetas.
+Este documento fija la planeacion operativa del proyecto hasta la salida previa al Mundial del 11 de junio de 2026. Se enfoca en la secuencia semanal de trabajo, los hitos duros, el valor visible para el usuario y los bloqueadores que no deben empujarse a finales de mayo.
 
 \subsection{Alcance}
 
-Aplica al repositorio documental y a su uso como base de trabajo para backend y frontend.
-
-\subsection{Definiciones}
-
-\begin{itemize}
-  \item \textbf{Fase}: agrupacion de entregables con un objetivo comun.
-  \item \textbf{Cierre funcional}: momento en que una seccion ya es suficientemente consistente para servir como referencia de trabajo.
-\end{itemize}
+Aplica a la coordinacion entre producto, backend, frontend, testing y operacion para la v1 de Quiniela.
 
 \subsection{Reglas}
 
 \begin{itemize}
-  \item El trabajo documental se prioriza por reduccion de ambiguedad.
-  \item Dominio y datos se cierran antes del detalle tecnico fino.
-  \item Ninguna fase debe avanzar ignorando contradicciones abiertas de la fase anterior.
+  \item El roadmap se organiza por reduccion de riesgo funcional y operativo.
+  \item Los tickets pueden cambiar, pero el \textbf{goal} del sprint no debe romperse sin replaneacion explicita.
+  \item Toda decision bloqueante debe cerrarse antes del sprint que la necesita.
+  \item A partir del 19 de mayo de 2026 no entran features nuevas; solo correcciones y preparacion de salida.
+  \item El buffer de finales de mayo es obligatorio y no debe consumirse con alcance nuevo.
 \end{itemize}
 
-\subsubsection{Fases del roadmap documental}
+\subsection{Hitos duros}
 
-\paragraph{Fase 1: nucleo del dominio}
+\begin{longtable}{p{0.28\textwidth}p{0.2\textwidth}p{0.38\textwidth}}
+\toprule
+\textbf{Hito} & \textbf{Fecha} & \textbf{Significado} \\
+\midrule
+Inicio del Sprint 2 & 7 de abril de 2026 & comienza el tramo ya guiado por epicas, riesgo y buffer real \\
+Code complete & 21 de mayo de 2026 & no entran features nuevas; solo validacion y correcciones \\
+Release candidate & 28 de mayo de 2026 & version lista para salida controlada \\
+Inicio del buffer final & 29 de mayo de 2026 & solo bugfixes menores, rehearsal y contingencia \\
+Inicio del Mundial & 11 de junio de 2026 & el sistema debe llegar estable y validado \\
+\bottomrule
+\end{longtable}
 
+\subsection{Planeacion por sprint}
+
+\begin{docnote}
+\textbf{Sprint 2}\\
+\textbf{Fechas}: 7 al 13 de abril de 2026\\
+\textbf{Epicas foco}: \texttt{E1 Fundations}, \texttt{E4 Payments and Activation}
+
+\textbf{Goal}\\
+Cerrar el slice funcional de activacion para que un participante pueda avanzar desde acceso hasta estado visible y validable, con control administrativo y gating basico.
+
+\textbf{El usuario podra}\\
 \begin{itemize}
-  \item objetivo: cerrar reglas de producto, estados, picks, locks, scoring, desempates y Edge Cases;
-  \item entregables principales: \texttt{00\_Overview}, \texttt{01\_Producto\_y\_Reglas}, partes nucleares de \texttt{05\_Datos};
-  \item resultado esperado: lenguaje comun y reglas del juego sin ambiguedad fuerte.
+  \item registrarse e iniciar sesion;
+  \item recuperar acceso;
+  \item ver su estado de activacion;
+  \item consultar como pagar;
+  \item enviar comprobante;
+  \item entender si su cuenta esta \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO} o \texttt{BLOQUEADO}.
 \end{itemize}
 
-\paragraph{Fase 2: arquitectura y aterrizaje tecnico}
-
+\textbf{Definition of Done}\\
 \begin{itemize}
-  \item objetivo: traducir el dominio ya cerrado a arquitectura, modulos, fronteras y contratos conceptuales;
-  \item entregables principales:
-  \begin{itemize}
-    \item \texttt{02\_Arquitectura};
-    \item \texttt{03\_Backend};
-    \item \texttt{04\_Frontend};
-    \item \texttt{06\_Integraciones};
-    \item \texttt{07\_Seguridad\_y\_Operacion}.
-  \end{itemize}
-  \item resultado esperado: base tecnica coherente para construir ambos repositorios de implementacion.
+  \item existe flujo funcional de activacion de extremo a extremo;
+  \item la operacion administrativa minima de aprobacion y rechazo esta soportada;
+  \item el sistema bloquea comportamiento no permitido por estado;
+  \item no quedan ambiguedades criticas sobre activacion que bloqueen el siguiente sprint.
 \end{itemize}
 
-\paragraph{Fase 3: calidad, experiencia y gestion}
-
+\textbf{Exit criteria}\\
 \begin{itemize}
-  \item objetivo: cerrar testing, UI/UX, backlog documental, riesgos y ciclo de aceptacion;
-  \item entregables principales: \texttt{08\_Testing}, \texttt{09\_UI\_UX}, \texttt{10\_Planeacion};
-  \item resultado esperado: documentacion lista para trabajo iterativo, revision y salida controlada.
+  \item demo funcional del flujo de activacion;
+  \item backlog del sprint siguiente actualizado;
+  \item criterios de aceptacion y testing del flujo ya reflejados.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 3}\\
+\textbf{Fechas}: 14 al 20 de abril de 2026\\
+\textbf{Epicas foco}: \texttt{E2 Core Quiniela}
+
+\textbf{Goal}\\
+Dejar lista la base funcional para consultar partidos y preparar el flujo de picks.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item ver el calendario o listado de partidos;
+  \item identificar kickoff y estado visible del partido;
+  \item navegar la superficie desde la que luego se capturaran picks.
 \end{itemize}
 
-\subsubsection{Estado actual del roadmap}
-
-Al momento de esta iteracion:
-
+\textbf{Definition of Done}\\
 \begin{itemize}
-  \item la Fase 1 esta sustancialmente cubierta;
-  \item la Fase 2 esta mayormente cubierta en arquitectura, backend, frontend, integraciones y operacion;
-  \item la Fase 3 esta en consolidacion documental y editorial.
+  \item el participante puede consultar partidos de forma consistente con el calendario oficial;
+  \item el sistema tiene base clara para la captura de picks;
+  \item no se inventan estados o agrupaciones no documentadas.
 \end{itemize}
 
-\subsubsection{Siguiente tramo recomendado}
-
+\textbf{Exit criteria}\\
 \begin{itemize}
-  \item pasada de consistencia cruzada entre secciones;
-  \item limpieza editorial y de maquetacion;
-  \item compilacion del PDF maestro;
-  \item refinamiento puntual de decisiones pendientes que aun bloquean frontend.
+  \item demo del listado visible de partidos;
+  \item contratos suficientemente estables para el trabajo de picks;
+  \item backlog refinado del sprint siguiente con foco en captura y lock.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 4}\\
+\textbf{Fechas}: 21 al 27 de abril de 2026\\
+\textbf{Epicas foco}: \texttt{E2 Core Quiniela}
+
+\textbf{Goal}\\
+Cerrar la integridad operativa del flujo de picks: captura valida, edicion permitida y lock automatico confiable.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item crear picks por partido;
+  \item editar picks antes del lock;
+  \item ver cuando un partido esta editable o bloqueado;
+  \item quedar en \texttt{SIN\_PICK} si no guardo antes del lock;
+  \item operar en modo solo lectura cuando el pick ya no sea editable.
 \end{itemize}
 
-\subsection{Edge Cases}
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item los picks pueden capturarse y persistirse de forma consistente;
+  \item el lock automatico esta definido e implementado sin ambiguedad funcional;
+  \item el comportamiento de lock esta cubierto por pruebas criticas;
+  \item el sistema queda listo para conectar resultados y scoring.
+\end{itemize}
+
+\textbf{Exit criteria}\\
+\begin{itemize}
+  \item demo de captura, edicion y cierre de picks;
+  \item evidencia de pruebas para rechazo por lock y por usuario no activo;
+  \item backlog refinado de resultados y scoring.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 5}\\
+\textbf{Fechas}: 28 de abril al 4 de mayo de 2026\\
+\textbf{Epicas foco}: \texttt{E5 Results Integration and Manual Fallback}
+
+\textbf{Goal}\\
+Establecer la autoridad del resultado oficial y el flujo operativo de sincronizacion, correccion manual y trazabilidad minima.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item ver resultados oficiales visibles de partidos;
+  \item depender de una unica verdad vigente del resultado;
+  \item recibir la consecuencia visible de una correccion de resultado cuando aplique.
+\end{itemize}
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item existe una ruta clara para obtener o consolidar resultados oficiales;
+  \item esta resuelta la precedencia entre fuente externa y override manual;
+  \item existe trazabilidad suficiente de acciones criticas sobre resultados;
+  \item el proyecto ya puede alimentar scoring con una base confiable de resultados.
+\end{itemize}
+
+\textbf{Exit criteria}\\
+\begin{itemize}
+  \item demo de resultado oficial visible y correccion controlada;
+  \item evidencia de recalculo coherente despues de correccion;
+  \item backlog refinado de scoring y leaderboard.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 6}\\
+\textbf{Fechas}: 5 al 11 de mayo de 2026\\
+\textbf{Epicas foco}: \texttt{E3 Scoring and Leaderboard}
+
+\textbf{Goal}\\
+Cerrar el primer ciclo competitivo completo: picks, resultados, scoring y leaderboard visible.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item ver su puntaje acumulado;
+  \item ver el leaderboard general;
+  \item consultar leaderboard filtrado por jornada o fase;
+  \item participar con picks y predicciones especiales que ya impactan el total competitivo.
+\end{itemize}
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item el sistema calcula scoring conforme a reglas documentadas;
+  \item multiplicadores y desempates criticos estan implementados correctamente;
+  \item el leaderboard general funciona con consistencia funcional;
+  \item los casos criticos de scoring y leaderboard tienen cobertura razonable.
+\end{itemize}
+
+\textbf{Exit criteria}\\
+\begin{itemize}
+  \item demo de ciclo competitivo completo;
+  \item evidencia de pruebas sobre scoring, lock y correccion de resultados;
+  \item backlog de hardening reducido a gaps concretos.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 7}\\
+\textbf{Fechas}: 12 al 18 de mayo de 2026\\
+\textbf{Epicas foco}: \texttt{E7 QA, Accessibility, and Hardening}
+
+\textbf{Goal}\\
+Reducir riesgo real de salida: endurecer seguridad, cerrar huecos criticos y estabilizar los flujos sensibles.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item usar una plataforma mas estable y consistente;
+  \item ver restricciones y errores mejor comunicados;
+  \item confiar mas en la coherencia del sistema antes de salida real.
+\end{itemize}
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item el set minimo de seguridad de v1 esta resuelto;
+  \item los flujos criticos tienen validacion suficiente segun riesgo;
+  \item los huecos principales de accesibilidad y estados visibles ya no bloquean salida;
+  \item el sistema esta apto para entrar en fase de release candidate.
+\end{itemize}
+
+\textbf{Exit criteria}\\
+\begin{itemize}
+  \item evidencia de validacion transversal en flujos criticos;
+  \item lista corta y priorizada de bugs restantes;
+  \item decisiones pendientes bloqueantes reducidas a cero.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Sprint 8}\\
+\textbf{Fechas}: 19 al 25 de mayo de 2026\\
+\textbf{Epicas foco}: cierre transversal de \texttt{E1}--\texttt{E7}
+
+\textbf{Goal}\\
+Entrar en \texttt{feature freeze} y dejar una version candidata a salida, con enfoque total en bugs, aceptacion y preparacion operativa.
+
+\textbf{El usuario podra}\\
+\begin{itemize}
+  \item usar una version practicamente final de la plataforma;
+  \item recorrer el flujo principal sin huecos criticos;
+  \item operar sobre una experiencia estable de registro, activacion, picks, resultados y leaderboard.
+\end{itemize}
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item no entran features nuevas;
+  \item los bugs relevantes estan resueltos o triageados explicitamente;
+  \item existe validacion funcional integral de los flujos principales;
+  \item el equipo puede declarar \texttt{code complete} al cierre del sprint.
+\end{itemize}
+
+\textbf{Exit criteria}\\
+\begin{itemize}
+  \item version candidata a salida demostrable de punta a punta;
+  \item backlog separado entre bugs bloqueantes y trabajo post-salida;
+  \item confirmacion explicita de \texttt{feature freeze}.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Buffer operativo 1}\\
+\textbf{Fechas}: 26 al 28 de mayo de 2026
+
+\textbf{Objetivo}\\
+Convertir la version cerrada en release candidate operable.
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item el sistema puede ser usado en una salida controlada;
+  \item se hizo revision final de operacion y contingencias;
+  \item los pendientes restantes son menores, conocidos y aceptados.
+\end{itemize}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Buffer operativo 2}\\
+\textbf{Fechas}: 29 de mayo al 10 de junio de 2026
+
+\textbf{Objetivo}\\
+No construir mas producto; solo proteger salida real.
+
+\textbf{Definition of Done}\\
+\begin{itemize}
+  \item solo se permiten bugfixes o ajustes operativos de bajo alcance;
+  \item existen planes claros para contingencias manuales;
+  \item el sistema llega estable al 11 de junio de 2026.
+\end{itemize}
+\end{docnote}
+
+\subsection{Bloqueadores transversales}
 
 \begin{itemize}
-  \item Una fase puede requerir retrocesos puntuales si una decision abierta descubierta tarde afecta documentos ya avanzados.
-  \item Un cierre parcial de fase es aceptable si los pendientes quedaron explicitamente registrados y no se presentan como decisiones ya resueltas.
+  \item \textbf{Bloquea backend}: cerrar el set minimo obligatorio de autenticacion, gestion de sesion y proteccion contra abuso para v1.
+  \item \textbf{Bloquea frontend}: definir el flujo visual de predicciones especiales dentro del modulo de picks.
+  \item \textbf{Bloquea frontend}: definir el desglose visual de puntos en leaderboard, perfil y detalle de rendimiento.
+  \item \textbf{Bloquea frontend}: cerrar las superficies exactas donde se muestra el aviso de resultado corregido.
+\end{itemize}
+
+\subsection{Capacidad reservada}
+
+\begin{itemize}
+  \item Entre Sprint 2 y Sprint 3 la capacidad puede priorizar construccion.
+  \item A partir de Sprint 4 se recomienda reservar entre 20\% y 30\% para bugs, integracion, retrabajo y ajustes documentales.
+  \item A partir de Sprint 7 la prioridad es estabilidad, no expansion funcional.
 \end{itemize}
 
 \subsection{Invariantes}
 
 \begin{itemize}
-  \item No se adelanta detalle tecnico fino cuando el dominio aun esta abierto.
-  \item Ninguna fase se considera cerrada si deja contradicciones normativas sin registrar.
-  \item El roadmap documental debe poder explicar por que una seccion se trabajo antes que otra.
-\end{itemize}
-
-\subsection{Preguntas abiertas}
-
-\begin{itemize}
-  \item Confirmar si el proyecto quiere convertir estas fases en hitos formales por semana, sprint o solo mantenerlas como secuencia logica de trabajo.
+  \item No se mueve la fecha de \texttt{code complete} sin aceptar explicitamente un aumento de riesgo.
+  \item Ningun sprint posterior a Sprint 6 debe depender de descubrimiento funcional fuerte.
+  \item El buffer de finales de mayo existe para estabilizar, no para seguir construyendo.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el roadmap documental se seguira manteniendo como documento vivo o si solo reflejara grandes cortes de avance.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si este roadmap semanal se actualizara sprint a sprint como documento vivo o si solo registrara grandes cortes de avance.
 \end{itemize}
