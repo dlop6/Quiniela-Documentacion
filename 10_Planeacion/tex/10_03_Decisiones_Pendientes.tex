@@ -31,12 +31,6 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 \subsubsection{Prioridad alta}
 
 \begin{enumerate}
-  \item \textbf{Politica de visibilidad de Campeon y Goleador frente a otros usuarios}\\
-  Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea frontend}\\
-  Documento responsable: \texttt{01\_03\_Picks\_y\_Locks}\\
-  Motivo: falta definir si estas predicciones se ocultan siempre, se publican al cierre del primer partido o se revelan en otro momento controlado.
-
   \item \textbf{Superficies y duracion del aviso de resultado corregido}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
@@ -53,18 +47,12 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 \subsubsection{Prioridad media}
 
 \begin{enumerate}
-  \setcounter{enumi}{3}
+  \setcounter{enumi}{2}
   \item \textbf{Precision visual de puntajes no enteros}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{Bloquea frontend}\\
   Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
   Motivo: la logica interna ya conserva precision exacta, pero falta fijar con cuantos decimales se mostrara el puntaje al usuario.
-
-  \item \textbf{Presentacion del flujo separado de predicciones especiales}\\
-  Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea frontend}\\
-  Documento responsable: \texttt{01\_03\_Picks\_y\_Locks}\\
-  Motivo: la separacion funcional ya esta cerrada, pero falta bajar la decision a comportamiento de interfaz y navegacion.
 
   \item \textbf{Tratamiento visual de predicciones especiales en leaderboard por jornada}\\
   Tipo: \texttt{Riesgo}\\
@@ -76,7 +64,7 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 \subsubsection{Prioridad baja}
 
 \begin{enumerate}
-  \setcounter{enumi}{6}
+  \setcounter{enumi}{4}
   \item \textbf{Persistencia explicita de \texttt{SIN\_PICK}}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{No bloqueante}\\
@@ -95,6 +83,20 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   Documento responsable: \texttt{01\_01\_Reglamento\_V1}\\
   Motivo: el reglamento actual sirve como fuente normativa, pero aun no se decide si se publicara una version mas breve para consumo general.
 \end{enumerate}
+
+\subsection{Decisiones cerradas recientemente}
+
+\begin{itemize}
+  \item \textbf{Presentacion del flujo separado de predicciones especiales}\\
+  Estado: \texttt{Cerrada en Sprint 3}\\
+  Veredicto: las predicciones especiales viven en una vista separada dentro del modulo funcional de picks y no se mezclan con la captura de picks por partido.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_03\_Sprint\_03.pdf}
+
+  \item \textbf{Politica de visibilidad de Campeon y Goleador frente a otros usuarios}\\
+  Estado: \texttt{Cerrada en Sprint 3}\\
+  Veredicto: permanecen ocultos para otros usuarios hasta que exista una regla oficial posterior de revelacion.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_03\_Sprint\_03.pdf}
+\end{itemize}
 
 \subsection{Edge Cases}
 

@@ -1,0 +1,404 @@
+\section{Sprint 1}
+
+\subsection{Contexto}
+
+Sprint 1 corresponde al cierre de coordinacion inicial y a la definicion del baseline con el que puede arrancar implementacion real a partir del Sprint 2. Las decisiones de este sprint se concentran en desbloquear backend y fijar reglas minimas de tecnologia, seguridad, persistencia y calidad.
+
+\begin{docnote}
+\textbf{Enfoque del sprint.} Las decisiones registradas en este bloque pertenecen al Grupo 1: decisiones que desbloquean backend.
+\end{docnote}
+
+\subsection{Resumen ejecutivo}
+
+\begin{longtable}{p{0.44\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Decision} & \textbf{Verdicto} \\
+\midrule
+Topologia oficial del proyecto & Repos separados \\
+Alcance oficial del repo de implementacion actual & Solo backend \\
+Uso obligatorio de TypeScript & Obligatorio en toda implementacion nueva \\
+Estrategia oficial de autenticacion y sesion v1 & JWT de acceso mas refresh token, sin social login \\
+Auth real vs scaffold & Auth real entra ya \\
+Social login & Fuera de v1 \\
+Alcance permitido de Prisma en esta fase & Schema fisico real minimo \\
+Entidades autorizadas para modelado fisico inicial & User, PaymentProof, Tournament, Phase, Team, Match, Pick, SpecialPrediction, Result, ScoreEntry y AuditEvent \\
+Migraciones reales de dominio & Permitidas \\
+Estrategia de almacenamiento de comprobantes & Archivo en storage privado; DB solo metadata y referencia \\
+Politica minima obligatoria de seguridad para v1 & Baseline obligatoria de seguridad \\
+Taxonomia minima de errores para backend & Taxonomia comun inicial \\
+Barra minima de testing por ticket antes de merge & Obligatoria \\
+Transiciones validas del estado de usuario & Registro nuevo a \texttt{PENDIENTE}; \texttt{PENDIENTE} a \texttt{ACTIVO}; \texttt{PENDIENTE} a \texttt{RECHAZADO}; \texttt{ACTIVO} a \texttt{BLOQUEADO} \\
+Activacion del usuario & Global en v1 \\
+Alcance real de \texttt{payments} en esta fase & Registro de comprobante mas revision administrativa real \\
+Forma oficial de representar \texttt{SIN\_PICK} & Resultado funcional explicito derivado de ausencia de pick valido al cierre \\
+Predicciones especiales \texttt{Campeon} y \texttt{Goleador} & Entran con implementacion real en v1 \\
+Alcance real de \texttt{results} en esta fase & Estructura real, carga manual y soporte para sync externa \\
+Proveedor oficial de resultados & Aun no se fija proveedor oficial \\
+Alcance real de \texttt{scoring} en esta fase & Si entra en v1 \\
+Alcance real de \texttt{recalculo} en esta fase & Si entra en v1 \\
+Alcance real de \texttt{leaderboard} en esta fase & Si entra en v1 \\
+Estrategia oficial de \texttt{leaderboard} & Derivacion simple desde scoring, sin snapshot obligatorio por ahora \\
+Superficie administrativa minima permitida en esta fase & Usuarios y comprobantes; partidos y resultados; scoring, recalculo y auditoria \\
+Modelo minimo de autorizacion administrativa & Se mantienen \texttt{admin} y \texttt{super admin}; archivado reservado al nivel mas alto \\
+Contrato minimo obligatorio de auditoria & Obligatorio con campos y eventos base definidos \\
+Flujos criticos con prueba obligatoria desde ya & Activacion, lock, \texttt{SIN\_PICK}, predicciones especiales, scoring, correcciones, recalculo, permisos admin y archivado \\
+\bottomrule
+\end{longtable}
+
+\subsection{Arquitectura y repos}
+
+\begin{docnote}
+\textbf{Decision.} Topologia oficial del proyecto
+
+\textbf{Verdicto.} Repos separados
+
+\textbf{Por que.} La documentacion ya separa backend y frontend como superficies distintas. Mantener repos separados reduce acoplamiento inicial, simplifica ownership y evita meter una decision de monorepo sin necesidad operativa inmediata.
+
+\textbf{Impacto.} Se asume un repositorio de implementacion para backend y otro para frontend. El repositorio documental permanece como fuente de verdad tecnica y funcional.
+
+\textbf{Documento dueno.} \texttt{02\_Arquitectura/} y \texttt{10\_Planeacion/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance oficial del repo de implementacion actual
+
+\textbf{Verdicto.} Solo backend
+
+\textbf{Por que.} El objetivo inmediato es desbloquear implementacion real del backend. Mezclar frontend dentro del mismo repo de implementacion haria mas difusa la coordinacion y no aporta ventaja clara en esta fase.
+
+\textbf{Impacto.} El primer repositorio de implementacion se define como backend-only. Frontend se manejara como repositorio separado.
+
+\textbf{Documento dueno.} \texttt{02\_Arquitectura/} y \texttt{03\_Backend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Uso obligatorio de TypeScript
+
+\textbf{Verdicto.} TypeScript es obligatorio en toda implementacion nueva
+
+\textbf{Por que.} El stack aprobado ya usa TypeScript. Volverlo obligatorio evita mezcla innecesaria con JavaScript plano y mejora consistencia de contratos, validaciones y mantenimiento.
+
+\textbf{Impacto.} No se autorizan modulos nuevos en JavaScript sin una excepcion explicita posterior.
+
+\textbf{Documento dueno.} \texttt{00\_Overview/tex/00\_03\_Principios\_de\_Ingenieria\_y\_Arquitectura.tex} y \texttt{03\_Backend/}
+\end{docnote}
+
+\subsection{Auth y seguridad}
+
+\begin{docnote}
+\textbf{Decision.} Estrategia oficial de autenticacion y sesion v1
+
+\textbf{Verdicto.} JWT de acceso mas refresh token, sin social login
+
+\textbf{Por que.} Esta estrategia resuelve el minimo funcional de login, sesion y proteccion de rutas sin introducir complejidad innecesaria para v1.
+
+\textbf{Impacto.} \texttt{auth} deja de ser una caja abierta y puede implementarse con una direccion tecnica concreta.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_02\_Seguridad\_Aplicativa.tex} y \texttt{03\_Backend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Auth real vs scaffold
+
+\textbf{Verdicto.} Auth real entra ya
+
+\textbf{Por que.} Activacion, proteccion administrativa y comportamiento real del sistema dependen de autenticacion funcional. Mantener \texttt{auth} como scaffold prolongaria un bloqueo tecnico clave.
+
+\textbf{Impacto.} Sprint 2 y siguientes trabajan sobre autenticacion real, no sobre placeholders estructurales.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_02\_Seguridad\_Aplicativa.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Social login
+
+\textbf{Verdicto.} Queda fuera de v1
+
+\textbf{Por que.} No es parte del core competitivo y agrega complejidad tecnica, de seguridad y de UX que no ayuda a llegar mejor al Mundial.
+
+\textbf{Impacto.} El acceso v1 queda limitado a credenciales propias y recuperacion de contrasena.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/} y \texttt{04\_Frontend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Politica minima obligatoria de seguridad para v1
+
+\textbf{Verdicto.} Se cierra una baseline obligatoria de seguridad para v1
+
+\textbf{Por que.} La documentacion ya identifica esta decision como bloqueante. Se necesita una base minima clara para proteger rutas, administracion, sesiones y superficies sensibles.
+
+\textbf{Impacto.} La baseline minima incluye autenticacion obligatoria en rutas protegidas, autorizacion por rol y estado, proteccion administrativa en backend, validacion estricta de frontera, manejo seguro de errores, secretos fuera del codigo, headers de hardening, rate limiting basico en login y acciones sensibles, y trazabilidad de acciones criticas.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_02\_Seguridad\_Aplicativa.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Taxonomia minima de errores para backend
+
+\textbf{Verdicto.} Se adopta una taxonomia minima comun
+
+\textbf{Por que.} Backend, frontend y testing necesitan una base compartida para no improvisar respuestas por modulo.
+
+\textbf{Impacto.} La taxonomia inicial incluye \texttt{validation\_error}, \texttt{authentication\_required}, \texttt{forbidden}, \texttt{invalid\_state}, \texttt{lock\_closed}, \texttt{not\_found}, \texttt{conflict}, \texttt{external\_dependency\_error} e \texttt{internal\_error}.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_03\_Validacion\_y\_Errores.tex}
+\end{docnote}
+
+\subsection{Persistencia y Prisma}
+
+\begin{docnote}
+\textbf{Decision.} Alcance permitido de Prisma en esta fase
+
+\textbf{Verdicto.} Schema fisico real minimo
+
+\textbf{Por que.} La fase actual ya requiere persistencia real. No basta con placeholders, pero tampoco conviene modelar exhaustivamente todo el dominio antes de necesitarlo.
+
+\textbf{Impacto.} Prisma puede usarse para modelado real de las entidades autorizadas en esta etapa.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/} y \texttt{03\_Backend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Entidades autorizadas para modelado fisico inicial
+
+\textbf{Verdicto.} Se autorizan inicialmente \texttt{User}, \texttt{PaymentProof}, \texttt{Tournament}, \texttt{Phase}, \texttt{Team}, \texttt{Match}, \texttt{Pick}, \texttt{SpecialPrediction}, \texttt{Result}, \texttt{ScoreEntry} y \texttt{AuditEvent}
+
+\textbf{Por que.} Este conjunto cubre activacion, calendario, picks, resultados, scoring y auditoria minima. Se evita abrir desde ya estrategias tecnicas mas avanzadas como snapshots de leaderboard.
+
+\textbf{Impacto.} El modelado fisico inicial queda acotado y suficiente para los slices funcionales priorizados.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/tex/05\_01\_Modelo\_de\_Dominio.tex} y \texttt{03\_Backend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Migraciones reales de dominio
+
+\textbf{Verdicto.} Se permiten migraciones reales
+
+\textbf{Por que.} Sin migraciones reales no hay backend operativo. La restriccion correcta no es prohibir migraciones, sino limitar su alcance a slices reales del plan.
+
+\textbf{Impacto.} Se habilita evolucion del esquema para las entidades autorizadas de esta fase.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/} y \texttt{03\_Backend/}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Estrategia de almacenamiento de comprobantes
+
+\textbf{Verdicto.} El archivo vive en object storage privado o equivalente; la base de datos guarda metadata y referencia
+
+\textbf{Por que.} Separar binario y metadata reduce acoplamiento, evita sobrecargar la base de datos y es mas consistente con una superficie sensible como evidencias de pago.
+
+\textbf{Impacto.} \texttt{payments} debe modelar referencia de archivo, tipo, tamano, hash y estado, no almacenar binarios directamente en la base de datos.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/}, \texttt{05\_Datos/} y \texttt{07\_Seguridad\_y\_Operacion/}
+\end{docnote}
+
+\subsection{Calidad minima}
+
+\begin{docnote}
+\textbf{Decision.} Barra minima de testing por ticket antes de merge
+
+\textbf{Verdicto.} Se vuelve obligatoria
+
+\textbf{Por que.} Sin una barra minima por ticket, el proyecto acumulara regresiones justo en la etapa de mayor presion previa al Mundial.
+
+\textbf{Impacto.} Todo ticket debe incluir prueba automatizada nueva o actualizada, o justificar de forma explicita por que no aplica. Si toca flujo critico, no debe hacer merge sin evidencia de validacion suficiente.
+
+\textbf{Documento dueno.} \texttt{08\_Testing/tex/08\_01\_Estrategia\_de\_Testing.tex} y \texttt{08\_Testing/tex/08\_02\_Casos\_Criticos\_de\_Prueba.tex}
+\end{docnote}
+
+\subsection{Dominio y estados}
+
+\begin{docnote}
+\textbf{Decision.} Transiciones validas del estado de usuario y quien puede ejecutarlas
+
+\textbf{Verdicto.} Se cierran oficialmente estas transiciones: registro nuevo a \texttt{PENDIENTE}, \texttt{PENDIENTE} a \texttt{ACTIVO}, \texttt{PENDIENTE} a \texttt{RECHAZADO} y \texttt{ACTIVO} a \texttt{BLOQUEADO}. El sistema ejecuta la transicion inicial de registro; \texttt{admin} y \texttt{super admin} ejecutan las transiciones administrativas.
+
+\textbf{Por que.} Esta matriz ya esta practicamente definida en el dominio y en permisos. Formalizarla evita lecturas ambiguas del flujo de activacion y bloquea la invencion de estados o transiciones no oficiales.
+
+\textbf{Impacto.} Backend puede validar cambios de estado contra una matriz cerrada; frontend deja de sugerir estados intermedios no oficiales; el flujo administrativo de activacion queda listo para implementacion real.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_02\_Estados\_y\_Flujos.tex} y \texttt{07\_Seguridad\_y\_Operacion/tex/07\_01\_Roles\_y\_Permisos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Activacion del usuario: global o por torneo
+
+\textbf{Verdicto.} En v1, la activacion es global
+
+\textbf{Por que.} La documentacion actual modela el estado del usuario como un eje unico del sistema. No existe una capa formal de activacion por torneo y agregarla ahora abriria complejidad innecesaria en auth, pagos, permisos y frontend.
+
+\textbf{Impacto.} Un usuario \texttt{ACTIVO} queda habilitado para competir en la quiniela v1 sin requerir una relacion adicional de activacion por torneo.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_01\_Reglamento\_V1.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_02\_Estados\_y\_Flujos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance real de \texttt{payments} en esta fase
+
+\textbf{Verdicto.} \texttt{payments} entra con registro de comprobante y revision administrativa real
+
+\textbf{Por que.} El proyecto no describe \texttt{payments} como un buzon pasivo. La activacion requiere validacion manual de pago con comprobante, el frontend contempla el flujo de carga y el panel admin, y permisos ya reconoce aprobar o rechazar comprobantes como accion administrativa.
+
+\textbf{Impacto.} Sprint 2 puede cerrar un flujo completo: el usuario registra comprobante, administracion revisa, aprueba o rechaza, y el estado del usuario cambia de forma consistente con el dominio.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_01\_Reglamento\_V1.tex}, \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex} y \texttt{07\_Seguridad\_y\_Operacion/tex/07\_01\_Roles\_y\_Permisos.tex}
+\end{docnote}
+
+\subsection{Picks y predicciones}
+
+\begin{docnote}
+\textbf{Decision.} Forma oficial de representar \texttt{SIN\_PICK}
+
+\textbf{Verdicto.} \texttt{SIN\_PICK} existe como resultado funcional explicito del dominio, pero derivado de la ausencia de pick valido al cierre, no como pick inventado
+
+\textbf{Por que.} El reglamento oficial ya define que si el participante no deja pick antes del lock, ese partido se considera sin pick y otorga cero puntos. Eso exige una representacion funcional clara, pero no obliga a fabricar una prediccion artificial.
+
+\textbf{Impacto.} Backend puede evaluar scoring y visibilidad usando una condicion cerrada de ausencia valida; frontend puede mostrar \texttt{SIN\_PICK} como estado real sin fingir un marcador inexistente; se evita persistir picks ficticios solo para llenar huecos.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_01\_Reglamento\_V1.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_03\_Picks\_y\_Locks.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Predicciones especiales \texttt{Campeon} y \texttt{Goleador}: implementacion real o solo estructural
+
+\textbf{Verdicto.} Entran con implementacion real en v1
+
+\textbf{Por que.} La documentacion de producto vigente las trata como parte del alcance real de v1. Mantenerlas como elementos solo estructurales dejaria desalineado el proyecto con sus reglas competitivas y abriria retrabajo posterior en backend, frontend y scoring.
+
+\textbf{Impacto.} Deben existir como flujo funcional real con captura, edicion antes del lock y modo lectura despues del lock. Backend y frontend las tratan como predicciones especiales validas, no como placeholders.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_01\_Reglamento\_V1.tex}, \texttt{01\_Producto\_y\_Reglas/tex/01\_03\_Picks\_y\_Locks.tex} y \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex}
+\end{docnote}
+
+\subsection{Resultados, scoring y leaderboard}
+
+\begin{docnote}
+\textbf{Decision.} Alcance real de \texttt{results} en esta fase
+
+\textbf{Verdicto.} \texttt{results} entra con estructura real, carga manual y soporte para sync externa
+
+\textbf{Por que.} El dominio ya trata resultados como subdominio real y la documentacion de integraciones ya define una estrategia funcional de sincronizacion con fallback manual. Eso exige algo mas que estructura vacia, pero no obliga a depender exclusivamente de una integracion externa cerrada desde ya.
+
+\textbf{Impacto.} Debe existir modelo real de resultados, operacion manual administrativa y una capa lista para integracion externa cuando el proveedor quede formalizado.
+
+\textbf{Documento dueno.} \texttt{06\_Integraciones/tex/06\_01\_API\_de\_Resultados.tex}, \texttt{06\_Integraciones/tex/06\_02\_Sincronizacion\_y\_Fallback\_Manual.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{05\_Datos/tex/05\_01\_Modelo\_de\_Dominio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Proveedor oficial de resultados
+
+\textbf{Verdicto.} Aun no se fija proveedor oficial
+
+\textbf{Por que.} La documentacion de integraciones dice de forma explicita que el proveedor comercial definitivo y su contrato tecnico exacto siguen abiertos. Forzar esa decision ahora seria introducir una definicion no cerrada por el proyecto.
+
+\textbf{Impacto.} Backend debe modelar integracion con capa de adaptacion interna y no acoplarse desde Sprint 1 a un payload proveedor-especifico.
+
+\textbf{Documento dueno.} \texttt{06\_Integraciones/tex/06\_01\_API\_de\_Resultados.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance real de \texttt{scoring} en esta fase
+
+\textbf{Verdicto.} \texttt{scoring} si entra en v1
+
+\textbf{Por que.} El proyecto ya tiene reglas oficiales completas de puntaje, multiplicadores, predicciones especiales y desempates. Ademas, backend y modelo de dominio ya lo tratan como subdominio funcional real.
+
+\textbf{Impacto.} V1 debe poder calcular puntaje por partido, integrar predicciones especiales y alimentar ranking oficial.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{05\_Datos/tex/05\_01\_Modelo\_de\_Dominio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance real de \texttt{recalculo} en esta fase
+
+\textbf{Verdicto.} \texttt{recalculo} si entra en v1
+
+\textbf{Por que.} La documentacion exige recalcular cuando cambia el resultado vigente o cuando una accion administrativa altera la verdad oficial aplicada al scoring. Sin recalculo, el sistema se quedaria inconsistente frente a una correccion valida.
+
+\textbf{Impacto.} El sistema debe soportar recalculo al menos por publicacion inicial de resultado utilizable, correccion de resultado, override manual y cambio de estado de partido que altere scoring.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{01\_Producto\_y\_Reglas/tex/01\_05\_Casos\_Borde.tex}, \texttt{06\_Integraciones/tex/06\_02\_Sincronizacion\_y\_Fallback\_Manual.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance real de \texttt{leaderboard} en esta fase
+
+\textbf{Verdicto.} \texttt{leaderboard} si entra en v1
+
+\textbf{Por que.} El leaderboard ya forma parte del alcance oficial del torneo, con ordenamiento, desempates y vistas esperadas. No es un extra post-release sino parte de la experiencia competitiva base.
+
+\textbf{Impacto.} V1 debe incluir leaderboard funcional, consistente con scoring y con la verdad oficial vigente de resultados.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex} y \texttt{05\_Datos/tex/05\_01\_Modelo\_de\_Dominio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Estrategia oficial de \texttt{leaderboard}
+
+\textbf{Verdicto.} Derivacion simple desde scoring, sin snapshot obligatorio por ahora
+
+\textbf{Por que.} El modelo de dominio todavia deja abierta la necesidad de distinguir entre puntaje calculado y snapshot persistido. La documentacion actual soporta reconstruccion o actualizacion desde scoring sin obligar una estrategia fisica avanzada en esta fase.
+
+\textbf{Impacto.} Backend implementa leaderboard como subdominio derivado del scoring vigente. Se evita introducir complejidad prematura de snapshots o materializacion persistente como verdad principal.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/tex/05\_01\_Modelo\_de\_Dominio.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\subsection{Administracion, auditoria y operacion}
+
+\begin{docnote}
+\textbf{Decision.} Superficie administrativa minima permitida en esta fase
+
+\textbf{Verdicto.} La superficie minima de v1 incluye solo tres bloques: usuarios y comprobantes; partidos y resultados; scoring, recalculo y auditoria
+
+\textbf{Por que.} Esos tres bloques ya aparecen como flujos principales de administracion en frontend y coinciden con las operaciones administrativas esperadas del backend. Cubren la operacion real de v1 sin abrir todavia una consola amplia de configuracion critica.
+
+\textbf{Impacto.} El panel administrativo de v1 queda acotado a operacion real y no se expande a branding, API keys, jobs o configuraciones avanzadas no cerradas.
+
+\textbf{Documento dueno.} \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex} y \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Modelo minimo de autorizacion administrativa
+
+\textbf{Verdicto.} En v1 se mantienen \texttt{admin} y \texttt{super admin}; \texttt{admin} opera pagos, usuarios, partidos, resultados, recalculo y auditoria; \texttt{super admin} conserva archivado y configuracion critica si luego se habilita
+
+\textbf{Por que.} La documentacion ya distingue ambos niveles y reserva archivado y acciones de mayor impacto al nivel mas alto. Eliminar esa distincion ahora borraria una frontera que el proyecto todavia reconoce como util.
+
+\textbf{Impacto.} V1 opera con un modelo minimo pero claro de autorizacion. No toda accion administrativa critica queda al mismo nivel de permiso.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_01\_Roles\_y\_Permisos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato minimo obligatorio de auditoria para acciones criticas
+
+\textbf{Verdicto.} Se vuelve obligatorio auditar con al menos: \texttt{timestamp}, actor, accion, entidad afectada, valor anterior, valor nuevo y justificacion cuando aplique
+
+\textbf{Por que.} La documentacion ya define estos campos y el inventario base de eventos auditables. Faltaba convertir ese esquema en obligacion operativa para v1.
+
+\textbf{Impacto.} Toda accion critica del admin debe dejar trazabilidad funcional suficiente para explicar cambios de acceso, scoring, resultados o estado oficial vigente.
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_03\_Logging\_Observabilidad\_y\_Auditoria.tex} y \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}
+\end{docnote}
+
+\subsection{Testing obligatorio}
+
+\begin{docnote}
+\textbf{Decision.} Flujos criticos que deben tener pruebas obligatorias desde ya
+
+\textbf{Verdicto.} Quedan formalmente obligatorios: activacion de usuarios, lock de picks, \texttt{SIN\_PICK}, lock de predicciones especiales, scoring por partido, multiplicadores y precision de scoring, correccion de resultados, prioridad de override manual, recalculo, permisos administrativos y archivado
+
+\textbf{Por que.} La estrategia de testing ya los marca como riesgos altos y el inventario de casos criticos ya los traduce a escenarios concretos. Faltaba convertir esa priorizacion en una exigencia operativa del proyecto.
+
+\textbf{Impacto.} Todo ticket que toque alguno de estos flujos debe traer evidencia de prueba suficiente antes de merge. Estos flujos dejan de ser recomendacion y pasan a ser barra minima real de calidad.
+
+\textbf{Documento dueno.} \texttt{08\_Testing/tex/08\_01\_Estrategia\_de\_Testing.tex} y \texttt{08\_Testing/tex/08\_02\_Casos\_Criticos\_de\_Prueba.tex}
+\end{docnote}
+
+\subsection{Resultado del sprint}
+
+Sprint 1 deja cerrada la base de tecnologia, seguridad, persistencia, calidad, activacion minima, reglas iniciales de picks y predicciones, alcance funcional de resultados, scoring y leaderboard, y el baseline minimo de administracion, auditoria y testing obligatorio con la que puede arrancar implementacion real en Sprint 2.

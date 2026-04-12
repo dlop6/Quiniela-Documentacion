@@ -1,0 +1,54 @@
+\section{Sprint 3}
+
+\subsection{Contexto}
+
+Este documento registra decisiones ejecutivas cerradas especificamente para planificar correctamente el Sprint 3. Su objetivo es fijar la frontera funcional del sprint y desbloquear el trabajo de frontend que si impacta la preparacion del flujo de picks, sin adelantar trabajo que el roadmap reserva para sprints posteriores.
+
+\begin{docnote}
+\textbf{Enfoque del sprint.} Sprint 3 mantiene como goal oficial dejar lista la base funcional para consultar partidos y preparar el flujo de picks. Las decisiones registradas aqui no cambian ese goal; solo cierran definiciones necesarias para planificarlo con coherencia frente al roadmap completo.
+\end{docnote}
+
+\subsection{Resumen ejecutivo}
+
+\begin{longtable}{p{0.44\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Decision} & \textbf{Verdicto} \\
+\midrule
+Flujo visible de predicciones especiales & Vive en una vista separada dentro del modulo funcional de picks y no se mezcla con picks por partido \\
+Visibilidad de Campeon y Goleador frente a otros usuarios & Permanece oculta para otros usuarios hasta que exista una regla oficial de revelacion posterior \\
+\bottomrule
+\end{longtable}
+
+\subsection{Frontend de picks}
+
+\begin{docnote}
+\textbf{Decision.} Flujo visible de predicciones especiales
+
+\textbf{Verdicto.} \texttt{Campeon} y \texttt{Goleador} viven en una vista separada dentro del modulo funcional de picks. No se mezclan con la captura de picks por partido, aunque pueden convivir bajo la misma seccion funcional del producto.
+
+\textbf{Por que.} El dominio ya habia cerrado que las predicciones especiales forman parte del modulo funcional de picks, pero tambien habia dejado pendiente como debia verse esa separacion en frontend. Para respetar el roadmap, Sprint 3 necesita preparar la base del flujo de picks sin convertir la captura regular de partidos en una pantalla mezclada con predicciones de torneo. Esta separacion conserva coherencia con el documento de flujos y evita contaminar la UX de picks por partido con reglas y cierres distintos.
+
+\textbf{Impacto.} Frontend puede planificar el modulo de picks con dos recorridos visibles distintos: picks por partido y predicciones especiales. Sprint 3 no queda obligado a cerrar la experiencia completa de predicciones especiales, pero si puede preparar navegacion y estructura sin ambiguedad. Sprint 4 conserva el cierre operativo de picks por partido y no absorbe deuda de arquitectura visual.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_03\_Picks\_y\_Locks.tex} y \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Visibilidad de \texttt{Campeon} y \texttt{Goleador} frente a otros usuarios
+
+\textbf{Verdicto.} Las predicciones especiales permanecen ocultas para otros usuarios mientras no exista una regla oficial posterior de revelacion. Sprint 3 no debe exponerlas socialmente por defecto.
+
+\textbf{Por que.} El dominio ya reconoce que la politica social de visibilidad de estas predicciones seguia abierta. Para no bloquear la planificacion de Sprint 3 ni contaminar la captura base de picks con una regla competitiva todavia inestable, se fija un comportamiento conservador: ocultarlas frente a terceros hasta que el producto cierre explicitamente un momento de revelacion. Esto evita inventar un criterio social prematuro y protege la coherencia competitiva antes de leaderboard, perfiles y vistas publicas.
+
+\textbf{Impacto.} Frontend puede disenar y construir sin asumir exposicion social temprana de estas predicciones. Backend no necesita abrir visibilidad para terceros en este sprint. Cuando el proyecto cierre la regla definitiva de revelacion, esa decision podra incorporarse en un sprint posterior sin romper el recorrido base que Sprint 3 necesita dejar listo.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_03\_Picks\_y\_Locks.tex} y \texttt{10\_Planeacion/tex/10\_03\_Decisiones\_Pendientes.tex}
+\end{docnote}
+
+\subsection{Notas}
+
+\begin{itemize}
+  \item Estas decisiones cierran dos bloqueadores de frontend que afectaban la planificacion del Sprint 3.
+  \item No cierran todavia detalles de leaderboard, scoring ni aviso de resultado corregido; esos siguen viviendo en sus documentos y registros correspondientes.
+  \item Si una decision posterior cambia la politica de revelacion o la forma visual final de estas superficies, ese cambio debe registrarse en el sprint donde se apruebe y no reescribir silenciosamente este documento.
+\end{itemize}
