@@ -1,0 +1,470 @@
+# Signup and Activation Contract
+
+## 1. Purpose and Scope
+
+This document defines the canonical backend contract for account signup and activation in the Quiniela project.
+
+It covers:
+- public account registration;
+- payment proof submission;
+- administrative proof review;
+- user activation and rejection;
+- login eligibility rules;
+- backend security and operational constraints for the flow.
+
+It does not define UI layout or frontend component structure. The frontend may present these states, but it does not define them.
+
+## 2. Source of Truth and Precedence
+
+- The backend is the source of truth for account state, activation, authorization, and transitions.
+- Product decisions documented in `01_Producto_y_Reglas` take precedence over implementation preferences.
+- More recent sprint decisions take precedence over older documents if there is a conflict.
+- If implementation details conflict with this document, this document wins unless a newer sprint decision explicitly overrides it.
+
+## 3. Ownership and Document Status
+
+- Owner: backend domain and activation flow.
+- Status: canonical project contract.
+- Scope: product rules plus backend API contract.
+
+## 4. Business Rules
+
+### 4.1 Official user states
+
+The only official user states are:
+
+- `PENDIENTE`: the account was created, but activation has not yet been approved.
+- `ACTIVO`: the account was approved by an admin and can participate normally.
+- `RECHAZADO`: the admin denied activation.
+- `BLOQUEADO`: the admin revoked access after the account had already been active.
+
+### 4.2 Important separations
+
+- Payment review is not a user state.
+- Review state belongs to the activation request or proof, not to the user account itself.
+- If a proof is rejected and the product later allows a retry, that retry must be modeled in the activation request flow, not by inventing a new user state.
+- The user does not become `ACTIVO` until an admin explicitly approves the proof.
+
+### 4.3 Activation rule
+
+- Registration does not activate the account.
+- A user is only eligible to log in for normal operation after admin approval.
+- Only `ACTIVO` users can compete and generate valid picks.
+
+## 5. State Machines
+
+### 5.1 User state machine
+
+Allowed transitions:
+
+- `PENDIENTE` -> `ACTIVO`
+- `PENDIENTE` -> `RECHAZADO`
+- `ACTIVO` -> `BLOQUEADO`
+
+Implicit rule:
+- a new registration starts at `PENDIENTE`
+
+Forbidden transitions:
+
+- `ACTIVO` -> `PENDIENTE`
+- `RECHAZADO` -> `ACTIVO` unless a new explicit product decision is documented
+- `BLOQUEADO` -> `ACTIVO` unless a new explicit product decision is documented
+- any transition not listed above
+
+### 5.2 Payment proof / activation request state
+
+This flow is separate from the user state.
+
+Recommended internal states:
+
+- `EN_REVISION`: proof was submitted and is waiting for admin review
+- `APROBADO`: proof was approved and the user became active
+- `RECHAZADO`: proof was rejected
+
+If the product later decides to support retry after rejection, that behavior should be expressed here, not in the user state machine.
+
+## 6. Canonical Flow
+
+1. The user registers.
+2. The backend creates the account in `PENDIENTE`.
+3. The user pays outside the system.
+4. The user uploads the payment proof.
+5. The backend stores the proof metadata and a private reference.
+6. The backend marks the activation request as pending review.
+7. An admin reviews the proof.
+8. The admin approves or rejects the request.
+9. If approved, the user becomes `ACTIVO`.
+10. If rejected, the user becomes `RECHAZADO`.
+11. Only `ACTIVO` users may log in and use competitive features.
+
+## 7. API Contract
+
+### 7.1 `POST /users/register`
+
+Creates the initial account.
+
+#### Request body
+
+```json
+{
+  "nombre": "Diego Lopez",
+  "email": "diego@email.com",
+  "password": "strong-password",
+  "acceptedTerms": true
+}
+```
+
+#### Allowed fields
+
+- `nombre`
+- `email`
+- `password`
+- `acceptedTerms` only if the project wants legal acceptance tracking
+
+#### Disallowed fields
+
+- `role`
+- `activo`
+- `id`
+- `estado`
+- `createdAt`
+- `updatedAt`
+- any other system-owned field
+
+#### Expected behavior
+
+- create the user in `PENDIENTE`
+- set `role = USER`
+- do not issue a session cookie
+- do not auto-login
+- do not allow the client to override account state or role
+- leave the user ready for activation proof upload
+
+#### Successful response
+
+```json
+{
+  "message": "Cuenta creada. Pendiente de activacion.",
+  "usuario": {
+    "id": "usr_123",
+    "nombre": "Diego Lopez",
+    "email": "diego@email.com",
+    "estado": "PENDIENTE"
+  }
+}
+```
+
+### 7.2 `POST /users/activation-proof`
+
+Uploads the payment proof for admin review.
+
+#### Request
+
+- `multipart/form-data`
+- fields:
+  - `comprobante` file
+  - `nota` optional
+
+#### Rules
+
+- only `PENDIENTE` users may submit a proof
+- the uploaded file must be validated by type and size
+- the backend must rename and store the file using server-controlled storage paths
+- the database stores metadata and a private reference, not the binary
+- the user remains `PENDIENTE`
+- no session is issued
+- the activation request becomes pending admin review
+
+#### Successful response
+
+```json
+{
+  "message": "Comprobante recibido. Queda en revision administrativa.",
+  "solicitud": {
+    "id": "act_456",
+    "estadoRevision": "EN_REVISION"
+  }
+}
+```
+
+### 7.3 `GET /admin/activation-requests`
+
+Lists activation requests for admin review.
+
+#### Rules
+
+- admin only
+- includes user, timestamp, proof metadata, and review state
+
+#### Successful response
+
+```json
+{
+  "items": [
+    {
+      "id": "act_456",
+      "usuario": {
+        "id": "usr_123",
+        "nombre": "Diego Lopez",
+        "email": "diego@email.com"
+      },
+      "estadoRevision": "EN_REVISION",
+      "createdAt": "2026-04-18T12:00:00Z"
+    }
+  ]
+}
+```
+
+### 7.4 `POST /admin/activation-requests/:id/approve`
+
+Approves the proof and activates the account.
+
+#### Rules
+
+- admin only
+- the request must exist
+- the request must be in an approvable state
+- the user becomes `ACTIVO`
+- the action must be audited with actor and timestamp
+
+#### Successful response
+
+```json
+{
+  "message": "Cuenta activada correctamente.",
+  "usuario": {
+    "id": "usr_123",
+    "estado": "ACTIVO"
+  }
+}
+```
+
+### 7.5 `POST /admin/activation-requests/:id/reject`
+
+Rejects the proof and denies activation.
+
+#### Rules
+
+- admin only
+- the request must exist
+- the request must be in a rejectable state
+- the user becomes `RECHAZADO`
+- the reason must be stored
+- the action must be audited with actor and timestamp
+
+#### Request body
+
+```json
+{
+  "motivo": "El comprobante no es legible."
+}
+```
+
+#### Successful response
+
+```json
+{
+  "message": "Solicitud rechazada.",
+  "usuario": {
+    "id": "usr_123",
+    "estado": "RECHAZADO"
+  }
+}
+```
+
+### 7.6 `POST /users/login`
+
+Authenticates only active accounts.
+
+#### Request body
+
+```json
+{
+  "email": "diego@email.com",
+  "password": "strong-password"
+}
+```
+
+#### Rules
+
+- only `ACTIVO` users can log in
+- `PENDIENTE`, `RECHAZADO`, and `BLOQUEADO` must not receive a session
+- error messages should be generic to avoid account enumeration
+
+#### Successful response
+
+```json
+{
+  "message": "Inicio de sesion correcto.",
+  "usuario": {
+    "id": "usr_123",
+    "nombre": "Diego Lopez",
+    "estado": "ACTIVO"
+  }
+}
+```
+
+## 8. Security and OWASP Alignment
+
+This flow should follow the following security principles:
+
+- allowlist validation on every input
+- canonicalization before validation where needed
+- no trust in client-side role or state fields
+- strong password hashing
+- no auto-login at registration time
+- generic error messages to reduce enumeration
+- rate limiting on registration, login, and proof upload
+- secure cookies only after real authentication
+- admin approval must be audited
+- file uploads must be validated by type, size, and storage policy
+
+### 8.1 Password storage
+
+Prefer a modern memory-hard password hashing algorithm when possible.
+
+If a legacy algorithm is used, it must be configured with a strong cost factor and its limits must be respected.
+
+### 8.2 Session handling
+
+- issue a session only after successful login
+- use secure cookie flags
+- do not expose session material to the client body
+
+### 8.3 File upload handling
+
+- store proof files in private storage
+- store metadata and reference in the database
+- do not trust the original filename
+- validate the file size and type before storage
+
+## 9. Storage and Evidence Policy
+
+- The file lives in private object storage or equivalent.
+- The database stores metadata and a private reference only.
+- Recommended metadata fields:
+  - reference key
+  - file name
+  - mime type
+  - file size
+  - file hash
+  - review state
+  - reviewer reference
+  - review reason
+
+## 10. Retry Policy
+
+This is intentionally not fully closed unless product decides it.
+
+If retry after rejection is allowed, the implementation must define:
+
+- whether a rejected proof can be resubmitted;
+- whether a new submission replaces the previous one or creates a new record;
+- when the retry becomes available;
+- whether the admin sees history or only the latest submission.
+
+If retry is not allowed, the backend must reject a new submission after rejection with an explicit domain error.
+
+## 11. Audit
+
+The following actions must be auditable:
+
+- account registration;
+- proof submission;
+- proof approval;
+- proof rejection;
+- state transition to `ACTIVO`;
+- state transition to `RECHAZADO`;
+- state transition to `BLOQUEADO`;
+- administrative access to review surfaces.
+
+Audit payload should capture:
+- actor type;
+- actor user id;
+- target entity type;
+- target entity id;
+- request id if available;
+- outcome or resolution;
+- minimal business metadata needed for traceability.
+
+## 12. Standard Errors
+
+### Validation error
+
+```json
+{
+  "error": "validation_error",
+  "message": "Los datos enviados no son validos."
+}
+```
+
+### Conflict
+
+```json
+{
+  "error": "conflict",
+  "message": "No fue posible completar la operacion."
+}
+```
+
+### Authentication required
+
+```json
+{
+  "error": "authentication_required",
+  "message": "No fue posible completar la operacion."
+}
+```
+
+### Forbidden
+
+```json
+{
+  "error": "forbidden",
+  "message": "La cuenta no esta habilitada para iniciar sesion."
+}
+```
+
+### Invalid state
+
+```json
+{
+  "error": "invalid_state",
+  "message": "La solicitud no puede procesarse en este estado."
+}
+```
+
+### Not found
+
+```json
+{
+  "error": "not_found",
+  "message": "El recurso solicitado no existe."
+}
+```
+
+## 13. Implementation Notes
+
+- This document defines business behavior, not repository structure.
+- The backend repo should consume this contract as source of truth.
+- The frontend may reflect the states, but it must not define them.
+- If a future sprint defines a more specific rule, that newer sprint decision takes precedence.
+
+## 14. Criteria of Acceptance
+
+- A new account starts in `PENDIENTE`.
+- The backend does not auto-login users on registration.
+- A payment proof can be submitted only by `PENDIENTE` users.
+- An admin can approve or reject a proof and the user transitions accordingly.
+- Only `ACTIVO` users can log in successfully for normal operation.
+- The file upload contract stores metadata and a private reference, not the binary in the database.
+- The flow leaves an audit trail for every critical administrative decision.
+
+## 15. Open Questions
+
+- Should a rejected proof be resubmittable?
+- If resubmission is allowed, does it replace the prior proof or create a new record?
+- Which file types should be allowed for the proof?
+- What is the maximum allowed proof size?
+- Should legal acceptance tracking be stored in the backend or only in the frontend UX?
+
