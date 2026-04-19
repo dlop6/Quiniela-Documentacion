@@ -88,7 +88,7 @@ Visibilidad de Campeon y Goleador frente a otros usuarios & Permanece oculta par
 \begin{itemize}
   \item Estas decisiones cierran dos bloqueadores de frontend que afectaban la planificacion del Sprint 3.
   \item Estas decisiones tambien cierran tres dudas tecnicas del flujo de activacion para que \texttt{QH-93} no mezcle session lifecycle, contrato HTTP y retry policy en un solo ticket ambiguo.
-  \item \texttt{QH-93} conserva cinco preguntas abiertas en \texttt{signup-activation.md}: compatibilidad de rutas, contrato exacto de request/response, semantica de \texttt{GET /payments/proofs}, metadata obligatoria del comprobante y taxonomia final de errores.
+  \item \texttt{QH-93} tambien queda alineado con la superficie real del backend: \texttt{POST /users} cubre registro, \texttt{POST /payments/proofs} cubre envio de comprobante, \texttt{GET /payments/proofs} cubre la cola administrativa y la taxonomia expuesta reutiliza el baseline compartido incluyendo \texttt{too\_many\_requests}.
   \item No cierran todavia detalles de leaderboard, scoring ni aviso de resultado corregido; esos siguen viviendo en sus documentos y registros correspondientes.
   \item Si una decision posterior cambia la politica de revelacion o la forma visual final de estas superficies, ese cambio debe registrarse en el sprint donde se apruebe y no reescribir silenciosamente este documento.
 \end{itemize}

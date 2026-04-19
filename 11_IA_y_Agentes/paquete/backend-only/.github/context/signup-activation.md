@@ -103,6 +103,11 @@ If the product later decides to support retry after rejection, that behavior sho
 
 Creates the initial account.
 
+Implementation note:
+
+- the current repository already exposes this registration flow as `POST /users`;
+- `POST /users/register` is the logical name of the operation in the contract, but this sprint does not require a separate compatibility alias to understand or implement the slice.
+
 #### Request body
 
 ```json
@@ -158,6 +163,11 @@ Creates the initial account.
 
 Submits the payment proof for admin review.
 
+Implementation note:
+
+- the current repository already exposes this proof submission flow as `POST /payments/proofs`;
+- `POST /users/activation-proof` is the logical name of the operation in the contract, but the implementation surface stays in `payments`.
+
 #### Request
 
 ```json
@@ -197,9 +207,10 @@ Lists activation proofs for admin review.
 
 #### Rules
 
-- admin only
+- admin-only review queue
 - includes user, timestamp, proof metadata, and review state
 - may be filtered by review state if needed by the admin surface
+- does not expose a separate participant "my proofs" surface in this sprint
 
 #### Successful response
 
@@ -350,16 +361,13 @@ If a legacy algorithm is used, it must be configured with a strong cost factor a
 
 ## 10. Retry Policy
 
-This is intentionally not fully closed unless product decides it.
+For Sprint 3, retry after rejection is closed as follows:
 
-If retry after rejection is allowed, the implementation must define:
+- a rejected proof does not reopen automatic retry in the same activation attempt;
+- the rejected attempt is considered closed for this sprint;
+- any future retry policy must be introduced as an explicit product decision before implementation.
 
-- whether a rejected proof can be resubmitted;
-- whether a new submission replaces the previous one or creates a new record;
-- when the retry becomes available;
-- whether the admin sees history or only the latest submission.
-
-If retry is not allowed, the backend must reject a new submission after rejection with an explicit domain error.
+The backend therefore keeps the one-pending-proof-per-user rule as the operational control for this slice.
 
 ## 11. Audit
 
@@ -439,6 +447,15 @@ Audit payload should capture:
 }
 ```
 
+### Too many requests
+
+```json
+{
+  "error": "too_many_requests",
+  "message": "Se realizaron demasiados intentos de registro."
+}
+```
+
 ## 13. Implementation Notes
 
 - This document defines business behavior, not repository structure.
@@ -460,8 +477,6 @@ Audit payload should capture:
 
 ## 15. Open Questions
 
-- Are the canonical routes for this slice the new documented paths, or should the current repo routes remain as aliases during migration?
-- What is the exact request and response shape for `POST /users/register` and `POST /users/activation-proof` beyond the canonical examples in this document?
-- Should `GET /payments/proofs` be interpreted as the admin review queue only, the user's own submissions only, or both surfaces behind different filters?
-- Which proof metadata fields are mandatory, which are optional, and which ones are only references to an external private file?
-- Is the final error taxonomy for this slice exactly the shared baseline already documented, or does QH-93 need any additional domain-specific codes?
+- Which file types should be allowed for the proof?
+- What is the maximum allowed proof size?
+- Should legal acceptance tracking be stored in the backend or only in the frontend UX?
