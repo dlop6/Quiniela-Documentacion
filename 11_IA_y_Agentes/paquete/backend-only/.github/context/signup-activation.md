@@ -124,7 +124,7 @@ Implementation note:
 - `nombre`
 - `email`
 - `password`
-- `acceptedTerms` only if the project wants legal acceptance tracking
+- `acceptedTerms` must be `true`
 
 #### Disallowed fields
 
@@ -140,6 +140,7 @@ Implementation note:
 
 - create the user in `PENDIENTE`
 - set `role = USER`
+- require `acceptedTerms = true` and persist legal acceptance metadata in backend
 - do not issue a session cookie
 - do not auto-login
 - do not allow the client to override account state or role
@@ -188,6 +189,8 @@ Implementation note:
 - no session is issued
 - the activation request becomes pending admin review
 - the storage provider or upload mechanism is not defined here
+- allowed file types: PDF, PNG, JPEG
+- maximum file size: 5 MiB
 
 #### Successful response
 
@@ -344,6 +347,8 @@ If a legacy algorithm is used, it must be configured with a strong cost factor a
 - store metadata and reference in the database
 - do not trust the original filename
 - validate the file size and type before storage
+- accept only PDF, PNG, or JPEG files
+- reject files larger than 5 MiB
 
 ## 9. Storage and Evidence Policy
 
@@ -358,6 +363,12 @@ If a legacy algorithm is used, it must be configured with a strong cost factor a
   - review state
   - reviewer reference
   - review reason
+
+### 9.1 Legal acceptance tracking
+
+- Legal acceptance tracking is stored in backend, not only in UX.
+- Registration must persist the acceptance timestamp and the agreed terms version when `acceptedTerms` is true.
+- The client may display the consent UI, but the backend owns the durable record.
 
 ## 10. Retry Policy
 
@@ -477,6 +488,4 @@ Audit payload should capture:
 
 ## 15. Open Questions
 
-- Which file types should be allowed for the proof?
-- What is the maximum allowed proof size?
-- Should legal acceptance tracking be stored in the backend or only in the frontend UX?
+None for QH-93 in this slice.
