@@ -156,24 +156,28 @@ Creates the initial account.
 
 ### 7.2 `POST /users/activation-proof`
 
-Uploads the payment proof for admin review.
+Submits the payment proof for admin review.
 
 #### Request
 
-- `multipart/form-data`
-- fields:
-  - `comprobante` file
-  - `nota` optional
+```json
+{
+  "storageKey": "payments/proofs/proof-001.png",
+  "fileName": "proof-001.png",
+  "mimeType": "image/png",
+  "fileSizeBytes": 48123,
+  "fileHash": "sha256-proof-001"
+}
+```
 
 #### Rules
 
 - only `PENDIENTE` users may submit a proof
-- the uploaded file must be validated by type and size
-- the backend must rename and store the file using server-controlled storage paths
-- the database stores metadata and a private reference, not the binary
+- the backend stores metadata and a private reference, not the binary
 - the user remains `PENDIENTE`
 - no session is issued
 - the activation request becomes pending admin review
+- the storage provider or upload mechanism is not defined here
 
 #### Successful response
 
@@ -187,14 +191,15 @@ Uploads the payment proof for admin review.
 }
 ```
 
-### 7.3 `GET /admin/activation-requests`
+### 7.3 `GET /payments/proofs`
 
-Lists activation requests for admin review.
+Lists activation proofs for admin review.
 
 #### Rules
 
 - admin only
 - includes user, timestamp, proof metadata, and review state
+- may be filtered by review state if needed by the admin surface
 
 #### Successful response
 
@@ -215,19 +220,31 @@ Lists activation requests for admin review.
 }
 ```
 
-### 7.4 `POST /admin/activation-requests/:id/approve`
+### 7.4 `PATCH /payments/proofs/:paymentProofId/review`
 
-Approves the proof and activates the account.
+Reviews a proof and resolves the activation outcome.
+
+#### Request body
+
+```json
+{
+  "resolution": "APROBADO",
+  "reviewReason": "El comprobante no es legible."
+}
+```
 
 #### Rules
 
 - admin only
-- the request must exist
-- the request must be in an approvable state
-- the user becomes `ACTIVO`
+- the proof must exist
+- the proof must be in a reviewable state
+- the request must carry an explicit resolution of `APROBADO` or `RECHAZADO`
+- if the resolution is `RECHAZADO`, the reason is required
+- the user becomes `ACTIVO` when approved
+- the user becomes `RECHAZADO` when rejected
 - the action must be audited with actor and timestamp
 
-#### Successful response
+#### Successful response when approved
 
 ```json
 {
@@ -239,28 +256,7 @@ Approves the proof and activates the account.
 }
 ```
 
-### 7.5 `POST /admin/activation-requests/:id/reject`
-
-Rejects the proof and denies activation.
-
-#### Rules
-
-- admin only
-- the request must exist
-- the request must be in a rejectable state
-- the user becomes `RECHAZADO`
-- the reason must be stored
-- the action must be audited with actor and timestamp
-
-#### Request body
-
-```json
-{
-  "motivo": "El comprobante no es legible."
-}
-```
-
-#### Successful response
+#### Successful response when rejected
 
 ```json
 {
@@ -459,12 +455,13 @@ Audit payload should capture:
 - Only `ACTIVO` users can log in successfully for normal operation.
 - The file upload contract stores metadata and a private reference, not the binary in the database.
 - The flow leaves an audit trail for every critical administrative decision.
+- This sprint does not introduce a new session lifecycle or a new refresh-token policy.
+- This sprint does not enable automatic retry after a rejected proof.
 
 ## 15. Open Questions
 
-- Should a rejected proof be resubmittable?
-- If resubmission is allowed, does it replace the prior proof or create a new record?
-- Which file types should be allowed for the proof?
-- What is the maximum allowed proof size?
-- Should legal acceptance tracking be stored in the backend or only in the frontend UX?
-
+- Are the canonical routes for this slice the new documented paths, or should the current repo routes remain as aliases during migration?
+- What is the exact request and response shape for `POST /users/register` and `POST /users/activation-proof` beyond the canonical examples in this document?
+- Should `GET /payments/proofs` be interpreted as the admin review queue only, the user's own submissions only, or both surfaces behind different filters?
+- Which proof metadata fields are mandatory, which are optional, and which ones are only references to an external private file?
+- Is the final error taxonomy for this slice exactly the shared baseline already documented, or does QH-93 need any additional domain-specific codes?
