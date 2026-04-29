@@ -81,6 +81,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
       \item la fuente externa o la accion manual produce un valor interpretable por el dominio;
       \item si existe override manual vigente, la API automatica no puede sobrescribirlo por si sola.
     \end{itemize}
+  \item Criterio de visibilidad: el resultado oficial vigente puede ser visible aunque el partido todavia no se encuentre en un estado textual finalizado, siempre que el dominio ya haya consolidado ese valor como verdad oficial vigente.
   \item Secuencia esperada:
     \begin{itemize}
       \item se recibe un resultado externo o manual;

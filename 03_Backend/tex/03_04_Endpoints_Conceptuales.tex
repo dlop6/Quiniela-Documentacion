@@ -24,6 +24,18 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
   \item El frontend consume contratos de dominio estables, no detalles internos de persistencia o integracion.
 \end{itemize}
 
+\subsubsection{Contrato acordado para consultar resultado oficial}
+
+\begin{itemize}
+  \item La operacion publica acordada para \texttt{QH-107} es \texttt{GET /matches/\{matchId\}/result}.
+  \item La consulta requiere autenticacion.
+  \item Si el partido existe pero todavia no tiene resultado oficial, el backend responde con \texttt{200 OK} y \texttt{result = null}.
+  \item Si el partido no existe, el backend responde \texttt{404 Not Found}.
+  \item La superficie publica minima expone \texttt{matchId}, \texttt{result.homeGoals}, \texttt{result.awayGoals} y \texttt{result.updatedAt}.
+  \item Los campos internos \texttt{externalReference}, \texttt{recordedByUserId}, \texttt{isOfficial} y \texttt{source} permanecen internos y no forman parte del contrato publico de esta consulta.
+  \item La existencia de un resultado oficial visible no queda atada de forma estricta al estado textual \texttt{FINALIZADO}; si existe un resultado oficial vigente, esa es la verdad visible para el frontend. Si no existe, se devuelve vacio.
+\end{itemize}
+
 \subsubsection{Operaciones publicas y autenticadas esperadas}
 
 \begin{longtable}{p{0.16\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.25\textwidth}}
@@ -67,6 +79,7 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
 \begin{itemize}
   \item Ninguna operacion de picks debe asumir que el frontend es autoridad de lock; el backend siempre revalida.
   \item Las operaciones de resultados deben devolver solo la verdad oficial vigente y no exponer al frontend la complejidad interna del proveedor externo.
+  \item La consulta de resultado oficial de \texttt{QH-107} usa contrato publico minimo y no expone metadatos internos de persistencia o trazabilidad.
   \item Las operaciones administrativas deben exigir autorizacion, justificacion cuando aplique y salida trazable.
   \item Las vistas de leaderboard deben responder con el ranking derivado oficial, no con datos parciales sin contexto de scoring.
 \end{itemize}

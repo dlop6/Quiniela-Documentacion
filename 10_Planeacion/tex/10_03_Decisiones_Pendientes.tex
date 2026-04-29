@@ -96,6 +96,11 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   Estado: \texttt{Cerrada en Sprint 3}\\
   Veredicto: permanecen ocultos para otros usuarios hasta que exista una regla oficial posterior de revelacion.\\
   Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_03\_Sprint\_03.pdf}
+
+  \item \textbf{Contrato publico de consulta de resultado oficial de partido (QH-107)}\\
+  Estado: \texttt{Cerrada en Sprint 5}\\
+  Veredicto: la consulta publica acordada es \texttt{GET /matches/\{matchId\}/result}; requiere autenticacion; responde \texttt{200 OK} con \texttt{result = null} si aun no existe resultado oficial; y expone solo \texttt{matchId}, \texttt{result.homeGoals}, \texttt{result.awayGoals} y \texttt{result.updatedAt}. Los campos internos de trazabilidad y fuente permanecen fuera del contrato publico.\\
+  Registro de cierre: \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
 \end{itemize}
 
 \subsection{Edge Cases}
