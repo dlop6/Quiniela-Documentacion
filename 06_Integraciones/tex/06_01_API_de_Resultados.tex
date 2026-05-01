@@ -6,7 +6,7 @@ Este documento define la integracion conceptual con la API externa de resultados
 
 \subsection{Alcance}
 
-Aplica a la integracion de resultados de partidos y metadatos asociados necesarios para soportar scoring, cierre funcional del partido y trazabilidad. No fija todavia proveedor comercial definitivo ni su contrato tecnico exacto.
+Aplica a la integracion de resultados de partidos y metadatos asociados necesarios para soportar cierre funcional del partido y trazabilidad. Para \texttt{QH-111} estas decisiones quedan cerradas a nivel de proveedor, endpoints validados, mapping, normalizacion y manejo de errores. El objetivo es dejar \texttt{QH-111} decision-complete antes de implementacion.
 
 \subsection{Definiciones}
 
@@ -36,6 +36,102 @@ Aplica a la integracion de resultados de partidos y metadatos asociados necesari
   \item marca temporal de actualizacion del dato externo.
 \end{itemize}
 
+\subsection{Proveedor cerrado para MVP (QH-111)}
+
+\subsubsection{Proveedor recomendado}
+
+Proveedor principal para MVP Mundial 2026: \textbf{football-data.org}.
+
+Motivo de decision (basado en POC, no en supuestos):
+\begin{itemize}
+  \item football-data.org permitio consultar directamente World Cup 2026 en el plan probado.
+  \item \texttt{GET /competitions/WC/matches?season=2026} devolvio los 104 partidos del Mundial 2026.
+  \item Permite match individual \texttt{GET /matches/\{matchId\}} y batch por ids \texttt{GET /matches?ids=...}.
+  \item API-Football (API-Sports) quedo como alternativa tecnicamente viable, pero en plan Free bloqueo \texttt{league=1\&season=2026} y batch IDs; quedo condicionada a plan Pro.
+\end{itemize}
+
+\subsubsection{Base URL, auth y variables de entorno}
+
+Base URL:
+\begin{itemize}
+  \item \texttt{https://api.football-data.org/v4}
+\end{itemize}
+
+Auth:
+\begin{itemize}
+  \item header \texttt{X-Auth-Token: <FOOTBALL\_DATA\_API\_TOKEN>}
+\end{itemize}
+
+Variables recomendadas:
+\begin{itemize}
+  \item \texttt{FOOTBALL\_DATA\_BASE\_URL=https://api.football-data.org/v4}
+  \item \texttt{FOOTBALL\_DATA\_API\_TOKEN=<secret>}
+  \item \texttt{FOOTBALL\_DATA\_COMPETITION\_CODE=WC}
+  \item \texttt{FOOTBALL\_DATA\_TARGET\_SEASON=2026}
+  \item \texttt{FOOTBALL\_DATA\_PROVIDER\_NAME=football-data.org}
+\end{itemize}
+
+\subsubsection{Endpoints validados (POC)}
+
+Los siguientes endpoints fueron validados durante POC con token valido:
+\begin{itemize}
+  \item \texttt{GET /competitions} (token valido, WC disponible)
+  \item \texttt{GET /competitions/WC} (currentSeason=2026, fechas del torneo)
+  \item \texttt{GET /competitions/WC/matches?season=2026} (104 matches, campos utiles)
+  \item \texttt{GET /matches?dateFrom=YYYY-MM-DD\&dateTo=YYYY-MM-DD} (fallback por ventana)
+  \item \texttt{GET /matches?dateFrom=...\&dateTo=...\&status=SCHEDULED} (filtro para futuros; response puede traer \texttt{status=TIMED})
+  \item \texttt{GET /matches/\{matchId\}} (match individual)
+  \item \texttt{GET /matches?ids=id1,id2,id3} (batch por ids)
+  \item \texttt{GET /competitions/WC/teams?season=2026} (48 equipos)
+\end{itemize}
+
+No aplica para World Cup como CUP:
+\begin{itemize}
+  \item \texttt{GET /competitions/WC/standings?season=2026} (404 / no aplicable)
+\end{itemize}
+
+Nota importante de POC:
+\begin{itemize}
+  \item En eliminatoria, football-data.org puede devolver \texttt{homeTeam} o \texttt{awayTeam} como \texttt{null} en partidos futuros. La implementacion no debe asumir equipos definidos desde el inicio.
+\end{itemize}
+
+\subsubsection{Errores validados (POC)}
+
+\begin{itemize}
+  \item Match inexistente: \texttt{GET /matches/999999999} devuelve error esperado con \texttt{errorCode=400}. Debe mapearse a \texttt{external\_match\_not\_found}.
+  \item Token invalido: \texttt{GET /competitions} con token invalido devuelve error esperado con \texttt{errorCode=400}. Debe mapearse a \texttt{provider\_auth\_invalid} (no transitorio).
+\end{itemize}
+
+\subsection{Contrato funcional cerrado para QH-111}
+
+\subsubsection{Encapsulamiento (adapter)}
+
+\begin{itemize}
+  \item La integracion debe estar encapsulada detras de interfaz interna (provider/adapter).
+  \item Implementacion recomendada: \texttt{FootballDataResultsProviderAdapter}.
+  \item El caso de uso no debe depender del payload crudo del proveedor.
+\end{itemize}
+
+\subsubsection{DTO normalizado minimo (salida del adapter)}
+
+El adapter debe producir un DTO interno normalizado con al menos:
+\begin{itemize}
+  \item \texttt{provider}
+  \item \texttt{externalMatchId}
+  \item \texttt{providerStatus}
+  \item \texttt{normalizedStatus}
+  \item \texttt{homeGoals}
+  \item \texttt{awayGoals}
+  \item \texttt{utcDate}
+  \item \texttt{stage}
+  \item \texttt{group}
+  \item \texttt{matchday}
+  \item \texttt{homeTeamExternalId}
+  \item \texttt{awayTeamExternalId}
+  \item \texttt{providerUpdatedAt} (o equivalente si esta disponible)
+  \item \texttt{externalReference}
+\end{itemize}
+
 \subsubsection{Adaptacion al dominio interno}
 
 \begin{itemize}
@@ -52,6 +148,86 @@ Aplica a la integracion de resultados de partidos y metadatos asociados necesari
   \item el dato puede mapearse al estado funcional del partido;
   \item los goles y el contexto permiten determinar un resultado compatible con el reglamento;
   \item no existe override manual vigente que impida adoptar automaticamente el valor de API.
+\end{itemize}
+
+\subsubsection{Condicion para persistir resultado oficial}
+
+\begin{itemize}
+  \item Solo persistir cuando \texttt{providerStatus = FINISHED}.
+  \item Adicionalmente, \texttt{score.fullTime.home} y \texttt{score.fullTime.away} deben ser no \texttt{null}.
+  \item Fuente del marcador oficial: \texttt{score.fullTime.home} y \texttt{score.fullTime.away}.
+  \item No persistir resultados desde estados intermedios o futuros.
+\end{itemize}
+
+\subsubsection{Traduccion de estados externos (football-data.org)}
+
+Mapeo minimo:
+\begin{itemize}
+  \item \texttt{TIMED} $\rightarrow$ programado / no persistible
+  \item \texttt{SCHEDULED} (como query param externo) $\rightarrow$ programado / no persistible
+  \item \texttt{FINISHED} $\rightarrow$ persistible si \texttt{score.fullTime} no es \texttt{null}
+  \item \texttt{LIVE}, \texttt{IN\_PLAY}, \texttt{PAUSED} $\rightarrow$ skip / no persistible (MVP sin live sync)
+  \item \texttt{POSTPONED}, \texttt{SUSPENDED}, \texttt{CANCELLED} $\rightarrow$ skip / no persistible
+  \item estado desconocido $\rightarrow$ skip seguro + auditoria
+\end{itemize}
+
+\subsubsection{Mapping externo/interno (schema recomendado)}
+
+\textbf{Match:} mapping directo por proveedor + id externo. No usar \texttt{Result.externalReference} para localizar partidos.
+
+Recomendacion de schema para \texttt{Match}:
+\begin{verbatim}
+externalProvider String?
+externalMatchId  String?
+
+@@unique([externalProvider, externalMatchId])
+@@index([externalProvider])
+\end{verbatim}
+
+Politica ante partido no mapeado:
+\begin{itemize}
+  \item Si llega un resultado externo cuyo \texttt{externalMatchId} no corresponde a un \texttt{Match} interno sincronizable, hacer skip seguro.
+  \item No crear \texttt{Match} automaticamente en QH-111.
+  \item Registrar evidencia con razon \texttt{external\_match\_not\_mapped}.
+\end{itemize}
+
+\textbf{Team:} mapping auxiliar por \texttt{team.id} del proveedor.
+
+Recomendacion de schema para \texttt{Team}:
+\begin{verbatim}
+externalProvider String?
+externalTeamId   String?
+shortName        String?
+crestUrl         String?
+
+@@unique([externalProvider, externalTeamId])
+\end{verbatim}
+
+\subsection{Limites explicitos de QH-111}
+
+\begin{itemize}
+  \item No incluye cron programado (solo caso de uso interno + superficie manual/admin ``Sync now'').
+  \item No incluye recomputacion real de puntos.
+  \item No incluye creacion automatica de \texttt{Match} desde proveedor.
+  \item No incluye creacion automatica de \texttt{Team} desde proveedor (solo mapping auxiliar si existe ticket separado que lo autorice).
+  \item No incluye soporte multi-provider activo.
+  \item No incluye tabla \texttt{MatchExternalMapping} ni \texttt{TeamExternalMapping}.
+  \item No incluye \texttt{ResultHistory}.
+  \item No incluye live sync / polling near-real-time.
+  \item No incluye exposicion publica de metadata externa.
+\end{itemize}
+
+\subsection{Efecto en lectura publica}
+
+La lectura publica de resultado por partido (ej. \texttt{GET /matches/:matchId/result}) debe reflejar inmediatamente el \texttt{Result} persistido.
+
+La respuesta publica no debe exponer:
+\begin{itemize}
+  \item \texttt{source}
+  \item \texttt{isOfficial}
+  \item \texttt{externalReference}
+  \item \texttt{recordedByUserId}
+  \item payload crudo del proveedor
 \end{itemize}
 
 \subsubsection{Superficies internas consumidoras}
@@ -83,13 +259,12 @@ Aplica a la integracion de resultados de partidos y metadatos asociados necesari
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar proveedor oficial, frecuencia operativa de consulta y limites de uso del contrato externo definitivo.
+  \item Validar un match \texttt{FINISHED} real de World Cup 2026 cuando existan los primeros partidos finalizados (smoke test).
   \item Confirmar si el sistema recibira tambien eventos de fixture y cambios de kickoff desde la misma integracion o desde una fuente separada.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item \texttt{Decision pendiente} \texttt{Bloquea backend}: seleccionar proveedor oficial y documentar su contrato tecnico minimo una vez aprobado.
-  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir si el sistema almacenara payload externo completo para auditoria o solo los campos adaptados y referencia de fuente.
+  \item \texttt{Decision pendiente} \texttt{No bloqueante}: validar limites reales de plan (scores delayed / schedules delayed) y su impacto operativo durante el torneo.
 \end{itemize}

@@ -6,7 +6,14 @@ Este documento define la estrategia funcional de sincronizacion automatica de re
 
 \subsection{Alcance}
 
-Aplica a jobs programados, sincronizaciones manuales, overrides administrativos, reintentos y activacion de recalculo a partir de cambios en resultados o estados de partido.
+Aplica a sincronizaciones manuales, overrides administrativos, reintentos y activacion de recalculo a partir de cambios en resultados o estados de partido.
+
+Nota de alcance para \texttt{QH-111}:
+\begin{itemize}
+  \item \texttt{QH-111} \textbf{NO} incluye cron programado.
+  \item \texttt{QH-111} \textbf{NO} incluye recomputacion real de puntos.
+  \item \texttt{QH-111} si incluye caso de uso de sync interno y superficie manual/admin ``Sync now''.
+\end{itemize}
 
 \subsection{Definiciones}
 
@@ -22,13 +29,13 @@ Aplica a jobs programados, sincronizaciones manuales, overrides administrativos,
   \item Toda actualizacion de resultado debe ser trazable, idempotente y consistente con el dominio.
   \item Toda correccion manual debe quedar auditada con actor, momento, valor anterior, valor nuevo y justificacion.
   \item Cuando exista un override manual vigente, la sincronizacion automatica no puede sobrescribirlo sin una accion explicita y auditada.
-  \item Todo cambio efectivo en resultado vigente o estado relevante del partido debe habilitar un recalculo consistente del scoring y leaderboard.
+  \item Todo cambio efectivo en resultado vigente o estado relevante del partido debe habilitar un recalculo consistente del scoring y leaderboard; \texttt{QH-111} solo deja el evento listo (no ejecuta recomputacion real).
 \end{itemize}
 
 \subsubsection{Secuencia funcional de sincronizacion automatica}
 
 \begin{enumerate}
-  \item El sistema consulta al proveedor externo segun su ventana operativa definida.
+  \item El sistema consulta al proveedor externo segun su ejecucion manual (QH-111) o ventana operativa definida (ticket posterior).
   \item Cada dato recibido se adapta al modelo interno del dominio.
   \item El sistema determina si el dato es aceptable como candidato para actualizar el resultado vigente.
   \item Si el valor no cambia o no es aplicable, la sincronizacion termina sin alterar scoring.
@@ -63,13 +70,58 @@ Aplica a jobs programados, sincronizaciones manuales, overrides administrativos,
 
 \subsubsection{Ventanas funcionales de sincronizacion}
 
-La estrategia exacta de frecuencia queda pendiente de proveedor e infraestructura, pero funcionalmente el sistema debe cubrir:
+La estrategia exacta de frecuencia (cron) queda fuera de \texttt{QH-111} y se define en ticket posterior. Funcionalmente el sistema debe cubrir:
 
 \begin{itemize}
   \item sincronizacion previa a kickoff para cambios oficiales de horario o estado;
   \item sincronizacion cercana al cierre del partido para detectar resultado utilizable;
   \item re-sincronizacion posterior para detectar correcciones;
   \item sincronizacion manual administrativa cuando operacion lo requiera.
+\end{itemize}
+
+\subsection{Auditoria operativa (QH-111)}
+
+QH-111 debe implementar auditoria operativa del sync. Requerimiento minimo:
+\begin{itemize}
+  \item \texttt{ExternalResultSyncRun}: corrida (runId, provider, endpoint, parametros, timestamp, outcome).
+  \item \texttt{ExternalResultSyncEvent}: evento por match consultado (match externo, match interno si existe, decision aplicada, razon de skip/error, before/after cuando aplique).
+\end{itemize}
+
+Notas:
+\begin{itemize}
+  \item No usar \texttt{AuditLog} como sustituto de estas entidades operativas; \texttt{AuditLog} puede usarse para acciones admin, pero \texttt{ExternalResultSyncRun/Event} son la fuente de verdad operativa del sync.
+  \item No crear \texttt{ResultHistory} dentro de QH-111; \texttt{beforeJson/afterJson} en \texttt{ExternalResultSyncEvent} cubre la necesidad del ticket.
+\end{itemize}
+
+\subsection{Errores normalizados recomendados}
+
+\begin{itemize}
+  \item \texttt{provider\_auth\_invalid}
+  \item \texttt{external\_match\_not\_found}
+  \item \texttt{external\_match\_not\_mapped}
+  \item \texttt{external\_result\_not\_final}
+  \item \texttt{manual\_override\_active}
+  \item \texttt{provider\_error}
+  \item \texttt{provider\_rate\_limited}
+  \item \texttt{provider\_payload\_invalid}
+\end{itemize}
+
+\subsection{Testing minimo obligatorio (QH-111)}
+
+Documentar como criterio de implementacion que QH-111 cubra al menos:
+\begin{itemize}
+  \item \texttt{FINISHED} + \texttt{score.fullTime} no null $\rightarrow$ crea \texttt{Result} con \texttt{source=EXTERNAL}.
+  \item \texttt{FINISHED} + \texttt{score.fullTime} no null sobre \texttt{Result.source=EXTERNAL} existente $\rightarrow$ actualiza idempotente.
+  \item \texttt{TIMED} con score null $\rightarrow$ skip no persistible.
+  \item \texttt{LIVE}/\texttt{IN\_PLAY}/\texttt{PAUSED} $\rightarrow$ skip no persistible.
+  \item \texttt{POSTPONED}/\texttt{SUSPENDED}/\texttt{CANCELLED} $\rightarrow$ skip no persistible.
+  \item \texttt{externalMatchId} no mapeado $\rightarrow$ skip \texttt{external\_match\_not\_mapped}.
+  \item \texttt{Result.source=MANUAL\_OVERRIDE} $\rightarrow$ skip \texttt{manual\_override\_active}.
+  \item token invalido del proveedor $\rightarrow$ \texttt{provider\_auth\_invalid}.
+  \item match inexistente del proveedor $\rightarrow$ \texttt{external\_match\_not\_found}.
+  \item batch IDs normaliza correctamente varios matches.
+  \item lectura publica refleja resultado sincronizado sin exponer metadata interna.
+  \item se crean \texttt{ExternalResultSyncRun} y \texttt{ExternalResultSyncEvent} con evidencia minima.
 \end{itemize}
 
 \subsection{Edge Cases}
@@ -93,7 +145,7 @@ La estrategia exacta de frecuencia queda pendiente de proveedor e infraestructur
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
-  \item Confirmar ventanas reales de scheduler, reintentos y re-sincronizacion una vez elegido el proveedor definitivo.
+  \item Confirmar ventanas reales de scheduler, reintentos y re-sincronizacion en ticket posterior de cron (fuera de QH-111).
   \item Confirmar si habra una accion administrativa explicita para liberar un override manual y volver a aceptar sincronizacion automatica normal.
 \end{itemize}
 
