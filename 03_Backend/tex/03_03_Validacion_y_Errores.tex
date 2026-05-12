@@ -45,6 +45,13 @@ Ejemplos de validacion de frontera esperada:
   \item tipos correctos para fechas, puntajes y estados.
 \end{itemize}
 
+Para correccion manual de resultados (\texttt{QH-112}):
+\begin{itemize}
+  \item \texttt{homeGoals} y \texttt{awayGoals} deben ser enteros en rango \texttt{0..20};
+  \item \texttt{justification} es obligatoria, con \texttt{trim()}, minimo 15 y maximo 500 caracteres;
+  \item la accion solo procede para partidos en estado cerrado (\texttt{FINISHED}).
+\end{itemize}
+
 \subsubsection{Taxonomia de errores}
 
 Errores funcionales esperados:
@@ -55,6 +62,15 @@ Errores funcionales esperados:
   \item intento de editar pick despues del lock;
   \item resultado o partido en estado incompatible con la accion solicitada;
   \item payload valido en forma, pero incompatible con una regla del dominio.
+\end{itemize}
+
+Codigos esperados para correccion manual:
+\begin{itemize}
+  \item \texttt{validation\_error}
+  \item \texttt{authentication\_required}
+  \item \texttt{forbidden}
+  \item \texttt{not\_found}
+  \item \texttt{invalid\_state}
 \end{itemize}
 
 Errores tecnicos esperados:

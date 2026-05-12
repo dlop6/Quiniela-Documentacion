@@ -70,12 +70,11 @@ Nota de alcance para \texttt{QH-111}:
 
 \subsubsection{Ventanas funcionales de sincronizacion}
 
-La estrategia exacta de frecuencia (cron) queda fuera de \texttt{QH-111} y se define en ticket posterior. Funcionalmente el sistema debe cubrir:
+Para MVP, la estrategia base acordada es corrida batch diaria en ventana operativa fija y disparo manual administrativo cuando se requiera. Funcionalmente el sistema debe cubrir:
 
 \begin{itemize}
-  \item sincronizacion previa a kickoff para cambios oficiales de horario o estado;
-  \item sincronizacion cercana al cierre del partido para detectar resultado utilizable;
-  \item re-sincronizacion posterior para detectar correcciones;
+  \item sincronizacion diaria por lote de partidos del torneo objetivo;
+  \item re-sincronizacion posterior para detectar correcciones de proveedor;
   \item sincronizacion manual administrativa cuando operacion lo requiera.
 \end{itemize}
 
@@ -152,6 +151,5 @@ Documentar como criterio de implementacion que QH-111 cubra al menos:
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir frecuencia exacta de sincronizacion segun limites del proveedor y necesidades operativas.
   \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si el recalculo posterior a sincronizacion se ejecuta inmediatamente en todos los casos o si algunas rutas usaran cola diferida.
 \end{itemize}

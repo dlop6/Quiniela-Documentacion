@@ -119,7 +119,7 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 \textbf{Modulo responsable}: \texttt{scoring} en colaboracion con \texttt{leaderboard}
 
 \begin{enumerate}
-  \item Trigger: correccion de resultado, override manual, cambio relevante de datos oficiales o accion administrativa de recalc ulo.
+  \item Trigger: correccion de resultado, override manual, cambio relevante de datos oficiales o accion administrativa de recalculo.
   \item Validaciones principales:
     \begin{itemize}
       \item el recalculo parte de resultados vigentes;
@@ -135,6 +135,8 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
     \end{itemize}
   \item Resultado esperado: el ranking resultante puede explicarse desde los datos fuente vigentes.
 \end{enumerate}
+
+Para Sprint 6, el modelo obligatorio es recalculo selectivo por partido afectado y participantes impactados. Un recalculo global completo del torneo no forma parte del cierre minimo del sprint y debe abrirse como capacidad administrativa separada si el producto la aprueba despues.
 
 \subsubsection{Proceso de archivado del torneo}
 
@@ -172,12 +174,6 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
   \item Un proceso critico no puede quedar sin criterio de error ni de auditoria.
   \item Todo proceso de scoring o recalculo debe partir de una unica verdad oficial vigente por partido.
   \item Ningun proceso ordinario puede reabrir picks bloqueados ni torneos archivados.
-\end{itemize}
-
-\subsection{Preguntas abiertas}
-
-\begin{itemize}
-  \item Confirmar si el recalculo sera siempre selectivo por partido afectado o si algunas acciones administrativas permitiran recalculo global del torneo.
 \end{itemize}
 
 \subsection{Decisiones pendientes}

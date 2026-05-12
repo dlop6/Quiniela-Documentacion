@@ -61,6 +61,7 @@ Aplica al repositorio frontend en su integracion con backend. Describe principio
   \item Las adaptaciones de contrato deben vivir cerca del acceso a datos o de la entidad correspondiente, no dispersas en componentes visuales.
   \item El frontend no debe construir contratos paralelos incompatibles con backend para simplificar localmente una pantalla.
   \item Toda mutacion relevante debe definir que consultas deben refrescarse o invalidarse despues de completarse.
+  \item El frontend no puede calcular ni ordenar el leaderboard oficial con logica propia; ese derivado pertenece al backend.
 \end{itemize}
 
 \subsubsection{Datos minimos por feature}
@@ -86,6 +87,7 @@ Aplica al repositorio frontend en su integracion con backend. Describe principio
   \item Un error tecnico debe comunicar que la operacion no pudo completarse y ofrecer reintento cuando corresponda.
   \item El frontend no debe esconder el estado final de una mutacion critica; siempre debe dejar feedback de exito, rechazo o fallo tecnico.
   \item Cuando exista resultado corregido, el frontend debe poder mostrar un aviso explicito y breve sin reconstruir la auditoria interna.
+  \item Los puntajes enteros pueden mostrarse sin decimales; los puntajes fraccionarios deben mostrarse con exactamente dos decimales visibles.
 \end{itemize}
 
 \subsection{Edge Cases}
@@ -93,6 +95,7 @@ Aplica al repositorio frontend en su integracion con backend. Describe principio
 \begin{itemize}
   \item Si el frontend muestra un formulario editable y el backend rechaza por lock reciente, la vista debe reconciliarse con el nuevo estado funcional y pasar a modo lectura.
   \item Si un dato remoto cambia por recalculo o correccion, las vistas derivadas deben invalidarse para evitar mostrar ranking o puntajes obsoletos.
+  \item Ante correccion de resultado con cambio efectivo, deben invalidarse al menos resultado del partido, calendario afectado, score visible del usuario, leaderboard activo y detalle dependiente del cambio.
   \item Si una consulta administrativa retorna informacion parcial por permisos, el frontend debe degradar la vista de forma controlada y no asumir acceso total.
 \end{itemize}
 
@@ -103,18 +106,17 @@ Aplica al repositorio frontend en su integracion con backend. Describe principio
   \item Ningun componente del frontend debe depender de datos no garantizados por contrato.
   \item La logica de presentacion no debe contener reglas oficiales unicas de scoring, lock o permisos.
   \item Toda mutacion critica debe tener un camino claro de refresco o invalidacion del estado remoto afectado.
+  \item Ningun helper local de scoring puede usarse como fuente oficial de posicion, score visible o desempate.
 \end{itemize}
 
 \subsection{Preguntas abiertas}
 
 \begin{itemize}
   \item Confirmar si los esquemas Zod de frontend se mantendran totalmente independientes o si existira una estrategia posterior de comparticion controlada de contratos con backend.
-  \item Confirmar cuantas superficies del frontend mostraran desglose de puntaje y con que precision visual se representaran los decimales.
 \end{itemize}
 
 \subsection{Decisiones pendientes}
 
 \begin{itemize}
-  \item \texttt{Decision pendiente} \texttt{No bloqueante}: definir la politica exacta de invalidacion y refresco para leaderboard y picks despues de una correccion de resultado.
   \item \texttt{Decision pendiente} \texttt{No bloqueante}: decidir si los mensajes funcionales del frontend tendran catalogo centralizado por feature o un inventario transversal de microcopy operativo.
 \end{itemize}

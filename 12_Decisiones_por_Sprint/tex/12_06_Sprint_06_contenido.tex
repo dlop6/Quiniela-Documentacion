@@ -1,0 +1,394 @@
+\section{Sprint 6}
+
+\subsection{Contexto}
+
+Este documento registra las decisiones cerradas necesarias para planificar y ejecutar Sprint 6 sin ambiguedad. Su objetivo es cerrar los bloqueadores de producto, UX, frontend y backend que afectan scoring, recalculo y leaderboard, sin empujar decisiones al momento de implementacion.
+
+\begin{docnote}
+\textbf{Enfoque del sprint.} Sprint 6 mantiene como goal oficial cerrar el primer ciclo competitivo completo: picks, resultados oficiales, scoring y leaderboard visible. Las decisiones registradas aqui no cambian ese goal; lo vuelven ejecutable sin improvisacion.
+\end{docnote}
+
+\subsection{Resumen ejecutivo}
+
+\begin{longtable}{p{0.44\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Decision} & \textbf{Verdicto} \\
+\midrule
+Superficie visible del leaderboard & Una sola superficie autenticada de ranking con filtros para general, fase y jornada \\
+Precision visual de puntajes no enteros & Enteros sin decimales; valores fraccionarios con exactamente dos decimales visibles \\
+Desglose visual de puntos & Total visible como dato primario; desglose compacto en ranking y desglose expandido solo en perfil o detalle si backend lo expone \\
+Tratamiento de picks especiales en leaderboard filtrado & El ranking filtrado por fase o jornada excluye del puntaje visible los picks especiales \\
+Feedback de resultado corregido & Badge persistente en el partido corregido y aviso breve cuando cambie puntaje o ranking \\
+Modelo de recalculo de Sprint 6 & Recalculo automatico selectivo por partido afectado; recalculo global admin queda fuera del sprint \\
+Autoridad oficial de scoring y ranking & Backend es la unica autoridad oficial; frontend no puede calcular ni ordenar ranking por su cuenta \\
+Politica de refresco frontend tras correccion & Invalida resultados, calendario afectado, score visible y leaderboard activo; no consume campos no garantizados por contrato \\
+Partido cancelado con resultado persistido & Mientras el partido siga en \texttt{CANCELADO}, no es utilizable para scoring aunque exista un \texttt{Result} persistido \\
+Autoridad operativa entre estado de partido y resultado persistido & Para scoring manda la combinacion consistente entre estado funcional y verdad oficial vigente utilizable; una contradiccion requiere correccion administrativa auditada \\
+Tipo persistente de \texttt{ScoreEntry.points} & Para Sprint 6, \texttt{ScoreEntry.points} debe persistirse como \texttt{Float}; \texttt{Int} contradice el scoring fraccional oficial sin redondeo \\
+Contrato de \texttt{ScoreEntry.reason} & Campo obligatorio sin enum cerrado en Sprint 6; debe conservar contexto funcional suficiente del origen del puntaje \\
+Contenido minimo de \texttt{ScoreEntry.reason} & Debe distinguir al menos ausencia valida de pick, outcome correcto, marcador exacto y cancelacion sin resultado utilizable \\
+Politica de actualizacion de \texttt{ScoreEntry.reason} & La fila vigente de \texttt{ScoreEntry} se actualiza con el motivo final vigente; el historial queda en auditoria, no versionado dentro de la misma fila \\
+Trigger de recalc selectivo en QH-150 & Se dispara en manual y sync, pero solo ante cambio efectivo del marcador oficial vigente \\
+Definicion de cambio efectivo en QH-150 & Solo cambia si cambia \texttt{homeGoals} y/o \texttt{awayGoals}; metadata sin cambio de marcador no recalcula \\
+Alcance del recalc selectivo en QH-150 & Solo recalcula \texttt{ScoreEntry} de picks del mismo \texttt{matchId}; no hay recalc global, por torneo ni por usuario \\
+Contrato interno minimo del recalc selectivo & Input canonico con \texttt{matchId}, origen, causa y contexto; output con contadores, afectados y ventana temporal \\
+Trazabilidad minima de recalc selectivo & Debe registrar \texttt{AuditEvent} con accion \texttt{match\_score\_recalculated} y contadores del resultado \\
+Politica transaccional del recalc selectivo & El resultado oficial se persiste primero; el recalc corre despues y su fallo no revierte la verdad oficial vigente \\
+Error publico ante fallo de recalc selectivo & Devuelve \texttt{internal\_error}; el detalle fino vive en auditoria y logging interno \\
+Idempotencia operativa del recalc selectivo & Un re-run sobre el mismo estado final converge sin cambios efectivos y deja trazabilidad del intento \\
+Relacion de QH-150 con predicciones especiales & QH-150 recalcula solo picks por partido; excluye \texttt{specialPredictionId} \\
+Evidencia minima backend para QH-150 & Debe cubrir cambio efectivo manual y sync, no-op por metadata, idempotencia, aislamiento por match y auditoria \\
+\bottomrule
+\end{longtable}
+
+\subsection{Leaderboard y score visible}
+
+\begin{docnote}
+\textbf{Decision.} Superficie visible del leaderboard
+
+\textbf{Verdicto.} Sprint 6 usa una sola superficie autenticada de ranking con filtros para vista general, por fase y por jornada. No se crean pantallas top-level separadas para cada corte del leaderboard.
+
+\textbf{Por que.} Desde principios de HCI, una sola superficie reduce costo de navegacion, mejora descubribilidad y evita que el usuario tenga que aprender varias pantallas para el mismo objetivo funcional. Desde software engineering, tambien reduce duplicacion de estados, queries y componentes.
+
+\textbf{Impacto.} Frontend planifica una sola pagina o modulo de leaderboard con controles de filtro visibles. Backend debe soportar el mismo modelo conceptual de cortes sin obligar al cliente a recomponer ranking localmente.
+
+\textbf{Documento dueno.} \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex} y \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Precision visual de puntajes no enteros
+
+\textbf{Verdicto.} El valor oficial de scoring conserva precision exacta en backend. En UI, los puntajes enteros se muestran sin decimales y los puntajes fraccionarios se muestran con exactamente dos decimales visibles.
+
+\textbf{Por que.} El dominio ya habia cerrado que backend no redondea. A nivel de UX, mostrar enteros sin ruido visual mejora legibilidad; mostrar fracciones con dos decimales evita ambiguedad, mantiene consistencia visual y representa correctamente valores esperables como \texttt{6.25}, \texttt{3.75} o \texttt{4.50}.
+
+\textbf{Impacto.} El frontend no debe truncar ni redondear de forma que altere la percepcion del valor oficial. El orden del leaderboard sigue viniendo del backend; el formato visual no redefine ranking.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex} y \texttt{04\_Frontend/tex/04\_03\_Estado\_Validacion\_y\_Datos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Desglose visual de puntos
+
+\textbf{Verdicto.} En leaderboard, el total visible del scope activo es el dato primario. El desglose se presenta como contexto secundario compacto. El desglose expandido vive solo en perfil o detalle de rendimiento si el backend expone ese contrato.
+
+\textbf{Por que.} En superficies densas como un ranking, HCI recomienda priorizar escaneo rapido y comparacion clara. Un detalle excesivo dentro de cada fila degrada legibilidad. Separar total primario y desglose secundario mantiene transparencia sin sobrecargar la tabla.
+
+\textbf{Impacto.} La vista general puede mostrar contexto compacto del tipo \texttt{Partidos + Especiales}. La vista de perfil o detalle puede mostrar desglose mas amplio cuando exista contrato oficial. Sprint 6 no obliga a un breakdown exhaustivo embebido en cada fila del leaderboard.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex} y \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Picks especiales en leaderboard filtrado
+
+\textbf{Verdicto.} El leaderboard filtrado por fase o jornada muestra solo puntaje atribuible al scope filtrado. Los puntos de \texttt{Campeon} y \texttt{Goleador} no forman parte del puntaje visible de una vista filtrada.
+
+\textbf{Por que.} Las predicciones especiales pertenecen al acumulado del torneo completo y no a una jornada o fase puntual. Incluirlas dentro de un corte filtrado rompe el modelo mental del usuario y dificulta interpretar por que una posicion cambia en esa vista.
+
+\textbf{Impacto.} El leaderboard general sigue usando el total acumulado del torneo. Una vista filtrada puede mostrar el total general como contexto secundario si el producto lo considera util, pero el puntaje principal del ranking filtrado excluye picks especiales.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}
+\end{docnote}
+
+\subsection{Correcciones y recalculo}
+
+\begin{docnote}
+\textbf{Decision.} Feedback visible de resultado corregido
+
+\textbf{Verdicto.} Cuando un resultado oficial fue corregido, el partido corregido debe mostrar badge persistente. Si esa correccion cambia puntaje o ranking del usuario, el frontend debe mostrar ademas un aviso breve y explicito.
+
+\textbf{Por que.} Desde principios de feedback y visibilidad del estado del sistema, el usuario debe entender que hubo una correccion y si tuvo consecuencia competitiva. El badge persistente da trazabilidad visible; el aviso breve comunica impacto sin convertir el leaderboard en una consola de auditoria.
+
+\textbf{Impacto.} El calendario o card del partido corregido es la superficie primaria de contexto persistente. El leaderboard refleja el nuevo dato por refresco, pero no es la superficie principal de notificacion.
+
+\textbf{Documento dueno.} \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex} y \texttt{04\_Frontend/tex/04\_03\_Estado\_Validacion\_y\_Datos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Modelo de recalculo de Sprint 6
+
+\textbf{Verdicto.} En Sprint 6, el modelo obligatorio es recalculo automatico selectivo por partido afectado y participantes impactados. No se exige un endpoint o proceso de recalculo global del torneo para cerrar el sprint.
+
+\textbf{Por que.} Desde backend engineering, el recalculo selectivo reduce superficie de fallo, costo operacional y riesgo de side effects masivos. Tambien permite trazar mejor la causa entre correccion de resultado y cambio competitivo.
+
+\textbf{Impacto.} Un cambio efectivo de resultado oficial debe disparar recalc idempotente sobre el subconjunto afectado. Si luego el producto necesita un recalc global administrativo, esa capacidad debe abrirse explicitamente en un sprint posterior.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Trigger de recalc selectivo en QH-150
+
+\textbf{Verdicto.} En QH-150, el recalc selectivo se dispara tanto desde \texttt{POST /matches/:matchId/result/manual} como desde \texttt{POST /matches/:matchId/result/sync}. En ambos flujos, la condicion es estricta: solo corre cuando hubo cambio efectivo del resultado oficial vigente.
+
+\textbf{Por que.} El proceso de resultados ya habia quedado cerrado como flujo manual o sincronizado, y ambos habilitan recalculo cuando existe cambio efectivo. Mantener el mismo criterio evita que backend produzca comportamientos competitivos distintos segun el origen del resultado.
+
+\textbf{Impacto.} Ninguno de los dos flujos puede disparar recalc por simple upsert tecnico, reescritura equivalente o metadata sin impacto competitivo.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_05\_Casos\_Borde.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Definicion de cambio efectivo en QH-150
+
+\textbf{Verdicto.} Para QH-150, existe cambio efectivo unicamente cuando cambia el marcador oficial vigente del partido, es decir, \texttt{homeGoals} y/o \texttt{awayGoals}. Cambios solo en metadata interna como \texttt{source}, \texttt{recordedByUserId}, \texttt{externalReference}, \texttt{updatedAt} u otros campos auxiliares no disparan recalc.
+
+\textbf{Por que.} El recalc competitivo existe para recomputar scoring cuando cambia el dato que define puntos. Permitir que metadata operativa dispare recalc introduciria ruido tecnico sin cambio real de verdad deportiva aplicada.
+
+\textbf{Impacto.} Backend debe comparar el marcador oficial vigente anterior y el nuevo antes de habilitar recalc. Un rewrite del mismo score no cuenta como cambio efectivo.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{12\_Decisiones\_por\_Sprint/tex/12\_06\_Sprint\_06\_contenido.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Alcance del recalc selectivo en QH-150
+
+\textbf{Verdicto.} El recalc selectivo de QH-150 afecta exclusivamente los \texttt{ScoreEntry} de picks por partido asociados al mismo \texttt{matchId}. Debe excluir cualquier recomputacion de otros \texttt{matchId}, incluso del mismo usuario. QH-150 no implementa recalc global, por torneo ni por usuario.
+
+\textbf{Por que.} Sprint 6 ya habia cerrado recalc selectivo por partido afectado y participantes impactados. Expandirlo a torneo completo, a usuario completo o a otros partidos reabriria alcance y riesgo operativo fuera del ticket.
+
+\textbf{Impacto.} La unidad de recalc debe localizar solo picks y score entries del partido afectado. Cualquier necesidad de torneo completo queda fuera del ticket y debe abrirse aparte.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{12\_Decisiones\_por\_Sprint/tex/12\_06\_Sprint\_06\_contenido.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato interno minimo del recalc selectivo
+
+\textbf{Verdicto.} La unidad interna reutilizable de QH-150 usa el siguiente contrato minimo obligatorio.
+
+\textbf{Input canonico.}
+\begin{verbatim}
+{
+  matchId: string;
+  triggerSource: "manual" | "sync";
+  cause: "official_result_changed";
+  actorUserId?: string | null;
+  requestId?: string | null;
+}
+\end{verbatim}
+
+\textbf{Output canonico.}
+\begin{verbatim}
+{
+  matchId: string;
+  affectedUsersCount: number;
+  createdCount: number;
+  updatedCount: number;
+  unchangedCount: number;
+  startedAt: Date;
+  finishedAt: Date;
+}
+\end{verbatim}
+
+\textbf{Por que.} QH-150 necesita un contrato suficientemente explicito para ser reutilizable desde \texttt{results}, expresar idempotencia y dejar trazabilidad, sin acoplarse todavia a leaderboard final ni a contratos HTTP publicos.
+
+\textbf{Impacto.} No se requieren campos adicionales obligatorios para cerrar el ticket. Si luego aparece una necesidad de observabilidad mas rica, se puede ampliar sin romper este minimo.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Trazabilidad minima de recalc selectivo
+
+\textbf{Verdicto.} QH-150 debe registrar trazabilidad minima en \texttt{AuditEvent}. La accion canonica es \texttt{match\_score\_recalculated}. El evento debe incluir como minimo: actor identificable, \texttt{entityType = Match}, \texttt{entityId = matchId}, \texttt{requestId} cuando exista, y un \texttt{metadataJson} con \texttt{triggerSource}, \texttt{cause}, \texttt{affectedUsersCount}, \texttt{createdCount}, \texttt{updatedCount}, \texttt{unchangedCount}, \texttt{startedAt} y \texttt{finishedAt}.
+
+\textbf{Por que.} El ticket exige trazabilidad minima del recalc. A la vez, el modelo de auditoria del proyecto ya concentra evidencia de procesos criticos sin convertir cada entidad derivada en una historia versionada propia.
+
+\textbf{Impacto.} QH-150 no necesita persistir before/after por usuario dentro del evento minimo. La auditoria del intento y sus contadores es suficiente para el cierre del ticket.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/tex/05\_04\_Auditoria\_y\_Trazabilidad.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Politica transaccional del recalc selectivo
+
+\textbf{Verdicto.} En QH-150, el resultado oficial vigente se persiste primero. El recalc selectivo corre inmediatamente despues como paso separado del flujo de aplicacion. Si el recalc falla, el resultado oficial no se revierte: la verdad oficial vigente se conserva y el sistema reporta error operativo con trazabilidad.
+
+\textbf{Por que.} El modulo \texttt{results} ya es autoridad de la verdad oficial vigente. Revertir el resultado por un fallo posterior de recalc haria que un problema operativo de scoring borre una verdad oficial ya consolidada, lo cual contradice la separacion de responsabilidades del dominio.
+
+\textbf{Impacto.} El sistema puede quedar temporalmente con resultado oficial persistido y recalc pendiente o fallido, pero nunca debe sacrificar la verdad oficial vigente por una falla de recomputacion derivada.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{06\_Integraciones/tex/06\_02\_Sincronizacion\_y\_Fallback\_Manual.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Error publico ante fallo de recalc selectivo
+
+\textbf{Verdicto.} Si QH-150 falla al ejecutar recalc selectivo, el codigo publico aplicable es \texttt{internal\_error}. La respuesta publica no expone detalle fino adicional; ese detalle vive en logging y auditoria interna.
+
+\textbf{Por que.} Un fallo de recalc posterior a persistencia del resultado oficial es un problema operativo interno, no una nueva regla funcional para el usuario. Exponer detalles de implementacion no aporta valor funcional y aumenta ruido contractual.
+
+\textbf{Impacto.} Backend conserva el envelope estandar del proyecto y deriva el diagnostico fino a observabilidad interna.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/tex/05\_04\_Auditoria\_y\_Trazabilidad.tex} y envelope estandar vigente del backend
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Idempotencia operativa del recalc selectivo
+
+\textbf{Verdicto.} Si QH-150 se ejecuta dos veces sobre el mismo estado final de resultado, la segunda ejecucion debe converger sin cambios efectivos de \texttt{ScoreEntry}. En ese caso, el output esperado es \texttt{createdCount = 0}, \texttt{updatedCount = 0} y \texttt{unchangedCount = affectedUsersCount}. El intento igualmente deja trazabilidad.
+
+\textbf{Por que.} El dominio ya habia cerrado que multiples recalculos sobre el mismo partido corregido deben converger al mismo estado final. Expresar esta convergencia con contadores explicitos evita ambiguedad tecnica y facilita pruebas.
+
+\textbf{Impacto.} Un re-run idempotente no se trata como error ni como no-op invisible; se trata como ejecucion valida sin cambios efectivos.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_05\_Casos\_Borde.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Relacion de QH-150 con predicciones especiales
+
+\textbf{Verdicto.} QH-150 recalcula solo \texttt{ScoreEntry} de picks por partido. Debe excluir cualquier \texttt{specialPredictionId}. No hay excepciones en este ticket.
+
+\textbf{Por que.} El trigger, el alcance selectivo y el ticket mismo estan definidos por cambio de resultado oficial de un partido. Las predicciones especiales no dependen del \texttt{matchId} corregido bajo este alcance.
+
+\textbf{Impacto.} La logica de QH-150 opera sobre score entries vinculados al partido afectado y deja fuera scoring especial hasta el ticket que corresponda.
+
+\textbf{Documento dueno.} \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Evidencia minima backend para QH-150
+
+\textbf{Verdicto.} Para considerar QH-150 cerrado en backend, la evidencia minima obligatoria debe cubrir:
+\begin{itemize}
+  \item cambio efectivo manual que recalcula solo el \texttt{matchId} afectado;
+  \item cambio efectivo por sync que recalcula solo el \texttt{matchId} afectado;
+  \item no-op competitivo cuando solo cambia metadata sin cambio de marcador;
+  \item segunda ejecucion idempotente sobre el mismo estado final con cero cambios efectivos;
+  \item aislamiento: partidos no relacionados permanecen intactos;
+  \item exclusion de \texttt{specialPredictionId};
+  \item registro de \texttt{AuditEvent} con \texttt{action = match\_score\_recalculated}.
+\end{itemize}
+
+\textbf{Por que.} Es el minimo que demuestra trigger correcto, alcance selectivo, convergencia, trazabilidad y ausencia de side effects fuera del partido afectado.
+
+\textbf{Impacto.} QH-150 no requiere frontend para validarse. Su barra de aceptacion backend vive en pruebas unitarias e integracion del flujo interno.
+
+\textbf{Documento dueno.} \texttt{08\_Testing/tex/08\_03\_Criterios\_de\_Aceptacion.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{12\_Decisiones\_por\_Sprint/tex/12\_06\_Sprint\_06\_contenido.tex}
+\end{docnote}
+
+\subsection{Scoring persistido y edge cases}
+
+\begin{docnote}
+\textbf{Decision.} Partido cancelado con resultado persistido
+
+\textbf{Verdicto.} Si un partido permanece en estado \texttt{CANCELADO}, ese partido no es utilizable para scoring aunque exista un \texttt{Result} persistido. Ese resultado puede existir como dato operativo o inconsistente, pero no habilita puntaje mientras el estado funcional siga siendo \texttt{CANCELADO}.
+
+\textbf{Por que.} La documentacion oficial ya define \texttt{Cancelado} como partido sin resultado oficial utilizable para la quiniela. Ademas, el dominio fija como invariante que un partido cancelado no produce puntaje. Permitir scoring por el solo hecho de tener un \texttt{Result} persistido introduciria una segunda semantica no documentada para \texttt{CANCELADO}.
+
+\textbf{Impacto.} Si aparece un \texttt{Result} persistido sobre un partido \texttt{CANCELADO}, el caso se trata como inconsistencia operativa y requiere correccion administrativa auditada antes de reabrir scoring. Persistido no equivale por si solo a utilizable.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_05\_Casos\_Borde.tex}, \texttt{05\_Datos/tex/05\_03\_Invariantes\_de\_Datos.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Autoridad operativa entre estado de partido y resultado persistido
+
+\textbf{Verdicto.} Para scoring no basta con que exista un \texttt{Result} persistido. El backend solo puede puntuar cuando existe una verdad oficial vigente utilizable y esa verdad es consistente con el estado funcional del partido. Si \texttt{match.status} y \texttt{Result} se contradicen, no se puntua automaticamente; primero se corrige la inconsistencia con trazabilidad.
+
+\textbf{Por que.} El proceso de scoring parte de un resultado oficial vigente utilizable, pero el modelo de estados y edge cases sigue restringiendo cuando un partido puede considerarse competitivo a efectos de puntaje. Separar persistencia de utilabilidad evita que una escritura de datos se convierta accidentalmente en autorizacion competitiva.
+
+\textbf{Impacto.} El modulo \texttt{results} puede conservar y exponer la verdad oficial vigente, pero el modulo \texttt{scoring} debe rechazar o saltar casos con contradiccion documental entre estado funcional y resultado consumible. La resolucion del conflicto pertenece a operacion administrativa auditada, no al scoring automatico.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}, \texttt{01\_Producto\_y\_Reglas/tex/01\_02\_Estados\_y\_Flujos.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_05\_Casos\_Borde.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Tipo persistente de \texttt{ScoreEntry.points}
+
+\textbf{Verdicto.} En Sprint 6, \texttt{ScoreEntry.points} debe persistirse como \texttt{Float}. Mantenerlo como \texttt{Int} contradice el scoring oficial cuando el puntaje derivado tiene componente fraccionario por multiplicador de fase.
+
+\textbf{Por que.} El dominio ya cerro que el calculo conserva precision exacta y no debe redondearse internamente. Ademas, la implementacion de scoring por partido ya produce valores como \texttt{6.25}, \texttt{4.5} y \texttt{5.25}. Si la persistencia se mantiene en \texttt{Int}, backend se veria forzado a truncar o redondear un valor que la regla oficial exige conservar.
+
+\textbf{Impacto.} El ticket de persistencia de \texttt{ScoreEntry} debe incluir migracion de esquema para reemplazar \texttt{Int} por \texttt{Float} en \texttt{points}. Este cambio no abre una tabla paralela ni redefine la formula de scoring; solo alinea la capa de datos con el valor oficial ya cerrado por producto y calculado por backend.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y runtime de \texttt{QH-147}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato de \texttt{ScoreEntry.reason}
+
+\textbf{Verdicto.} En Sprint 6, \texttt{ScoreEntry.reason} es obligatorio, no puede quedar vacio y no se cierra como enum oficial en esta fase. Su contrato minimo es conservar contexto funcional suficiente para explicar el origen del puntaje derivado.
+
+\textbf{Por que.} La documentacion del ticket exige \texttt{reason} y trazabilidad funcional, pero no fija un catalogo cerrado. Forzar un enum nuevo sin fuente duena reabriria una decision que los documentos actuales no cerraron explicitamente.
+
+\textbf{Impacto.} Backend debe persistir \texttt{reason} en create y update de \texttt{ScoreEntry}. Los tickets de Sprint 6 no deben asumir que existe ya un enum oficial ni abrir un contrato mas rigido sin documentarlo en una fuente de dominio o datos.
+
+\textbf{Documento dueno.} \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y \texttt{05\_Datos/tex/05\_02\_Entidades\_y\_Relaciones.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contenido minimo de \texttt{ScoreEntry.reason}
+
+\textbf{Verdicto.} Aunque \texttt{reason} no se cierre como enum oficial en Sprint 6, el valor persistido debe dejar claro, como minimo, cual fue la salida funcional del scoring por partido. Debe distinguir al menos: ausencia valida de pick, outcome correcto, marcador exacto y partido cancelado sin resultado utilizable.
+
+\textbf{Por que.} Esas distinciones ya aparecen como salidas obligatorias del calculo y como casos minimos de cobertura. Exigirlas dentro de \texttt{reason} alinea persistencia, trazabilidad funcional y testing sin imponer todavia una taxonomia de dominio mas amplia que la documentada.
+
+\textbf{Impacto.} Las implementaciones de Sprint 6 pueden resolver \texttt{reason} como texto controlado o formato interno equivalente, siempre que cubran como minimo esas categorias funcionales y no dejen razones opacas o vacias.
+
+\textbf{Documento dueno.} \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Politica de actualizacion de \texttt{ScoreEntry.reason}
+
+\textbf{Verdicto.} \texttt{ScoreEntry} mantiene una sola fila vigente por combinacion competitiva documentada en el ticket. Si cambia el puntaje derivado, la misma fila se actualiza y \texttt{reason} pasa a reflejar el motivo vigente final. El historial de cambios no se versiona dentro de \texttt{ScoreEntry}; vive en auditoria.
+
+\textbf{Por que.} Sprint 6 ya habia cerrado unicidad por entrada y comportamiento \texttt{update}, no \texttt{create}, cuando cambia el valor derivado. A la vez, la trazabilidad historica del sistema pertenece al subdominio de auditoria. Duplicar o versionar razones dentro de la misma entidad mezclaria scoring derivado con historia operativa.
+
+\textbf{Impacto.} Recalculo y correccion de resultado deben converger sobre una unica fila vigente de \texttt{ScoreEntry}. Si se necesita reconstruir el antes y despues, la fuente es \texttt{AuditEvent} y no un versionado embebido del score derivado.
+
+\textbf{Documento dueno.} \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md}, \texttt{05\_Datos/tex/05\_04\_Auditoria\_y\_Trazabilidad.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\subsection{Fronteras tecnicas obligatorias}
+
+\begin{docnote}
+\textbf{Decision.} Autoridad oficial de scoring y ranking
+
+\textbf{Verdicto.} El backend es la unica autoridad oficial para score visible, desempates y orden del leaderboard. El frontend no puede calcular ranking oficial ni reordenar participantes usando logica propia.
+
+\textbf{Por que.} La coherencia competitiva exige una sola fuente de verdad. Permitir calculo paralelo en cliente abriria drift entre usuarios, bugs de consistencia y tickets ambiguos. Los helpers locales solo son aceptables como apoyo de presentacion no oficial y nunca como fuente de ranking.
+
+\textbf{Impacto.} Los tickets de Sprint 6 deben tratar cualquier helper local de scoring como no autoritativo. La UI consume el derivado oficial del backend para total, posicion y filtros.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{04\_Frontend/tex/04\_03\_Estado\_Validacion\_y\_Datos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Politica de refresco frontend tras correccion de resultado
+
+\textbf{Verdicto.} Ante una correccion manual o una sincronizacion externa con cambio efectivo, el frontend debe invalidar al menos:
+\begin{itemize}
+  \item resultado visible del partido afectado;
+  \item calendario o listado que contiene ese partido;
+  \item score visible del usuario si existe en la UI;
+  \item leaderboard activo y sus filtros visibles;
+  \item detalle de partido o detalle de rendimiento dependiente del cambio.
+\end{itemize}
+
+\textbf{Por que.} Desde software engineering y UX, mostrar score o ranking obsoleto despues de una correccion rompe confianza y genera inconsistencia observable. La politica de invalidacion debe ser explicita para que el cliente no dependa de recargas manuales ni de campos no garantizados.
+
+\textbf{Impacto.} Frontend no debe asumir banderas como \texttt{hasImpact} o \texttt{isCorrected} si backend no las expone formalmente. La reconciliacion se hace por refresco de datos oficiales y no por inferencia local.
+
+\textbf{Documento dueno.} \texttt{04\_Frontend/tex/04\_03\_Estado\_Validacion\_y\_Datos.tex}
+\end{docnote}
+
+\subsection{Alineaciones obligatorias antes de ticketear Sprint 6}
+
+\begin{itemize}
+  \item Los tickets de Sprint 6 no deben asumir campos o rutas de \texttt{results} que el backend no haya formalizado en contrato.
+  \item Los tickets de Sprint 6 no deben reabrir formula de scoring, multiplicadores ni desempates ya cerrados en \texttt{01\_04\_Scoring\_y\_Desempates.tex}.
+  \item Si existe drift documental heredado de Sprint 5 sobre \texttt{results}, el trabajo de Sprint 6 debe escalarlo y sincronizarlo; no puede improvisar una tercera variante.
+\end{itemize}
+
+\subsection{Notas}
+
+\begin{itemize}
+  \item Estas decisiones cierran los pendientes necesarios para redactar tickets de Sprint 6 sin dejar huecos de UX, recalculo o autoridad de scoring.
+  \item La implementacion de Sprint 6 debe seguir principios de HCI: una sola superficie clara por objetivo, feedback visible, baja carga cognitiva y consistencia entre score mostrado y ranking recibido.
+  \item La implementacion de Sprint 6 debe seguir principios de software engineering: autoridad unica del backend, contratos explicitos, recalculo idempotente, filtros no ambiguos y ausencia de logica competitiva oficial en cliente.
+\end{itemize}

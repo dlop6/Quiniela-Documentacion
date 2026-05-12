@@ -31,40 +31,28 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 \subsubsection{Prioridad alta}
 
 \begin{enumerate}
-  \item \textbf{Superficies y duracion del aviso de resultado corregido}\\
+  \item \textbf{Consolidacion del flujo de comprobantes con Google Forms}\\
   Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea frontend}\\
-  Documento responsable: \texttt{01\_05\_Casos\_Borde}\\
-  Motivo: falta definir en que vistas aparece el aviso al usuario y durante cuanto tiempo debe mantenerse visible.
-
-  \item \textbf{Presentacion visual del desglose de puntos}\\
-  Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea frontend}\\
-  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
-  Motivo: falta definir donde se muestra el aporte de picks por partido y predicciones especiales sin alterar el ranking oficial.
+  Criticidad: \texttt{Bloquea activacion y release}\\
+  Documento responsable: \texttt{10\_01\_Roadmap\_y\_Fases}, \texttt{01\_02\_Estados\_y\_Flujos} y \texttt{03\_02\_Procesos\_de\_Negocio}\\
+  Motivo: ya se decidio abandonar upload de comprobantes en la plataforma, pero falta cerrar el contrato operativo entre registro en la app, evidencia enviada por Google Forms y aprobacion/rechazo administrativa en backend.
 \end{enumerate}
 
 \subsubsection{Prioridad media}
 
 \begin{enumerate}
-  \setcounter{enumi}{2}
-  \item \textbf{Precision visual de puntajes no enteros}\\
-  Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea frontend}\\
-  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
-  Motivo: la logica interna ya conserva precision exacta, pero falta fijar con cuantos decimales se mostrara el puntaje al usuario.
-
-  \item \textbf{Tratamiento visual de predicciones especiales en leaderboard por jornada}\\
+  \setcounter{enumi}{1}
+  \item \textbf{Alcance final del track de migracion a Supabase Auth}\\
   Tipo: \texttt{Riesgo}\\
-  Criticidad: \texttt{No bloqueante}\\
-  Documento responsable: \texttt{01\_04\_Scoring\_y\_Desempates}\\
-  Motivo: falta confirmar si la vista por jornada excluye visualmente los puntos de Campeon y Goleador aunque el total general los integre.
+  Criticidad: \texttt{No bloqueante para roadmap competitivo}\\
+  Documento responsable: \texttt{10\_01\_Roadmap\_y\_Fases}\\
+  Motivo: la migracion es trabajo real en curso, pero no tiene sprint competitivo fijo. Falta decidir solo su cierre operativo final, no su pertenencia al goal de los sprints competitivos.
 \end{enumerate}
 
 \subsubsection{Prioridad baja}
 
 \begin{enumerate}
-  \setcounter{enumi}{4}
+  \setcounter{enumi}{2}
   \item \textbf{Persistencia explicita de \texttt{SIN\_PICK}}\\
   Tipo: \texttt{Decision pendiente}\\
   Criticidad: \texttt{No bloqueante}\\
@@ -87,6 +75,41 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 \subsection{Decisiones cerradas recientemente}
 
 \begin{itemize}
+  \item \textbf{Superficie del leaderboard en Sprint 6}\\
+  Estado: \texttt{Cerrada en Sprint 6}\\
+  Veredicto: una sola superficie autenticada de ranking con filtros para general, fase y jornada.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_06\_Sprint\_06.tex}
+
+  \item \textbf{Precision visual y desglose de scoring en Sprint 6}\\
+  Estado: \texttt{Cerrada en Sprint 6}\\
+  Veredicto: enteros sin decimales, fraccionarios con dos decimales visibles; el total es el dato primario y el desglose es contexto secundario.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_06\_Sprint\_06.tex} y \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}
+
+  \item \textbf{Tratamiento de picks especiales en leaderboard filtrado}\\
+  Estado: \texttt{Cerrada en Sprint 6}\\
+  Veredicto: la vista filtrada por jornada o fase excluye picks especiales del puntaje principal visible.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_06\_Sprint\_06.tex}
+
+  \item \textbf{Feedback visible de resultado corregido en Sprint 6}\\
+  Estado: \texttt{Cerrada en Sprint 6}\\
+  Veredicto: badge persistente en el partido corregido y aviso breve cuando cambie puntaje o ranking.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_06\_Sprint\_06.tex}
+
+  \item \textbf{Modelo de recalculo minimo de Sprint 6}\\
+  Estado: \texttt{Cerrada en Sprint 6}\\
+  Veredicto: recalculo automatico selectivo por partido afectado; el recalculo global admin queda fuera del cierre minimo del sprint.\\
+  Registro de cierre: \texttt{12\_Decisiones\_por\_Sprint/12\_06\_Sprint\_06.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+
+  \item \textbf{Ubicacion temporal del refactor de comprobantes con Google Forms}\\
+  Estado: \texttt{Cerrada}\\
+  Veredicto: el refactor del flujo de comprobantes para abandonar upload en plataforma y consolidar evidencia via Google Forms se planifica para Sprint 7.\\
+  Registro de cierre: \texttt{10\_Planeacion/tex/10\_01\_Roadmap\_y\_Fases.tex}
+
+  \item \textbf{Tratamiento del track de migracion a Supabase Auth}\\
+  Estado: \texttt{Cerrada}\\
+  Veredicto: se reconoce como track paralelo real sin sprint competitivo fijo y no redefine por si solo el goal de los sprints competitivos.\\
+  Registro de cierre: \texttt{10\_Planeacion/tex/10\_01\_Roadmap\_y\_Fases.tex}
+
   \item \textbf{Presentacion del flujo separado de predicciones especiales}\\
   Estado: \texttt{Cerrada en Sprint 3}\\
   Veredicto: las predicciones especiales viven en una vista separada dentro del modulo funcional de picks y no se mezclan con la captura de picks por partido.\\

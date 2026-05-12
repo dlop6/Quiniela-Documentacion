@@ -36,6 +36,18 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
   \item La existencia de un resultado oficial visible no queda atada de forma estricta al estado textual \texttt{FINALIZADO}; si existe un resultado oficial vigente, esa es la verdad visible para el frontend. Si no existe, se devuelve vacio.
 \end{itemize}
 
+\subsubsection{Contrato acordado para correccion manual de resultado}
+
+\begin{itemize}
+  \item La operacion administrativa acordada para \texttt{QH-112} es \texttt{POST /matches/\{matchId\}/result/manual}.
+  \item La operacion requiere \texttt{requireAuthenticatedUser} y \texttt{requireAdministrativeUser}.
+  \item El payload minimo es \texttt{homeGoals}, \texttt{awayGoals}, \texttt{justification}.
+  \item \texttt{justification} es obligatoria y validada en frontera.
+  \item La operacion tiene semantica de upsert: crea si no existe resultado y actualiza si existe.
+  \item Si el nuevo marcador es identico al vigente, responde \texttt{200 OK} con \texttt{resultChanged=false}.
+  \item La operacion registra trazabilidad funcional minima en auditoria.
+\end{itemize}
+
 \subsubsection{Operaciones publicas y autenticadas esperadas}
 
 \begin{longtable}{p{0.16\textwidth}p{0.25\textwidth}p{0.24\textwidth}p{0.25\textwidth}}
@@ -82,6 +94,9 @@ La intencion es descriptiva. No reemplaza una especificacion exhaustiva tipo Ope
   \item La consulta de resultado oficial de \texttt{QH-107} usa contrato publico minimo y no expone metadatos internos de persistencia o trazabilidad.
   \item Las operaciones administrativas deben exigir autorizacion, justificacion cuando aplique y salida trazable.
   \item Las vistas de leaderboard deben responder con el ranking derivado oficial, no con datos parciales sin contexto de scoring.
+  \item La experiencia de leaderboard de Sprint 6 se modela como una sola superficie conceptual de ranking con cortes general, por fase y por jornada.
+  \item La respuesta de leaderboard debe entregar posicion y puntaje oficial del scope consultado; el cliente no recalcula ni recompone orden.
+  \item Si existe desglose visible, ese desglose es secundario y no reemplaza el valor principal del ranking.
 \end{itemize}
 
 \subsection{Edge Cases}

@@ -86,7 +86,9 @@ Panel admin de scoring y auditoria & admin & disparar recalculos y consultar tra
 
 \begin{itemize}
   \item El leaderboard debe mostrar el puntaje total acumulado como criterio principal de orden.
-  \item El frontend debe poder ofrecer desglose de aportes por picks y predicciones especiales si el producto decide exponerlo.
+  \item El leaderboard vive en una sola superficie autenticada con filtros para general, fase y jornada.
+  \item El frontend debe poder ofrecer desglose de aportes por picks y predicciones especiales como contexto secundario, no como dato primario de ranking.
+  \item En vistas filtradas por fase o jornada, el valor principal visible corresponde solo al scope filtrado.
   \item La consulta del ranking no debe recalcular logica en cliente; solo presenta el derivado oficial recibido del backend.
 \end{itemize}
 
@@ -118,7 +120,7 @@ Panel admin de scoring y auditoria & admin & disparar recalculos y consultar tra
 \begin{itemize}
   \item Un usuario autenticado pero \texttt{PENDIENTE}, \texttt{RECHAZADO} o \texttt{BLOQUEADO} puede acceder a partes visibles del frontend, pero no debe poder ejecutar flujos reservados a \texttt{ACTIVO}.
   \item Un partido \texttt{POSTERGADO} puede requerir actualizar la presentacion del lock sin que eso implique permitir al frontend decidir la regla por si mismo.
-  \item Un resultado \texttt{CORREGIDO} puede requerir aviso visible al usuario sin exponer detalle operativo completo del cambio.
+  \item Un resultado \texttt{CORREGIDO} requiere badge persistente en el partido afectado y puede disparar un aviso breve cuando cambie puntaje o ranking, sin exponer detalle operativo completo del cambio.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -128,13 +130,6 @@ Panel admin de scoring y auditoria & admin & disparar recalculos y consultar tra
   \item Ninguna pagina administrativa debe estar disponible sin autorizacion valida.
   \item Las pantallas del frontend representan estados del dominio; no los redefinen.
   \item Toda pagina con accion critica debe dejar claro su estado de exito, rechazo o restriccion.
-\end{itemize}
-
-\subsection{Preguntas abiertas}
-
-\begin{itemize}
-  \item Confirmar si el leaderboard por jornada sera una pantalla propia o un filtro dentro de una unica superficie de ranking.
-  \item Confirmar si el aviso de resultado corregido aparecera en calendario, detalle de partido, leaderboard o en mas de una superficie del frontend.
 \end{itemize}
 
 \subsection{Decisiones pendientes}

@@ -83,6 +83,9 @@ Final & x2.0 \\
       \item por jornada;
       \item por fase.
     \end{itemize}
+  \item La vista general usa el total acumulado del torneo como valor principal.
+  \item Las vistas filtradas por jornada o fase muestran como valor principal solo el puntaje atribuible al scope filtrado.
+  \item Las predicciones especiales \texttt{Campeon} y \texttt{Goleador} no forman parte del puntaje principal de una vista filtrada por jornada o fase.
 \end{itemize}
 
 \subsubsection{Desempates}
@@ -102,6 +105,8 @@ Orden oficial de desempates:
   \item Si un resultado oficial se corrige, el puntaje afectado debe recalcularse de forma deterministica.
   \item Si un partido fue cancelado sin resultado oficial utilizable, ese partido no altera el ranking.
   \item Si el formato visual del puntaje usa redondeo o truncamiento para mostrar datos, ese formato no puede alterar el orden real del leaderboard.
+  \item Si un puntaje es entero, la interfaz puede mostrarlo sin decimales.
+  \item Si un puntaje tiene componente fraccionario, la interfaz debe mostrar exactamente dos decimales visibles.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -112,17 +117,14 @@ Orden oficial de desempates:
   \item El leaderboard refleja solo resultados oficiales vigentes.
   \item El total acumulado es la unica base oficial de ranking.
   \item Las predicciones especiales suman al total, aunque puedan mostrarse en desglose.
+  \item El formato visual del score nunca redefine ni altera el valor oficial de calculo.
 \end{itemize}
 
-\subsection{Preguntas abiertas}
+\subsection{Presentacion visual acordada}
 
 \begin{itemize}
-  \item Confirmar la precision visual exacta con la que se mostraran puntajes no enteros en la interfaz.
-\end{itemize}
-
-\subsection{Decisiones pendientes}
-
-\begin{itemize}
-  \item `Decision pendiente` `Bloquea frontend`: definir como se presenta visualmente el desglose de puntos en leaderboard, perfil y detalle de rendimiento.
-  \item `Decision pendiente` `No bloqueante`: confirmar si el leaderboard por jornada excluye visualmente las predicciones especiales aunque el total general las incluya.
+  \item En leaderboard, el puntaje visible del scope activo es el dato primario.
+  \item El desglose se presenta como contexto secundario, no como reemplazo del total oficial.
+  \item En vista general, el desglose compacto puede separar \texttt{Partidos} y \texttt{Especiales}.
+  \item El desglose expandido de rendimiento vive en perfil o detalle si el backend expone ese contrato.
 \end{itemize}

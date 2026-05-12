@@ -1,0 +1,199 @@
+\section{Sprint 5}
+
+\subsection{Contexto}
+
+Este documento registra las decisiones cerradas para Sprint 5 sobre integracion de resultados oficiales y correccion manual, tomando como base los tickets \texttt{QH-111} y \texttt{QH-112}. El objetivo es dejar una frontera tecnica sin ambiguedad para backend, frontend, contratos y auditoria.
+
+\begin{docnote}
+\textbf{Enfoque del sprint.} Sprint 5 cierra la autoridad del resultado oficial visible, fallback manual controlado y trazabilidad minima. No cierra scoring completo ni leaderboard final.
+\end{docnote}
+
+\subsection{Resumen ejecutivo}
+
+\begin{longtable}{p{0.44\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Decision} & \textbf{Verdicto} \\
+\midrule
+Proveedor externo recomendado para MVP & football-data.org \\
+Estrategia de sincronizacion MVP & corrida batch diaria + ejecucion manual administrativa (sin near-real-time) \\
+Identificador externo de partido & \texttt{Match.externalProvider + Match.externalMatchId} \\
+Regla de persistencia automatica & solo \texttt{FINISHED} con \texttt{score.fullTime} no nulo \\
+Precedencia entre fuentes & \texttt{MANUAL\_OVERRIDE} prevalece sobre sync externo \\
+Superficie manual de correccion & \texttt{POST /matches/\{matchId\}/result/manual} \\
+Semantica de correccion manual & upsert controlado \\
+Politica de correccion identica & permitida, retorna \texttt{resultChanged=false} \\
+Proteccion del endpoint manual & requiere autenticacion y rol administrativo \\
+Trazabilidad minima en QH-112 & \texttt{AuditEvent} funcional minimo; detalle operativo de sync en QH-114 \\
+\bottomrule
+\end{longtable}
+
+\subsection{Decisiones cerradas de QH-111}
+
+\begin{docnote}
+\textbf{Decision.} Proveedor externo para MVP
+
+\textbf{Verdicto.} Se cierra \texttt{football-data.org} como proveedor recomendado para Sprint 5.
+
+\textbf{Por que.} La POC validada permitio consultar directamente World Cup 2026 en el plan probado, incluyendo partidos por competicion, por id y por batch, con menor incertidumbre operativa que la alternativa en plan Free.
+
+\textbf{Impacto.} QH-111 implementa adapter concreto de football-data.org, manteniendo encapsulamiento de proveedor para evitar lock de dominio.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Estrategia de sincronizacion para MVP
+
+\textbf{Verdicto.} La estrategia base es corrida batch diaria (ventana operativa definida por operacion) y ejecucion manual ``sync now'' bajo superficie admin. No se implementa polling near-real-time en este sprint.
+
+\textbf{Por que.} Para quiniela MVP no es requisito de negocio actualizar en vivo por segundo; un flujo batch controlado reduce complejidad, costo y riesgo de incidentes.
+
+\textbf{Impacto.} El cron fino queda en ticket posterior de scheduler. QH-111 debe dejar el caso de uso listo para ser invocado tanto por job diario como por disparo manual.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Mapping oficial externo/interno
+
+\textbf{Verdicto.} El mapping oficial de partido se resuelve con \texttt{Match.externalProvider + Match.externalMatchId}. El sistema no crea partidos automaticamente cuando no existe mapping.
+
+\textbf{Por que.} Reutilizar \texttt{Result.externalReference} para localizar partidos mezcla responsabilidades y debilita trazabilidad del partido.
+
+\textbf{Impacto.} Un partido externo no mapeado se registra como skip \texttt{external\_match\_not\_mapped}; no genera alta implicita de \texttt{Match}.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Regla de persistencia automatica de resultado
+
+\textbf{Verdicto.} Solo se persiste resultado externo cuando el partido viene \texttt{FINISHED} y \texttt{score.fullTime.home/away} son no nulos.
+
+\textbf{Por que.} El dominio de quiniela usa marcador final de tiempo reglamentario (90 minutos + agregado) como verdad de scoring.
+
+\textbf{Impacto.} Estados \texttt{TIMED}, \texttt{SCHEDULED}, \texttt{LIVE}, \texttt{IN\_PLAY}, \texttt{PAUSED}, \texttt{POSTPONED}, \texttt{SUSPENDED}, \texttt{CANCELLED} son no persistibles en QH-111.
+\end{docnote}
+
+\subsection{Decisiones cerradas de QH-112}
+
+\begin{docnote}
+\textbf{Decision.} Fuente persistida para correccion manual
+
+\textbf{Verdicto.} QH-112 persiste \texttt{Result.source = MANUAL\_OVERRIDE}.
+
+\textbf{Por que.} El valor manual no es ``carga manual neutra''; es una prioridad operativa explicita frente a sync externo.
+
+\textbf{Impacto.} La precedencia queda clara para QH-113 y para cualquier re-sincronizacion futura.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Bloqueo de sync automatico ante override manual
+
+\textbf{Verdicto.} Una correccion manual bloquea sobrescritura automatica por si sola mientras siga vigente como \texttt{MANUAL\_OVERRIDE}.
+
+\textbf{Por que.} Evita oscilaciones entre dato externo y correccion validada por administracion.
+
+\textbf{Impacto.} El sync externo debe registrar skip \texttt{manual\_override\_active} hasta nueva accion administrativa explicita.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato del endpoint manual
+
+\textbf{Verdicto.} Ruta canonica: \texttt{POST /matches/\{matchId\}/result/manual}. Requiere \texttt{requireAuthenticatedUser} y \texttt{requireAdministrativeUser}.
+
+\textbf{Payload minimo.}
+\begin{itemize}
+  \item \texttt{homeGoals: integer}
+  \item \texttt{awayGoals: integer}
+  \item \texttt{justification: string} (obligatoria)
+\end{itemize}
+
+\textbf{Impacto.} QH-112 cierra contrato nuevo backend y habilita consumo consistente desde admin.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Semantica de escritura del endpoint manual
+
+\textbf{Verdicto.} El endpoint se comporta como upsert: crea resultado si no existe y actualiza si existe.
+
+\textbf{Por que.} Unifica flujo operativo y evita bifurcar entre ``crear'' y ``corregir'' para la misma capacidad.
+
+\textbf{Impacto.} La respuesta HTTP es \texttt{200 OK} para create y update; no se usa \texttt{201} en este endpoint.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Correccion manual identica al valor vigente
+
+\textbf{Verdicto.} Se permite; no devuelve \texttt{409}. Debe retornar \texttt{resultChanged=false}.
+
+\textbf{Por que.} Operativamente sirve para confirmar valor vigente sin abrir error artificial y mantiene idempotencia.
+
+\textbf{Impacto.} Debe quedar trazabilidad de intento administrativo aun cuando no haya cambio de marcador.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Reglas de \texttt{justification}
+
+\textbf{Verdicto.} \texttt{justification} es obligatoria, con \texttt{trim()}, longitud minima 15 y maxima 500 caracteres.
+
+\textbf{Por que.} Una correccion de resultado es accion sensible y debe poder auditarse con contexto suficiente.
+
+\textbf{Impacto.} Payload sin justificacion valida responde \texttt{validation\_error}.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Restriccion por estado de partido en correccion manual
+
+\textbf{Verdicto.} La correccion manual solo procede para partidos cerrados (\texttt{FINISHED}); si no, se rechaza con \texttt{invalid\_state}.
+
+\textbf{Por que.} Evita fijar marcador oficial en partidos todavia en juego o no iniciados.
+
+\textbf{Impacto.} QH-112 no habilita ``live manual scoring'' en Sprint 5.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Validacion de rango de goles
+
+\textbf{Verdicto.} \texttt{homeGoals} y \texttt{awayGoals} deben ser enteros en rango \texttt{0..20}.
+
+\textbf{Por que.} Cubre resultados reales de futbol con margen razonable y reduce errores de captura.
+
+\textbf{Impacto.} Fuera de rango responde \texttt{validation\_error}.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Trazabilidad minima de QH-112 vs QH-114
+
+\textbf{Verdicto.} QH-112 registra auditoria funcional minima en \texttt{AuditEvent} (actor, matchId, before/after, justification, timestamp, resultado de operacion). QH-114 cubre auditoria operativa extendida de sincronizacion externa.
+
+\textbf{Por que.} Se separan responsabilidades: accion admin manual en QH-112, telemetria operativa de provider/sync en QH-114.
+
+\textbf{Impacto.} No bloquear QH-112 esperando cierre completo de run/event del sync.
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} OpenAPI y Postman en QH-112
+
+\textbf{Verdicto.} Deben incluirse en QH-112 como parte del cierre de contrato del endpoint manual.
+
+\textbf{Por que.} Evita divergencia entre runtime y contrato publicado desde el momento de introduccion del endpoint.
+
+\textbf{Impacto.} QH-121 y QH-122 se enfocan en alineacion global/hardening, no en crear por primera vez el contrato del endpoint manual.
+\end{docnote}
+
+\subsection{Taxonomia publica esperada para flujo manual}
+
+\begin{itemize}
+  \item \texttt{validation\_error}
+  \item \texttt{authentication\_required}
+  \item \texttt{forbidden}
+  \item \texttt{not\_found}
+  \item \texttt{invalid\_state}
+  \item \texttt{conflict} (solo si existe condicion de concurrencia real)
+  \item \texttt{internal\_error}
+\end{itemize}
+
+Errores tecnicos de proveedor (\texttt{provider\_auth\_invalid}, \texttt{provider\_rate\_limited}, etc.) quedan primariamente para flujo de sync externo y no para el endpoint manual de correccion.
+
+\subsection{Notas}
+
+\begin{itemize}
+  \item Este documento deja Sprint 5 decision-complete para implementar \texttt{results} sin adivinar contratos ni precedencia.
+  \item Si una decision posterior cambia el comportamiento aqui cerrado, debe registrarse en el sprint correspondiente y sincronizar los documentos duenos.
+  \item Referencias tecnicas complementarias: \texttt{06\_Integraciones/tex/06\_01\_API\_de\_Resultados.tex}, \texttt{06\_Integraciones/tex/06\_02\_Sincronizacion\_y\_Fallback\_Manual.tex}, \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}.
+\end{itemize}
