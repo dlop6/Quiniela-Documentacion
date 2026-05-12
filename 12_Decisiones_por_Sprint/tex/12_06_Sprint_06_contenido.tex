@@ -28,6 +28,10 @@ Tipo persistente de \texttt{ScoreEntry.points} & Para Sprint 6, \texttt{ScoreEnt
 Contrato de \texttt{ScoreEntry.reason} & Campo obligatorio sin enum cerrado en Sprint 6; debe conservar contexto funcional suficiente del origen del puntaje \\
 Contenido minimo de \texttt{ScoreEntry.reason} & Debe distinguir al menos ausencia valida de pick, outcome correcto, marcador exacto y cancelacion sin resultado utilizable \\
 Politica de actualizacion de \texttt{ScoreEntry.reason} & La fila vigente de \texttt{ScoreEntry} se actualiza con el motivo final vigente; el historial queda en auditoria, no versionado dentro de la misma fila \\
+Contrato backend de leaderboard general (QH-151) & \texttt{GET /leaderboard} autenticado, contrato fijo de fila y posicion resuelta por backend; incluye solo usuarios \texttt{ACTIVO}, incluyendo activos con \texttt{0} puntos \\
+Orden operativo base de leaderboard en QH-151 & Mientras QH-152 no este aplicado: \texttt{total DESC}, \texttt{user.createdAt ASC}, \texttt{user.id ASC}, con posicion secuencial \texttt{1..n} \\
+Jerarquia oficial de desempates (QH-152) & Sobre empate en total: \texttt{EXACT\_SCORE DESC}, \texttt{OUTCOME\_HITS DESC}, \texttt{KO\_POINTS DESC}, registro mas temprano y fallback tecnico \texttt{user.id ASC} \\
+Semantica operativa de conteos de desempate en QH-152 & \texttt{EXACT\_SCORE} tambien cuenta como acierto de outcome; especiales suman al total general pero no participan en criterios de desempate \\
 Trigger de recalc selectivo en QH-150 & Se dispara en manual y sync, pero solo ante cambio efectivo del marcador oficial vigente \\
 Definicion de cambio efectivo en QH-150 & Solo cambia si cambia \texttt{homeGoals} y/o \texttt{awayGoals}; metadata sin cambio de marcador no recalcula \\
 Alcance del recalc selectivo en QH-150 & Solo recalcula \texttt{ScoreEntry} de picks del mismo \texttt{matchId}; no hay recalc global, por torneo ni por usuario \\
@@ -342,6 +346,56 @@ Evidencia minima backend para QH-150 & Debe cubrir cambio efectivo manual y sync
 \textbf{Impacto.} Recalculo y correccion de resultado deben converger sobre una unica fila vigente de \texttt{ScoreEntry}. Si se necesita reconstruir el antes y despues, la fuente es \texttt{AuditEvent} y no un versionado embebido del score derivado.
 
 \textbf{Documento dueno.} \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md}, \texttt{05\_Datos/tex/05\_04\_Auditoria\_y\_Trazabilidad.tex} y \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex}
+\end{docnote}
+
+\subsection{Leaderboard backend y desempates cerrados}
+
+\begin{docnote}
+\textbf{Decision.} Contrato backend oficial de leaderboard general en QH-151
+
+\textbf{Verdicto.} El contrato oficial de Sprint 6 para leaderboard general es \texttt{GET /leaderboard} autenticado, con respuesta oficial ordenada desde backend y sin recalculo local en cliente. Cada fila expone como minimo \texttt{position}, \texttt{participant.userId}, \texttt{participant.displayName} y \texttt{score.total}. El ranking incluye solo usuarios \texttt{ACTIVO}, incluyendo activos con \texttt{0} puntos.
+
+\textbf{Por que.} La documentacion de dominio y backend ya cierra que el ranking oficial no puede depender del cliente y que la vista general usa acumulado oficial del torneo. Para evitar ambiguedad de implementacion, el ticket debe fijar ruta, shape y semantica de inclusion sin dejar decisiones grandes al implementador.
+
+\textbf{Impacto.} Backend implementa contrato estable consumible por frontend placeholder sin reinterpretar scoring. QH-151 no introduce filtros, paginacion ni breakdown obligatorio por fila; solo cierra lectura general oficial reproducible.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}, \texttt{05\_Datos/tex/05\_03\_Invariantes\_de\_Datos.tex} y \texttt{12\_Decisiones\_por\_Sprint/tex/12\_06\_Sprint\_06\_contenido.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Orden operativo base en QH-151 hasta aplicar QH-152
+
+\textbf{Verdicto.} Mientras QH-152 no este aplicado, QH-151 usa orden base determinista para empates de total: \texttt{score.total DESC}, luego \texttt{user.createdAt ASC} y finalmente \texttt{user.id ASC}. La \texttt{position} es ordinal unica secuencial \texttt{1..n} consistente con el orden final.
+
+\textbf{Por que.} QH-151 debe poder cerrar contrato sin dejar orden arbitrario, pero no reabre la jerarquia competitiva oficial que pertenece a QH-152. Este orden base evita nondeterminismo y da estabilidad contractual mientras entra el algoritmo completo de desempates.
+
+\textbf{Impacto.} El backend de QH-151 entrega ranking reproducible desde dia uno y QH-152 pasa a ser un reemplazo controlado del comparador, no una redefinicion del contrato HTTP.
+
+\textbf{Documento dueno.} \texttt{05\_Datos/tex/05\_03\_Invariantes\_de\_Datos.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y tickets \texttt{QH-151/QH-152}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Jerarquia oficial de desempates en QH-152
+
+\textbf{Verdicto.} El orden oficial en empate de total se aplica exactamente asi: mayor \texttt{EXACT\_SCORE}, luego mayor cantidad de outcomes acertados, luego mayor puntaje KO, luego registro mas temprano y, si persiste empate perfecto, fallback tecnico final por \texttt{user.id ASC}. Este fallback no altera la jerarquia competitiva; solo garantiza orden total determinista.
+
+\textbf{Por que.} El documento dueno ya define la jerarquia competitiva oficial. El ticket debe aterrizarla a un comparador completamente ejecutable para eliminar interpretaciones diferentes entre implementaciones y ambientes.
+
+\textbf{Impacto.} QH-152 no cambia ruta ni shape de respuesta de QH-151; cambia solo el comparador interno del orden. El ranking final queda reproducible y explicable a partir de datos fuente vigentes.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{05\_Datos/tex/05\_03\_Invariantes\_de\_Datos.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Semantica operativa de conteos de desempate en QH-152
+
+\textbf{Verdicto.} Para QH-152, \texttt{EXACT\_SCORE} cuenta tambien como acierto de outcome. Los conteos de desempate se calculan sobre \texttt{ScoreEntry} de partido (\texttt{matchId != null}). Las predicciones especiales suman al total general, pero no participan en criterios de desempate. KO se interpreta como fases \texttt{Octavos de final}, \texttt{Cuartos de final}, \texttt{Semifinales}, \texttt{Tercer lugar} y \texttt{Final}. La fecha de registro para desempate es \texttt{User.createdAt}.
+
+\textbf{Por que.} Sin esta capa operativa, la jerarquia oficial seguiria teniendo huecos de implementacion: que cuenta como outcome, que entra en KO y que fuente de fecha se usa. Cerrar estos puntos evita drift funcional entre repositorios y pruebas.
+
+\textbf{Impacto.} Backend puede implementar y probar QH-152 sin abrir decisiones adicionales. La evidencia minima de testing pasa a ser verificable con datos concretos y resultados esperados univocos.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y contratos de \texttt{scoring} en backend
 \end{docnote}
 
 \subsection{Fronteras tecnicas obligatorias}
