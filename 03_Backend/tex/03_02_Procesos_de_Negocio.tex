@@ -30,16 +30,19 @@ Describe secuencias funcionales del backend para activacion, lock, resultados, s
 \textbf{Modulo responsable}: \texttt{payments} en colaboracion con \texttt{users}
 
 \begin{enumerate}
-  \item Trigger: un usuario registrado carga o presenta un comprobante de pago para revision administrativa.
+  \item Trigger: un usuario registrado y \texttt{PENDIENTE} realiza el pago, recibe desde la plataforma una referencia de comprobante y envia su evidencia a traves del proveedor externo de formularios aprobado para el producto.
   \item Validaciones principales:
     \begin{itemize}
       \item el usuario existe y se encuentra en estado \texttt{PENDIENTE};
-      \item el comprobante es aceptable para revision administrativa;
+      \item la respuesta externa contiene una referencia valida emitida por la plataforma;
+      \item la evidencia es aceptable para revision administrativa;
       \item la resolucion administrativa es explicita.
     \end{itemize}
   \item Secuencia esperada:
     \begin{itemize}
-      \item se registra el comprobante;
+      \item la plataforma emite o muestra la referencia canonica de comprobante al usuario;
+      \item el usuario abre el formulario externo y envia archivo mas metadata minima;
+      \item el backend ingiere la respuesta externa y registra el comprobante como evidencia revisable;
       \item se revisa administrativamente;
       \item si se aprueba, el usuario transiciona a \texttt{ACTIVO};
       \item si se rechaza, el usuario transiciona a \texttt{RECHAZADO}.

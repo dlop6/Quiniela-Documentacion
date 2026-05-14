@@ -60,8 +60,18 @@ Panel admin de scoring y auditoria & admin & disparar recalculos y consultar tra
 \paragraph{Flujo de activacion}
 
 \begin{itemize}
-  \item El usuario en \texttt{PENDIENTE} debe poder consultar instrucciones y registrar comprobante.
-  \item La pantalla debe reflejar claramente si la cuenta sigue \texttt{PENDIENTE}, fue \texttt{RECHAZADA} o ya esta \texttt{ACTIVA}.
+  \item El usuario en \texttt{PENDIENTE} debe poder consultar instrucciones, ver su referencia de comprobante y abrir el formulario externo aprobado para enviar evidencia.
+  \item La plataforma sigue siendo la superficie principal del flujo. El formulario externo solo captura archivo y metadata minima; no reemplaza el estado visible ni la narrativa de activacion dentro de la app.
+  \item El flujo visible recomendado es:
+  \begin{itemize}
+    \item registro completado;
+    \item instrucciones de pago visibles;
+    \item referencia canonica de comprobante visible y copiable;
+    \item CTA principal para abrir formulario externo;
+    \item regreso a la plataforma para seguir el estado;
+    \item resolucion administrativa reflejada en la cuenta.
+  \end{itemize}
+  \item La pantalla debe reflejar claramente si la cuenta sigue \texttt{PENDIENTE}, si el comprobante ya fue recibido para revision, si fue \texttt{RECHAZADA} o si ya esta \texttt{ACTIVA}.
   \item El frontend no debe inventar un estado \texttt{EN\_REVISION}; la revision administrativa vive dentro del flujo, no como estado funcional separado del usuario.
 \end{itemize}
 

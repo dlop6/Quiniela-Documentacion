@@ -1,0 +1,61 @@
+1. *Flujo real del usuario*
+
+El usuario se registra en Quiniela Rotaract.
+
+En ese momento su cuenta todavia no esta activa. Queda pendiente de activacion.
+
+2. *Pantalla de activacion*
+
+Quiniela Rotaract le muestra la pantalla de activacion.
+
+Ahi el usuario ve:
+
+- las instrucciones para realizar el pago
+- el monto o los datos necesarios para pagar
+- una referencia unica de comprobante
+- un boton para abrir el formulario oficial
+
+3. *Pago*
+
+El usuario realiza el pago fuera de Quiniela Rotaract.
+
+El pago se hace por deposito.
+
+4. *Envio del comprobante*
+
+El usuario abre el formulario oficial y envia su comprobante.
+
+En ese formulario debe llenar:
+
+- su referencia unica de comprobante
+- el correo con el que se registro en Quiniela Rotaract
+- su nombre
+- la fecha en que realizo el deposito
+- el monto pagado
+- un dato breve de identificacion del pago, como los ultimos digitos de la operacion o referencia bancaria
+- y subir la imagen o archivo del comprobante
+
+5. *Importante sobre la activacion*
+
+Enviar el formulario no activa la cuenta automaticamente.
+
+El formulario solo sirve para entregar el comprobante. Despues, Quiniela Rotaract debe recibir esa informacion y relacionarla con la cuenta correcta.
+
+6. *Seguimiento del estado*
+
+El usuario regresa a Quiniela Rotaract para seguir su estado.
+
+Quiniela Rotaract sigue siendo el lugar principal del proceso. Ahi el usuario podra ver si su comprobante:
+
+- todavia no ha sido enviado
+- ya fue recibido y esta en revision
+- fue rechazado y necesita correccion
+- o ya fue aprobado
+
+7. *Revision final*
+
+El equipo revisa el comprobante.
+
+Si todo esta bien, la cuenta se aprueba y queda activa.
+
+Si hay un problema, la cuenta no se activa todavia y el usuario vera que debe corregir o volver a enviar su comprobante.

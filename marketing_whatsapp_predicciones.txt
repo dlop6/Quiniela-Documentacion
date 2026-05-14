@@ -1,0 +1,70 @@
+1. *Como funcionan las predicciones*
+
+Las predicciones principales se hacen por partido.
+
+Eso significa que:
+
+- no es obligatorio llenar todo de una sola vez
+- cada persona puede registrar sus predicciones partido por partido
+- tambien puede adelantarse y dejar varios partidos ya llenados
+- mientras el partido siga abierto, la prediccion se puede editar
+
+Ademas, existen predicciones especiales separadas:
+
+- campeon del torneo
+- goleador del torneo
+
+Estas predicciones especiales no van mezcladas con los picks normales de partidos; viven en un flujo aparte dentro de la plataforma.
+
+2. *Hasta cuando se pueden cambiar las predicciones*
+
+Cada prediccion de partido se cierra 5 minutos antes del inicio oficial del partido.
+
+Las predicciones especiales de:
+
+- campeon
+- goleador
+
+se cierran 5 minutos antes del primer partido del torneo.
+
+Despues de ese momento, ya no se pueden modificar.
+
+Si una persona no deja su prediccion antes del cierre de un partido, ese partido queda sin prediccion y otorga 0 puntos.
+
+3. *Como funciona el puntaje*
+
+Por cada partido:
+
+- acertar el resultado general del partido da 3 puntos
+- acertar el marcador exacto da 2 puntos adicionales
+
+Eso significa que un partido puede dar hasta 5 puntos base.
+
+Despues, esos puntos se multiplican segun la fase del torneo:
+
+- Fase de grupos: x1.0
+- Octavos de final: x1.25
+- Cuartos de final: x1.5
+- Semifinales: x1.75
+- Tercer lugar: x1.75
+- Final: x2.0
+
+Predicciones especiales:
+
+- campeon correcto: 20 puntos
+- goleador correcto: 15 puntos
+
+En resumen:
+
+- se ganan puntos por acertar resultados
+- se ganan mas puntos si se acierta el marcador exacto
+- las fases finales valen mas
+
+4. *Ranking y visibilidad*
+
+La plataforma tiene ranking general y tambien vistas por jornada o por fase.
+
+Importante para comunicar bien el juego limpio:
+
+- las predicciones de otros participantes no se muestran antes de que cierre el partido
+- solo se vuelven visibles despues del cierre correspondiente

@@ -34,7 +34,7 @@ Registro & publico & editable, validacion, exito, error funcional, error tecnico
 Login & publico & editable, validacion, error funcional, error tecnico \\
 Recuperacion de acceso & publico & editable, confirmacion, error \\
 Estado de activacion & autenticado & \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO}, \texttt{BLOQUEADO}, carga, error \\
-Carga de comprobante & autenticado & editable, confirmacion, rechazo funcional, error tecnico \\
+Carga de comprobante & autenticado & instrucciones visibles, referencia visible, CTA a formulario externo, confirmacion de envio esperado, rechazo funcional, error tecnico \\
 Calendario y picks & autenticado & carga, lista, vacio, editable, bloqueado, solo lectura, error \\
 Predicciones especiales & autenticado & editable, bloqueado, solo lectura, error \\
 Leaderboard & autenticado & carga, lista, vacio, error, estado con desglose si aplica \\
@@ -49,6 +49,12 @@ Admin scoring y auditoria & admin & carga, lista, confirmacion critica, error, s
 
 \begin{itemize}
   \item \texttt{PENDIENTE}, \texttt{ACTIVO}, \texttt{RECHAZADO} y \texttt{BLOQUEADO} en activacion y contexto de cuenta.
+  \item Dentro de \texttt{PENDIENTE}, la experiencia de activacion debe distinguir visualmente:
+  \begin{itemize}
+    \item pendiente de enviar comprobante;
+    \item comprobante recibido para revision;
+    \item requiere nuevo envio por rechazo.
+  \end{itemize}
   \item Partido editable o bloqueado en captura de picks.
   \item \texttt{SIN\_PICK} como ausencia valida de prediccion guardada.
   \item Resultado corregido cuando el sistema deba comunicar una actualizacion relevante.

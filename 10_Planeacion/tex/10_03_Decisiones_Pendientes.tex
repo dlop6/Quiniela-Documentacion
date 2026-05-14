@@ -30,13 +30,9 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
 
 \subsubsection{Prioridad alta}
 
-\begin{enumerate}
-  \item \textbf{Consolidacion del flujo de comprobantes con Google Forms}\\
-  Tipo: \texttt{Decision pendiente}\\
-  Criticidad: \texttt{Bloquea activacion y release}\\
-  Documento responsable: \texttt{10\_01\_Roadmap\_y\_Fases}, \texttt{01\_02\_Estados\_y\_Flujos} y \texttt{03\_02\_Procesos\_de\_Negocio}\\
-  Motivo: ya se decidio abandonar upload de comprobantes en la plataforma, pero falta cerrar el contrato operativo entre registro en la app, evidencia enviada por Google Forms y aprobacion/rechazo administrativa en backend.
-\end{enumerate}
+\begin{itemize}
+  \item No hay decisiones abiertas de prioridad alta en este momento.
+\end{itemize}
 
 \subsubsection{Prioridad media}
 
@@ -104,6 +100,16 @@ Aplica a reglas de negocio, arquitectura, datos, integraciones y criterios opera
   Estado: \texttt{Cerrada}\\
   Veredicto: el refactor del flujo de comprobantes para abandonar upload en plataforma y consolidar evidencia via Google Forms se planifica para Sprint 7.\\
   Registro de cierre: \texttt{10\_Planeacion/tex/10\_01\_Roadmap\_y\_Fases.tex}
+
+  \item \textbf{Contrato operativo del flujo de comprobantes con Google Forms}\\
+  Estado: \texttt{Cerrada}\\
+  Veredicto: Google Forms queda como proveedor oficial de captura de evidencia; Microsoft Forms se descarta para este producto. Forms no decide estados ni activaciones: solo captura archivo y metadata minima. La plataforma sigue siendo duena de identidad, estado funcional, revision administrativa, auditoria y resolucion. La vinculacion canonica entre usuario y evidencia se hace con una referencia generada por la plataforma, no solo por email. La integracion operativa de v1 se cierra como ingest programado desde Google Forms hacia backend, no como upload directo desde la UI ni como dependencia de storage privado propio. En experiencia de usuario, la plataforma mantiene el flujo principal de activacion y solo delega la entrega de evidencia al formulario externo. Campos visibles minimos en plataforma: instrucciones de pago, referencia canonica de comprobante, estado visible de activacion, CTA para abrir formulario y CTA de retorno para seguir estado. Campos minimos de Google Forms: referencia canonica, correo registrado, nombre visible, fecha del pago, monto pagado, referencia bancaria parcial y archivo del comprobante.\\
+  Registro de cierre: \texttt{03\_Backend/tex/03\_01\_Modulos\_y\_Responsabilidades.tex}, \texttt{03\_Backend/tex/03\_02\_Procesos\_de\_Negocio.tex} y \texttt{10\_Planeacion/tex/10\_03\_Decisiones\_Pendientes.tex}
+
+  \item \textbf{Guia de comunicacion externa del flujo de activacion}\\
+  Estado: \texttt{Cerrada}\\
+  Veredicto: marketing, operacion y frontend deben comunicar el flujo real de activacion sin promesas de automatizacion inexistentes. La narrativa oficial es: registrarse en la plataforma, realizar el pago, copiar la referencia generada por la plataforma, enviar el comprobante en el formulario oficial y seguir el estado de revision dentro de la plataforma. No se permite comunicar que el comprobante se sube dentro de la plataforma, que el envio del formulario activa automaticamente la cuenta o que el correo por si solo sustituye la referencia canonica. La plataforma sigue siendo la superficie principal del proceso; el formulario externo es solo el canal para entregar evidencia.\\
+  Registro de cierre: \texttt{09\_UI\_UX/tex/09\_03\_Accesibilidad\_y\_Microcopy.tex}, \texttt{04\_Frontend/tex/04\_02\_Flujos\_y\_Paginas.tex} y \texttt{10\_Planeacion/tex/10\_03\_Decisiones\_Pendientes.tex}
 
   \item \textbf{Tratamiento del track de migracion a Supabase Auth}\\
   Estado: \texttt{Cerrada}\\

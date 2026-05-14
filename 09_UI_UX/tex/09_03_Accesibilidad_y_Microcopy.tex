@@ -37,6 +37,8 @@ Aplica a textos de botones, mensajes de estado, validaciones, errores, confirmac
 
 \begin{itemize}
   \item cuenta pendiente de activacion;
+  \item referencia de comprobante lista para usar;
+  \item abrir formulario externo para enviar evidencia;
   \item comprobante recibido;
   \item activacion aprobada o rechazada;
   \item pick guardado correctamente;
@@ -66,13 +68,36 @@ Aplica a textos de botones, mensajes de estado, validaciones, errores, confirmac
   \item transparente cuando el sistema corrige o restringe algo.
 \end{itemize}
 
+\subsubsection{Guia operativa para comunicacion externa del flujo de activacion}
+
+\begin{itemize}
+  \item La comunicacion de marketing sobre activacion debe describir el flujo real y no una version simplificada que contradiga el producto.
+  \item La plataforma sigue siendo la superficie principal del proceso; el formulario externo solo sirve para entregar evidencia del pago.
+  \item El mensaje recomendado para explicar el flujo es: registrate en la plataforma, realiza tu pago, copia tu referencia, envia tu comprobante en el formulario y sigue el estado de tu activacion dentro de la plataforma.
+  \item El mensaje debe prometer revision y seguimiento visible, no aprobacion automatica inmediata.
+  \item El mensaje debe reforzar que la referencia generada por la plataforma es parte del proceso correcto de envio del comprobante.
+\end{itemize}
+
+\subsubsection{Frases recomendadas para activacion y promocion}
+
+\begin{itemize}
+  \item ``Registrate en Quiniela, realiza tu pago y envia tu comprobante en el formulario oficial.''
+  \item ``Tu referencia de comprobante estara disponible dentro de la plataforma.''
+  \item ``Despues de enviar tu comprobante, podras seguir el estado de revision desde tu cuenta.''
+  \item ``La activacion se confirma cuando el equipo valide tu evidencia.''
+\end{itemize}
+
 \subsubsection{Mensajes que deben evitarse}
 
 \begin{itemize}
   \item mensajes vagos como ``ocurrio un problema'' sin contexto util;
   \item mensajes que culpen al usuario cuando el fallo es tecnico;
   \item textos que sugieran que un pick fue guardado si la operacion aun no se confirmo;
-  \item mensajes administrativos que oculten impacto real de una accion critica.
+  \item mensajes administrativos que oculten impacto real de una accion critica;
+  \item ``sube tu comprobante aqui'' si el flujo real ocurre en un formulario externo;
+  \item ``tu cuenta se activa automaticamente al enviar el formulario'';
+  \item ``envia solo tu correo y nosotros encontramos tu pago'' si la regla real exige referencia canonica;
+  \item cualquier mensaje promocional que sugiera que Google Forms reemplaza a la plataforma como superficie principal del proceso.
 \end{itemize}
 
 \subsection{Edge Cases}
@@ -81,6 +106,7 @@ Aplica a textos de botones, mensajes de estado, validaciones, errores, confirmac
   \item Un error tecnico puede requerir lenguaje diferente al error funcional aunque aparezca en la misma pantalla.
   \item El aviso de resultado corregido debe ser claro, pero no necesita exponer por defecto detalle profundo de auditoria.
   \item Un estado de cuenta bloqueada requiere tono firme y claro sin dejar ambiguedad sobre la restriccion.
+  \item Si la evidencia se envia en un formulario externo, la plataforma no debe prometer recepcion inmediata hasta que backend confirme la ingestion de la respuesta.
 \end{itemize}
 
 \subsection{Invariantes}
@@ -89,6 +115,7 @@ Aplica a textos de botones, mensajes de estado, validaciones, errores, confirmac
   \item Los mensajes no ocultan reglas reales del sistema.
   \item La accesibilidad no depende solo del color.
   \item El microcopy mantiene consistencia terminologica con la documentacion del dominio.
+  \item La plataforma no debe decir ``sube tu comprobante aqui'' si el flujo real ocurre en un formulario externo.
 \end{itemize}
 
 \subsection{Preguntas abiertas}

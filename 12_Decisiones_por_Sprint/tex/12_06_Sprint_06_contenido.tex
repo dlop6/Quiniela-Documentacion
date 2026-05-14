@@ -32,6 +32,11 @@ Contrato backend de leaderboard general (QH-151) & \texttt{GET /leaderboard} aut
 Orden operativo base de leaderboard en QH-151 & Mientras QH-152 no este aplicado: \texttt{total DESC}, \texttt{user.createdAt ASC}, \texttt{user.id ASC}, con posicion secuencial \texttt{1..n} \\
 Jerarquia oficial de desempates (QH-152) & Sobre empate en total: \texttt{EXACT\_SCORE DESC}, \texttt{OUTCOME\_HITS DESC}, \texttt{KO\_POINTS DESC}, registro mas temprano y fallback tecnico \texttt{user.id ASC} \\
 Semantica operativa de conteos de desempate en QH-152 & \texttt{EXACT\_SCORE} tambien cuenta como acierto de outcome; especiales suman al total general pero no participan en criterios de desempate \\
+Modelo semantico de fase y jornada para QH-153 & \texttt{fase} se implementa con \texttt{Phase}; \texttt{jornada} es concepto distinto implementado como \texttt{Match.matchday} persistido \\
+Contrato HTTP de leaderboard filtrado en QH-153 & Se reutiliza \texttt{GET /leaderboard} con query params mutuamente excluyentes \texttt{phaseId} o \texttt{matchday}; sin filtros devuelve vista general \\
+Semantica de score y filtros en QH-153 & En respuesta filtrada, \texttt{score.total} significa puntaje del scope consultado; especiales quedan completamente fuera del response filtrado \\
+Desempates y presencia de usuarios en leaderboard filtrado & Los desempates se recalculan solo con entries del scope filtrado; usuarios \texttt{ACTIVO} con \texttt{0} puntos en el scope siguen apareciendo \\
+Errores y alcance tecnico de QH-153 & \texttt{phaseId} inexistente responde \texttt{404}; \texttt{matchday} sin resultados responde array vacio; el ticket incluye backend, tests, OpenAPI, Postman y seed minima \\
 Trigger de recalc selectivo en QH-150 & Se dispara en manual y sync, pero solo ante cambio efectivo del marcador oficial vigente \\
 Definicion de cambio efectivo en QH-150 & Solo cambia si cambia \texttt{homeGoals} y/o \texttt{awayGoals}; metadata sin cambio de marcador no recalcula \\
 Alcance del recalc selectivo en QH-150 & Solo recalcula \texttt{ScoreEntry} de picks del mismo \texttt{matchId}; no hay recalc global, por torneo ni por usuario \\
@@ -396,6 +401,66 @@ Evidencia minima backend para QH-150 & Debe cubrir cambio efectivo manual y sync
 \textbf{Impacto.} Backend puede implementar y probar QH-152 sin abrir decisiones adicionales. La evidencia minima de testing pasa a ser verificable con datos concretos y resultados esperados univocos.
 
 \textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{10\_Planeacion/Sprint\_06\_Jira\_Ticket\_Drafts.md} y contratos de \texttt{scoring} en backend
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Modelo semantico de fase y jornada para QH-153
+
+\textbf{Verdicto.} Para Sprint 6, \texttt{fase} y \texttt{jornada} son conceptos distintos. \texttt{fase} se implementa con la entidad \texttt{Phase}. \texttt{jornada} no se deriva de \texttt{Phase.order}, \texttt{Phase.name} ni de heuristicas por fecha; se implementa como dato persistido \texttt{Match.matchday}. El concepto de producto sigue llamandose \texttt{jornada}; el nombre tecnico del campo y del filtro de API es \texttt{matchday}.
+
+\textbf{Por que.} El dominio y Sprint 6 ya esperan dos cortes distintos del leaderboard: por fase y por jornada. Si ambos conceptos se colapsan sobre \texttt{Phase}, el sistema finge dos filtros cuando en realidad tendria uno solo. Persistir \texttt{matchday} en \texttt{Match} mantiene separacion semantica clara, evita heuristicas inventadas y sigue principios de simplicidad operativa sin sobredisenar una entidad nueva.
+
+\textbf{Impacto.} Backend puede filtrar por fase usando \texttt{phaseId} y por jornada usando \texttt{matchday}. El proveedor externo puede seguir entregando \texttt{matchday} como dato de integracion, pero la fuente oficial del filtro pasa a ser el campo persistido del dominio. Frontend y producto muestran \texttt{jornada} al usuario; API, OpenAPI y tests usan \texttt{matchday}.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}, \texttt{06\_Integraciones/tex/06\_01\_API\_de\_Resultados.tex}, \texttt{QuinielaBackend/prisma/schema.prisma} y \texttt{QuinielaBackend/src/modules/matches}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato HTTP exacto de leaderboard filtrado en QH-153
+
+\textbf{Verdicto.} QH-153 reutiliza \texttt{GET /leaderboard} y no crea rutas nuevas. El contrato acepta query params mutuamente excluyentes: \texttt{phaseId} como \texttt{string} no vacio o \texttt{matchday} como entero positivo. Sin filtros, la respuesta sigue siendo el leaderboard general. Si se envian ambos filtros a la vez, el backend responde \texttt{400 validation\_error}. La autenticacion y autorizacion son exactamente las mismas que en QH-151: cualquier usuario autenticado puede consultar el leaderboard general o filtrado.
+
+\textbf{Por que.} El sistema ya tiene una sola superficie conceptual de leaderboard y un endpoint general existente. Mantener la misma ruta con query params evita drift entre frontend, backend y OpenAPI, sigue la convencion ya usada por \texttt{matches} y reduce complejidad accidental del contrato.
+
+\textbf{Impacto.} Frontend cambia de modo general, por fase o por jornada sin navegar a endpoints distintos. OpenAPI y Postman deben documentar: request sin filtros, request con \texttt{phaseId}, request con \texttt{matchday} y error cuando ambos llegan juntos.
+
+\textbf{Documento dueno.} \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}, \texttt{QuinielaBackend/src/modules/leaderboard/http/routes.ts}, \texttt{QuinielaBackend/src/modules/matches/http/schemas.ts} y \texttt{QuinielaBackend/docs/api/openapi.yaml}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Semantica exacta de filtros y shape de fila en QH-153
+
+\textbf{Verdicto.} En filtro por fase, el leaderboard suma solo \texttt{ScoreEntry} de partido cuyo \texttt{Match.phaseId} coincide con el \texttt{phaseId} consultado. En filtro por jornada, suma solo \texttt{ScoreEntry} de partido cuyo \texttt{Match.matchday} coincide con el \texttt{matchday} consultado. Un partido sin \texttt{matchday} no participa en un leaderboard por jornada. La fila filtrada mantiene exactamente el mismo shape base del leaderboard general: \texttt{position}, \texttt{participant.userId}, \texttt{participant.displayName} y \texttt{score.total}. En una respuesta filtrada, \texttt{score.total} significa el puntaje del scope consultado y no el total general del torneo.
+
+\textbf{Por que.} Sprint 6 ya cerro que el valor principal visible de una vista filtrada debe corresponder solo al scope activo. Mantener el mismo shape evita bifurcar contratos y obliga a que la diferencia de semantica viva en el scope de la consulta, no en un cambio arbitrario de estructura.
+
+\textbf{Impacto.} El cliente no necesita adaptadores especiales por tipo de leaderboard. Sin embargo, backend y docs deben dejar explicito que \texttt{score.total} cambia de significado entre vista general y vista filtrada segun el scope consultado.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{03\_Backend/tex/03\_04\_Endpoints\_Conceptuales.tex}, \texttt{QuinielaBackend/src/modules/leaderboard/http/schemas.ts} y ticket \texttt{QH-153}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Predicciones especiales, desempates y usuarios con cero en QH-153
+
+\textbf{Verdicto.} En leaderboard filtrado, las predicciones especiales quedan completamente fuera del response: no entran al puntaje principal, no entran a desempates y no se muestran como breakdown o contexto secundario. Los desempates reutilizan la jerarquia de QH-152, pero calculada solo con \texttt{ScoreEntry} dentro del scope filtrado. No se usa total general como fallback intermedio. Los usuarios \texttt{ACTIVO} siguen apareciendo aunque tengan \texttt{0} puntos en el scope filtrado.
+
+\textbf{Por que.} Las predicciones especiales pertenecen al acumulado del torneo completo y mezclar su presencia dentro de una vista filtrada reintroduce ruido semantico. A la vez, si el filtro representa un ranking propio, sus desempates deben salir de ese mismo subconjunto y no de informacion externa al corte consultado. Mantener usuarios activos con \texttt{0} puntos conserva un universo competitivo estable entre vistas.
+
+\textbf{Impacto.} Backend calcula orden oficial del filtro sobre entries del scope y no sobre el total general. Frontend puede alternar entre general y filtros sin que desaparezcan participantes por una regla distinta de inclusion.
+
+\textbf{Documento dueno.} \texttt{01\_Producto\_y\_Reglas/tex/01\_04\_Scoring\_y\_Desempates.tex}, \texttt{12\_Decisiones\_por\_Sprint/tex/12\_06\_Sprint\_06\_contenido.tex} y contratos cerrados en \texttt{QH-151/QH-152}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Errores, seed minima y alcance tecnico de QH-153
+
+\textbf{Verdicto.} En QH-153, un \texttt{phaseId} con formato invalido responde \texttt{400 validation\_error}; un \texttt{phaseId} bien formado pero inexistente responde \texttt{404 not\_found}. Un \texttt{matchday} con formato invalido responde \texttt{400 validation\_error}; un \texttt{matchday} valido sin partidos o sin score asociado responde \texttt{200 OK} con \texttt{leaderboard = []}. El ticket incluye backend query/service/repository, tests unitarios e integracion, actualizacion de OpenAPI, actualizacion de Postman y seed minima reproducible para al menos dos fases y dos jornadas.
+
+\textbf{Por que.} \texttt{phaseId} referencia una entidad explicita del dominio y por eso su inexistencia debe ser tratada como recurso no encontrado. \texttt{matchday}, en cambio, funciona como valor de corte y no como recurso direccionable propio, asi que la ausencia de datos se expresa mejor con lista vacia. Como el ticket expone contrato backend consumible, query sin documentacion, ejemplos y dataset reproducible dejaria el cierre incompleto.
+
+\textbf{Impacto.} Implementacion y QA cuentan con reglas estables para validar errores, fixtures y consumo manual. QH-153 no se limita a query mas tests: sale listo para integracion con frontend, OpenAPI y Postman sin interpretaciones adicionales.
+
+\textbf{Documento dueno.} ticket \texttt{QH-153}, \texttt{QuinielaBackend/docs/api/openapi.yaml}, \texttt{QuinielaBackend/prisma/seed.ts} y politica de errores del backend
 \end{docnote}
 
 \subsection{Fronteras tecnicas obligatorias}

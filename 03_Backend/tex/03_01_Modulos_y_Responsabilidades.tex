@@ -50,7 +50,7 @@ modules/
 \midrule
 \texttt{auth} & autenticacion, sesion y acceso inicial & credenciales, tokens, sesion valida o rechazada & \texttt{users}, servicios transversales \\
 \texttt{users} & identidad y estado funcional de cuenta & registro, consulta y cambio de estado de usuario & \texttt{audit}, \texttt{notifications} \\
-\texttt{payments} & comprobantes, revision y activacion administrativa & carga y revision de comprobante, resolucion administrativa & \texttt{users}, \texttt{audit}, \texttt{notifications} \\
+\texttt{payments} & comprobantes, revision y activacion administrativa & ingest de evidencia de comprobante, revision administrativa y resolucion de activacion & \texttt{users}, \texttt{audit}, \texttt{notifications} \\
 \texttt{matches} & calendario, fases, kickoff y estado de partido & partidos, fases, horarios y cambios de estado & \texttt{audit} \\
 \texttt{picks} & captura, edicion y lock de picks y predicciones especiales & picks validos o rechazados, estado de lock & \texttt{users}, \texttt{matches}, \texttt{audit} \\
 \texttt{results} & resultado vigente, sincronizacion externa y overrides & resultados externos o manuales, verdad oficial vigente & \texttt{matches}, \texttt{audit} \\
@@ -66,6 +66,8 @@ modules/
 
 \begin{itemize}
   \item \texttt{payments} no activa usuarios por mutacion directa informal; la activacion debe quedar trazada y reflejada en \texttt{users}.
+  \item \texttt{payments} es dueno del comprobante como evidencia funcional revisable, pero no es dueno del almacenamiento final del archivo si la captura ocurre en un proveedor externo aprobado.
+  \item Un proveedor externo de formularios puede capturar archivo y metadata minima, pero no decide estado funcional, aprobacion ni rechazo; esa autoridad permanece en \texttt{payments} y \texttt{users}.
   \item \texttt{picks} controla captura y lock, pero no calcula puntaje.
   \item \texttt{results} decide la verdad vigente del resultado, pero no recalcula ranking por si solo; esa responsabilidad pertenece a \texttt{scoring} y \texttt{leaderboard}.
   \item \texttt{leaderboard} consume resultados de scoring y no redefine desempates ni formulas de puntos.
