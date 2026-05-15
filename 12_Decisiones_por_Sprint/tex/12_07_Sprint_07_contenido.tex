@@ -1,0 +1,212 @@
+\section{Sprint 7}
+
+\subsection{Contexto}
+
+Este documento registra decisiones de backend que deben quedar cerradas antes de implementar los tickets de Sprint 7 sobre activacion y comprobantes con Supabase Storage. El objetivo es evitar ambiguedad tecnica y evitar decisiones grandes durante la implementacion.
+
+\begin{docnote}
+\textbf{Enfoque del sprint.} Sprint 7 mantiene goal de hardening, estabilidad operativa y cierre de flujo critico. El slice de comprobantes se ejecuta integrado en plataforma y no por Google Forms.
+\end{docnote}
+
+\subsection{Resumen ejecutivo}
+
+\begin{longtable}{p{0.44\textwidth}p{0.42\textwidth}}
+\toprule
+\textbf{Decision} & \textbf{Verdicto} \\
+\midrule
+Formato y tamano final de comprobante & Persistencia final solo \texttt{image/webp} y tamano maximo \texttt{3 MB} \\
+Regla canonica de \texttt{storageKey} & Prefijo obligatorio \texttt{payment-proofs/} y patron estable por usuario y fecha \\
+Endpoint admin de acceso a evidencia privada & \texttt{GET /payments/proofs/:paymentProofId/access} \\
+TTL de acceso temporal & \texttt{expiresInSeconds = 300} fijo \\
+Politica de error al resolver evidencia & \texttt{404 not\_found} para recurso inexistente; \texttt{500 internal\_error} para fallo operativo \\
+Rate limiting por endpoint de activacion & Cuotas cerradas por ruta sensible para submit, queue, access y review \\
+Timeout y retry de integracion storage & Timeout corto y retry acotado solo para fallos transitorios de red \\
+Taxonomia final de errores auth/payments & Mapeo escenario a codigo publico cerrado sobre catalogo comun \\
+Redaccion de logs sensibles & Prohibido token completo, URL temporal completa y evidencia; permitido ids tecnicos y campos truncados \\
+Contrato final de paginacion de cola admin & Mantener \texttt{limit/offset} con \texttt{default=50} y \texttt{max=100} en Sprint 7 \\
+\bottomrule
+\end{longtable}
+
+\subsection{Decisiones cerradas de backend previas a implementacion}
+
+\begin{docnote}
+\textbf{Decision.} Formato y tamano final de comprobante
+
+\textbf{Verdicto.} El backend acepta para persistencia final de comprobantes solo \texttt{image/webp} con \texttt{fileSizeBytes <= 3\_145\_728} (3 MB). Se elimina \texttt{application/pdf} como formato valido para nuevos registros.
+
+\textbf{Por que.} El flujo operativo del sprint se define para evidencia ligera y uniforme en storage privado. Mantener multiples formatos aumenta costo de validacion y variabilidad operativa sin beneficio funcional para revision administrativa.
+
+\textbf{Impacto.} \texttt{QH-XX01}, \texttt{QH-XX06A}, \texttt{QH-XX06B}
+
+\textbf{Documento dueno.} \texttt{src/modules/payments/http/schemas.ts}, \texttt{docs/api/openapi.yaml}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Regla canonica de \texttt{storageKey}
+
+\textbf{Verdicto.} El \texttt{storageKey} de comprobantes debe seguir patron canonicamente parseable:
+\begin{verbatim}
+payment-proofs/{userId}/{yyyy}/{mm}/{uuid}.webp
+\end{verbatim}
+Adicionalmente, debe iniciar con prefijo \texttt{payment-proofs/}.
+
+\textbf{Por que.} El patron fijo permite trazabilidad por usuario y ventana temporal, evita colisiones y simplifica operacion de soporte y auditoria.
+
+\textbf{Impacto.} \texttt{QH-XX01}, \texttt{QH-XX02B}, \texttt{QH-XX06B}
+
+\textbf{Documento dueno.} \texttt{src/modules/payments/domain/payment-proof.ts}, \texttt{prisma/schema.prisma}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Endpoint admin de acceso a evidencia privada
+
+\textbf{Verdicto.} Se define endpoint oficial:
+\begin{verbatim}
+GET /payments/proofs/:paymentProofId/access
+\end{verbatim}
+con autorizacion administrativa activa.
+
+\textbf{Por que.} El admin necesita abrir evidencia privada sin hacer publico el bucket ni mover autorizacion sensible al cliente.
+
+\textbf{Impacto.} \texttt{QH-XX02B}, \texttt{QH-XX07}
+
+\textbf{Documento dueno.} \texttt{src/modules/payments/http/routes.ts}, \texttt{src/modules/auth/http/middleware.ts}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} TTL de acceso temporal a evidencia
+
+\textbf{Verdicto.} El acceso temporal emitido por backend usa \texttt{expiresInSeconds = 300} (5 minutos), fijo para Sprint 7.
+
+\textbf{Por que.} Este valor balancea seguridad y usabilidad operativa para revision manual.
+
+\textbf{Impacto.} \texttt{QH-XX02B}, \texttt{QH-XX07}, \texttt{QH-XX11}
+
+\textbf{Documento dueno.} Contrato HTTP de \texttt{payments/proofs/*/access}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Politica de error al resolver evidencia privada
+
+\textbf{Verdicto.} Mapeo publico obligatorio:
+\begin{itemize}
+  \item \texttt{paymentProofId} inexistente: \texttt{404 not\_found}
+  \item objeto inexistente en storage: \texttt{404 not\_found}
+  \item fallo operativo de provider storage: \texttt{500 internal\_error}
+\end{itemize}
+
+\textbf{Por que.} Se requiere consistencia de error semantics para consumo frontend y soporte.
+
+\textbf{Impacto.} \texttt{QH-XX02B}, \texttt{QH-XX04}
+
+\textbf{Documento dueno.} Catalogo de errores backend y contrato payments
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Rate limiting por endpoint sensible de activacion
+
+\textbf{Verdicto.} Se cierran cuotas iniciales de Sprint 7:
+\begin{itemize}
+  \item \texttt{POST /payments/proofs}: \texttt{5 req / 10 min / user}
+  \item \texttt{GET /payments/proofs/:id/access}: \texttt{30 req / 10 min / admin}
+  \item \texttt{PATCH /payments/proofs/:id/review}: \texttt{20 req / 10 min / admin}
+  \item \texttt{GET /payments/proofs}: \texttt{60 req / 10 min / admin}
+\end{itemize}
+Exceso debe responder \texttt{429 too\_many\_requests}.
+
+\textbf{Por que.} Limita abuso y estabiliza carga operativa de endpoints sensibles sin introducir complejidad excesiva en esta fase.
+
+\textbf{Impacto.} \texttt{QH-XX11}, \texttt{QH-XX03}, \texttt{QH-XX04}
+
+\textbf{Documento dueno.} \texttt{docs/pending-decisions.md}, \texttt{src/shared/errors/error-codes.ts}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Timeout y retry de integracion storage
+
+\textbf{Verdicto.} Politica de Sprint 7:
+\begin{itemize}
+  \item timeout por operacion de storage: \texttt{5s}
+  \item retry: \texttt{1} intento adicional
+  \item retry solo para errores transitorios de red/timeout
+  \item sin retry para errores de cliente o permisos (\texttt{4xx})
+\end{itemize}
+
+\textbf{Por que.} Evita bloqueo prolongado, reduce cascada de fallos y mantiene comportamiento predecible.
+
+\textbf{Impacto.} \texttt{QH-XX11}
+
+\textbf{Documento dueno.} Integracion payments-storage
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Taxonomia final de errores auth/payments para Sprint 7
+
+\textbf{Verdicto.} Se congela mapping publico sobre catalogo comun:
+\begin{itemize}
+  \item \texttt{validation\_error}
+  \item \texttt{authentication\_required}
+  \item \texttt{forbidden}
+  \item \texttt{invalid\_state}
+  \item \texttt{conflict}
+  \item \texttt{not\_found}
+  \item \texttt{too\_many\_requests}
+  \item \texttt{internal\_error}
+\end{itemize}
+
+\textbf{Por que.} Reduce drift entre rutas y pruebas, y hace predecible el manejo de error en frontend.
+
+\textbf{Impacto.} \texttt{QH-XX03}, \texttt{QH-XX04}
+
+\textbf{Documento dueno.} \texttt{src/shared/errors/error-codes.ts}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Redaccion minima obligatoria en logs sensibles
+
+\textbf{Verdicto.} Queda prohibido loggear:
+\begin{itemize}
+  \item token completo
+  \item URL temporal completa de evidencia
+  \item contenido binario/base64 del comprobante
+  \item hash completo de evidencia cuando no sea indispensable
+\end{itemize}
+Permitido:
+\begin{itemize}
+  \item \texttt{paymentProofId}
+  \item \texttt{userId}
+  \item \texttt{storageKey} truncado/controlado
+  \item resultado y codigo de error
+\end{itemize}
+
+\textbf{Por que.} Logging util sin fuga de secretos ni datos sensibles.
+
+\textbf{Impacto.} \texttt{QH-XX05}, \texttt{QH-XX11}
+
+\textbf{Documento dueno.} \texttt{07\_Seguridad\_y\_Operacion/tex/07\_03\_Logging\_Observabilidad\_y\_Auditoria.tex}
+\end{docnote}
+
+\begin{docnote}
+\textbf{Decision.} Contrato de paginacion para cola administrativa
+
+\textbf{Verdicto.} En Sprint 7 se mantiene \texttt{limit/offset} en cola admin, con:
+\begin{itemize}
+  \item \texttt{default limit = 50}
+  \item \texttt{max limit = 100}
+\end{itemize}
+No se migra a cursor en este sprint.
+
+\textbf{Por que.} Ya existe implementacion y pruebas sobre este esquema; cambiar a cursor agregaria alcance no necesario para el objetivo del sprint.
+
+\textbf{Impacto.} \texttt{QH-XX02A}, \texttt{QH-XX07}, \texttt{QH-XX11}
+
+\textbf{Documento dueno.} \texttt{src/modules/payments/http/schemas.ts}, \texttt{src/modules/payments/http/routes.ts}
+\end{docnote}
+
+\subsection{Notas}
+
+\begin{itemize}
+  \item Estas decisiones cierran el bloque backend previo a implementacion de Sprint 7 para evitar supuestos durante desarrollo.
+  \item El trabajo de frontend y validacion E2E depende de estos cierres.
+  \item Si cambia una decision, debe versionarse explicitamente en este mismo documento antes de ajustar tickets.
+\end{itemize}
